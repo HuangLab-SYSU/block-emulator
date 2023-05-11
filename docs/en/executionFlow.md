@@ -2,7 +2,7 @@
 
 The operation cycle of the entire BlockEmulator can be divided into three stages: **parameter configuration before operation**, **execution**, and **data collection during operation and after operation**
 
-![The workflow of blockEmulator platform](./figures/workflow.png)
+![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/docs/en/workflow.png)
 
  <center> The period of exection of *BlockEmulator* </center>
 
