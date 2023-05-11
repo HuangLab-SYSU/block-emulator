@@ -4,13 +4,13 @@
 
 BrokerChain 跨分片机制，来自于 INFOCOM2022 收录的论文 《[BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)》, 论文针对目前分片区块链系统中存在大量跨分配交易的问题提出了 BrokerChain 跨分片交易机制，即，将选定为 Broker 的账户的状态进行分割，使其存在于每个分片之中，当分片间出现跨分片交易的时候，就可以使用 Broker 来进行处理。如下图所示：
 
-![img](./fig/broker.png)
+![img](./fig/broker.PNG)
 
 图 1. “做市商账户”交易机制
 
 Broker 账户也就是“做市商账户”，运用状态分割技术，让每个分片中存在 Broker，当用户提交了一个跨分片交易，如某分片的账户 A 向另一个分片的账户 B 发起一笔交易，那么这一笔跨分片交易就可以拆解为两笔片内交易，分别为账户 A 和同分片的 Broker 账户 C 进行一笔交易以及账户 B 和同分片的 Broker 账户 C 进行一笔交易，当交易完成后，实现跨分片交易处理，以减少跨分片交易的数量。
 
-![img](./fig/process.png)
+![img](./fig/process.PNG)
 
 图 2. 交易执行时序图
 
@@ -39,7 +39,7 @@ Broker 账户也就是“做市商账户”，运用状态分割技术，让每�
 
 
 
-![img](./fig/pbft_example.png))
+![img](./fig/pbft_example.PNG))
 
 图 3. PBFT 共识算法为例
 
