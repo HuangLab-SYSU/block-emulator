@@ -159,68 +159,64 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 # 黄华威
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/huawei.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Huawei.PNG" width=200>
 
 中山大学副教授，博士生导师，IEEE 高级会员，中国计算机学会 (CCF) 高级会员，CCF 区块链专委会执行委员、CCF 分布式与并行计算专委会执行委员。2016年取得日本会津大学“计算机科学与工程”博士学位；曾先后担任日本学术振兴会特别研究员、香港理工大学访问学者、日本京都大学特任助理教授。研究方向包括区块链底层机制、分布式系统与协议、Web3 与元宇宙底层关键技术。研究成果发表在 CCF-A 类推荐期刊 IEEE Journal on Selected Areas in Communications（JSAC），IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) 与 IEEE Transactions on Computers (TC)等，以及 CCF 推荐 A / B 类国际学术会议 INFOCOM、ICDCS、SRDS、IWQoS等。论文谷歌引用 3700+，H-index 27。曾担任 CCF 推荐 A 类期刊 IEEE JSAC 的区块链专刊的客座编辑（lead guest editor）。主持多项科技部和广东省重点研发计划课题，主持国家自然科学研究基金面上和青年项目、CCF-华为胡杨林基金区块链专项项目，以及多项广东省和广州市科技计划项目。出版区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
 
 # 郑子彬
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/zibin.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zibin.PNG" width=200>
 
 中山大学计算机学院教授，软件工程学院副院长、国家优秀青年科学基金获得者、IEEE Fellow、ACM 杰出科学家、国家数字家庭工程技术研究主心副主任、区块链与智能金融研究中心主任。出版 Springer 英文学术专著 2 部、发表论文 200 余篇，论文谷歌学术引用超过 28000 次。获得教育部自然科学二等奖、吴文俊人工智能自然科学二等奖、青年珠江学者、 ACM 中国新星提名奖、国际软件工程大会（ICSE）ACM SIGSOFT Distinguished Paper Award、国际 Web 服务大会（ICWS）最佳学生论文奖等奖项；担任数十个国际学术会议的程序委员会主席。
 
 # 林建入
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/jianru.png)
-
-![img](https://j4s9dl19cd.feishu.cn/space/api/box/stream/download/asynccode/?code=NzJmZWE1Y2UwNmFlZTVjNmZkMWU3ZTg0NmY1OTdlYjNfOFo0VTVPcUtETk5QdHg2dm5qZ3dMM2MxcFF3dTdpNHhfVG9rZW46UllsRWJCdzBRb3hCWjN4QnBrcGNiZWJhbmtiXzE2ODM4MTQ4MDA6MTY4MzgxODQwMF9WNA)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Jianru.png" width=200>
 
 林建入，资深程序员，在去中心化系统、智能合约语言与虚拟机的设计与实现方面拥有丰富经验。《高伸缩性系统》中文版译者。唬米科技创始人，同时也是中山大学区块链实验室 HuangLab 的技术导师。访问 \url{ https://github.com/Jianru-Lin/} 可以了解他的开源项目。设计并领导开发了 blockEmulator 以及其后续高阶版本。参与编著区块链教材《从区块链到 Web3》人民邮电出版社出版。
 
 # 李涛涛
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/taotao.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/taotao.PNG" width=200>
 
 李涛涛，博士，博士后研究员，于2022年毕业于中国科学院信息工程研究所网络空间安全专业获工学博士学位，现就职于中山大学软件工程学院进行博士后研究工作。主要研究方向为区块链理论与技术应用，应用密码，具体包括侧链技术、跨链协议、轻量级区块链、密码工具在区块链中的应用。参与多项国家/省部级重点研发计划课题，近年来在CCF推荐国际学术会议和期刊上发表论文多篇。参与 BlockEmulator 的开发。参与编写区块链教材《从区块链到 Web3》人民邮电出版社出版。
 
 # 罗肖飞
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/Luo.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Luo.png" width=200>
 
 罗肖飞，中山大学博士后研究员，于2023年3月获得日本会津大学“计算机科学与工程”博士学位，曾参与日本文部省 RFID 项目的研发等相关工作。目前的研究方向为区块链、支付通道网络，强化学习等等。相关研究成果发表在 CCF A 类期刊及其他知名国际期刊与会议。参与多项科技部和广东省重点研发计划项目。参与 BlockEmulator 的开发。参与编写区块链教材《从区块链到 Web3》人民邮电出版社出版。
 
 
-
 # 杨青林
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/qinglin.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/qinglin.PNG" width=200>
 
 杨青林，博士，助理研究员， IEEE 会员（IEEE member），于2021年3月取得日本会津大学“计算机科学与工程”博士学位。主要研究方向包括智能边缘云计算，联邦学习隐私保护，Web3。近年来在国际学术期刊/会议发表论文近 20 篇。担任 IEEE Open Journal of Computer Science (OJ-CS) 专刊客座编委成员。参与多项国家重点研发计划课题、国家自然科学基金面上项目的研发工作。参与 BlockEmulator 的开发。参与编著区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
 
 # 陈钦德
 
-
-
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/qinde.png)
-
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/qinde.png" width=200>
 
 
 陈钦德，中山大学软件工程学院 2023 级博士生，目前的研究方向为区块链。自 2022 年 8 月进入 HuangLab 研究学习， 参与 BlockEmulator 的开发。
 
 # 叶光
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/yeguang.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/yeguang.png" width=200>
 
 叶光，中山大学软件工程学院 2023 级研究生，目前的研究方向为区块链。自 2021 年 8 月以本科实习生身份加入 HuangLab，先后参与了一篇 CCF-A 期刊论文和 BlockEmulator 的开发。
 
 # 殷昭伉
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/zhaokang.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zhaokang.png" width=200>
+
 
 殷昭伉，中山大学软件工程学院2023级研究生，目前的研究方向为区块链。2022年10月，通过研究生推免加入HuangLab，参与 BlockEmulator的开发。
 
 # 吴均豪
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/junhao.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/junhao.png" width=200>
+
 
 吴均豪，中山大学软件工程学院2021级本科生。2022年9月加入 HuangLab 实习，参与 BlockEmulator 的开发。
