@@ -41,13 +41,13 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
 
 <h3>3. BlockEmulator 亮点</h3>
 
-1. **轻量化**：BlockEmulator 是一个轻量化的区块链实验平台。
+1. **轻量化：** BlockEmulator 是一个轻量化的区块链实验平台。
 
-2. **快速搭建：**方便用户进行快速搭建区块链实验平台，并且支持远程部署到云端运行。
+2. **快速搭建：** 方便用户进行快速搭建区块链实验平台，并且支持远程部署到云端运行。
 
-3. **可定制化：**BlockEmulator 是基于 Goland 语言实现的区块链实验平台，支持用户定制化二次开发。
+3. **可定制化：** BlockEmulator 是基于 Goland 语言实现的区块链实验平台，支持用户定制化二次开发。
 
-4. **易于实验：**BlockEmulator 支持主流区块链（如以太坊）的历史交易数据的回放，可以自动输出、保存各项区块链实验指标（如系统吞吐量、交易确认时延、交易池拥塞程度等等）以及系统运行的日志。这些功能非常便于科研人员与学生进行实验数据的收集以及实验图的绘制。
+4. **易于实验：** BlockEmulator 支持主流区块链（如以太坊）的历史交易数据的回放，可以自动输出、保存各项区块链实验指标（如系统吞吐量、交易确认时延、交易池拥塞程度等等）以及系统运行的日志。这些功能非常便于科研人员与学生进行实验数据的收集以及实验图的绘制。
 
    
 
@@ -114,18 +114,18 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 <h4>2.5 内置的共识协议和跨分片交易机制</h4>
 
-<h5>2.5.1 **Monoxide** 提出的 **Relay** **Transaction “接力****交易****”****的****跨分片****机制** [NSDI'2019 Monoxide]</h4>
+<h5>2.5.1 Monoxide 提出的 Relay Transaction 接力交易的跨分片机制 [NSDI'2019 Monoxide] </h4>
 [Relay 跨分片交易技术文档](./relay.md)
 
 
 
-<h5>2.5.2 **BrokerChain 提出的****“中间人”****跨分片机制** [INFOCOM'2022 BrokerChain] </h5>
+<h5>2.5.2 BrokerChain 提出的“中间人”跨分片机制 [INFOCOM'2022 BrokerChain] </h5>
 
 [BrokerChain 技术文档](./brokerchain.md) 
 
 
 
-<h5>2.5.3 **SRDS 论文**提出的“账户划分”机制 [SRDS'2022 Achieving] </h5>
+<h5>2.5.3 SRDS 论文提出的“账户划分”机制 [SRDS'2022 Achieving] </h5>
 
 [CLPA 算法详解](./CLPA.md) 
 
