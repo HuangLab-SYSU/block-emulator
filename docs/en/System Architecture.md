@@ -14,5 +14,5 @@ This is the first section of the second chapter in the **BlockEmulator** English
 5. **Utilization Layer**: This layer is mainly responsible for the overall operation of the system. Before the system runs, it reads local data, input parameter settings, and prepares the running environment, including constructing blockchain nodes, etc. During system operation, it ensures that transaction data is injected according to parameter settings, data exchange is stable, and logs and experimental data are saved. After the system runs, it can draw relevant charts based on the saved experimental data, such as the blockchain throughput over time.
    
 
-![The Hier Architecture of BlockEmulator](./figures/SystemArch.png)
+![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/docs/en/SystemArch.png)
  <center>The Hier Architecture of BlockEmulator </center>
