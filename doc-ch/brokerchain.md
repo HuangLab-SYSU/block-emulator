@@ -17,10 +17,10 @@ Broker 账户也就是“做市商账户”，运用状态分割技术，让每�
 如上图，描述的是一笔由 Broker 服务的跨分片交易的执行时序图，具体的流程如下（源自 [BrokerChain 论文](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)）：
 
 - Op1 : Sender A 发送原始交易消息 $θ_{raw}$给  Broker C 
-- Op2 : BrokerC 收到原始消息$$θ_{raw}$$ 后，分别给原始交易发送方账户和接收方账户所在分片（图中 Shard1、Shard2 ）发送$$θ_{1}$$
-- Op3：Shard1 节点接收到 $$θ_{1}$$ 后，判断消息合法性，构建 A 和 C 之间的交易（Tx1），如果交易上链，则向 Broker 发送Confirm$$θ_{1}$$消息
-- Op4：Broker 接收到 Confirm$$θ_{1}$$消息，验证消息的有效性后，向 Shard2 发送$$θ_{2}$$
-- Op5：Shard2 节点接收到 $$θ_{2}$$ 后，判断消息合法性，构建 C 和 B 之间的交易（Tx2），，如果交易上链，则向 Broker 发送Confirm$$θ_{2}$$消息完成跨分片交易
+- Op2 : BrokerC 收到原始消息 $θ_{raw}$ 后，分别给原始交易发送方账户和接收方账户所在分片（图中 Shard1、Shard2 ）发送 $θ_{1}$
+- Op3：Shard1 节点接收到 $θ_{1}$ 后，判断消息合法性，构建 A 和 C 之间的交易（Tx1），如果交易上链，则向 Broker 发送Confirm $θ_{1}$消息
+- Op4：Broker 接收到 Confirm $θ_{1}$消息，验证消息的有效性后，向 Shard2 发送 $θ_{2}$
+- Op5：Shard2 节点接收到 $θ_{2}$ 后，判断消息合法性，构建 C 和 B 之间的交易（Tx2），，如果交易上链，则向 Broker 发送Confirm $θ_{2}$消息完成跨分片交易
 - 
 
 ## **二、Broker 设计**
@@ -28,10 +28,10 @@ Broker 账户也就是“做市商账户”，运用状态分割技术，让每�
 ### **1. 结构设计**
 
 - **Sender** ：目前 Sender 为区块链中矿工节点担任的角色（如 PBFT 中主节点，负责接收客户端发来的交易 和 给从节点和broker客户端发消息）。
-  - 负责检测接收的交易是否为跨分片交易，如果是跨分片交易，则生成 $$θ_{raw}$$，并发送给 Broker
-  - 负责处理来自 Broker 的 $$θ_{1}$$ ，主要步骤为验证消息、生成 Tx1 片内交易、添加 Tx1 到交易池
-  - 负责处理来自 Broker 的 $$θ_{2}$$ ，主要步骤为验证消息、生成  Tx2 片内交易、添加 Tx2 到交易池
-  - 当新的区块打包上链后，负责筛选 BrokerTx，并分别生成$$Confirmθ_{1}$$和$$Confirmθ_{2}$$发送给 Broker客户端
+  - 负责检测接收的交易是否为跨分片交易，如果是跨分片交易，则生成 $θ_{raw}$，并发送给 Broker
+  - 负责处理来自 Broker 的 $θ_{1}$ ，主要步骤为验证消息、生成 Tx1 片内交易、添加 Tx1 到交易池
+  - 负责处理来自 Broker 的 $θ_{2}$ ，主要步骤为验证消息、生成  Tx2 片内交易、添加 Tx2 到交易池
+  - 当新的区块打包上链后，负责筛选 BrokerTx，并分别生成 $Confirmθ_{1}$和 $Confirmθ_{2}$发送给 Broker客户端
 - **Broker** ：Broker 作为独立客户端，专门负责跨分片交易请求
   - **BrokerAccount** : 在分片区块链网络中，Broker 账户将会被分割到各个分片中，也就是说 Broker 将拥有和分片数量对应的 account ，且 brokerAccount 不参与区块链网络的状态迁移。
     - 如 A → B，A 在 1 分片，B 在 2 分片， Broker 检测到跨分片交易后，经过一系列信息交换，跨分片交易变为 A → BrokerAccount1 和 BrokerAccount2 → B （BrokerAccount1 在 A , BrokerAccount2 在 B）
@@ -97,7 +97,7 @@ func handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm)
 
 #### 2.1. 消息类型
 
-$ θ_{raw} $：Sender 向 Broker 发送的原始交易的消息 
+$θ_{raw}$：Sender 向 Broker 发送的原始交易的消息 
 
 ```Go
 type BrokerRawMeg struct {
@@ -110,7 +110,7 @@ type BrokerRawMeg struct {
 }
 ```
 
-$$θ_{1}$$：Broker 向原始交易的发起者所在分片发送的信息。
+$θ_{1}$：Broker 向原始交易的发起者所在分片发送的信息。
 
 ```Go
 type BrokerType1Meg struct {
@@ -121,7 +121,7 @@ type BrokerType1Meg struct {
 }
 ```
 
-$$Confirmθ_{1}$$：原始交易发起者账户所在分片将 Tx1 上链后，向 Broker 发送的确认信息。
+$Confirmθ_{1}$：原始交易发起者账户所在分片将 Tx1 上链后，向 Broker 发送的确认信息。
 
 ```Go
 type mag1Confirm struct {
@@ -130,7 +130,7 @@ type mag1Confirm struct {
 }
 ```
 
-$$θ_{2}$$：Broker 向原始交易的接收者所在分片发送的信息。
+$θ_{2}$：Broker 向原始交易的接收者所在分片发送的信息。
 
 ```Go
 type BrokerType2Meg struct {
@@ -140,7 +140,7 @@ type BrokerType2Meg struct {
 }
 ```
 
-$$Confirmθ_{2}$$：原始交易的接收者所在分片, 将 Tx2 上链后，向 Broker 发送的确认信息。
+$Confirmθ_{2}$：原始交易的接收者所在分片, 将 Tx2 上链后，向 Broker 发送的确认信息。
 
 ```Go
 type mag2Confirm struct {
@@ -151,15 +151,15 @@ type mag2Confirm struct {
 
 以上的消息结构都提供了该有的使用方法：
 
-| `handleBrokerRawMag(brokerRawMags []*message.BrokerRawMeg) ` | 处理来自矿工节点的原始消息，产生并发送 $$θ_{1}$$    |
+| `handleBrokerRawMag(brokerRawMags []*message.BrokerRawMeg) ` | 处理来自矿工节点的原始消息，产生并发送 $θ_{1}$    |
 | ------------------------------------------------------------ | --------------------------------------------------- |
-| `handleTx1ConfirmMag(mag1confirms []*message.Mag1Confirm) `  | 处理来自矿工节点的 $$Confirmθ_{1}$$，发送 $$θ_{2}$$ |
-| `handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm) `  | 处理来自矿工节点的 $$Confirmθ_{2}$$，记录结果       |
+| `handleTx1ConfirmMag(mag1confirms []*message.Mag1Confirm) `  | 处理来自矿工节点的 $Confirmθ_{1}$，发送 $θ_{2}$ |
+| `handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm) `  | 处理来自矿工节点的 $Confirmθ_{2}$，记录结果       |
 | `fetchModifiedMap(key string) uint64 `                       | 用于判断交易中账户所属分片                          |
 
 ### 2.2 缓存池
 
-主要用于交易处理流程中缓存 $$Confirmθ_{1}$$和 $$Confirmθ_{2}$$消息，因为 Confirm 确认消息需要在交易上链之后才进行处理，所以需要用缓存池将 Confirm 确认消息缓存。
+主要用于交易处理流程中缓存 $Confirmθ_{1}$和 $Confirmθ_{2}$消息，因为 Confirm 确认消息需要在交易上链之后才进行处理，所以需要用缓存池将 Confirm 确认消息缓存。
 
 ```Go
 brokerConfirm1Pool = make(map[string]*mag1Confirm)
@@ -170,6 +170,6 @@ brokerConfirm2Pool = make(map[string]*mag2Confirm)
 
 | `dealTxByBroker(txs []*core.Transaction) (itxs []*core.Transaction)` | 采用 Broker 交易进行跨分片交易处理，输入为代注入交易，输出为片内交易，同时生成 RawMeg，并发送给 Broker |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `handleBrokerType1Mes(brokerType1Megs []*message.BrokerType1Meg)  ` | 处理来自 Broker 的 $$θ_{1}$$，解析消息并，生成片内交易 Tx1，并加入交易池 |
-| `handleBrokerType2Mes(brokerType2Megs []*message.BrokerType2Meg)  ` | 处理来自 Broker 的 $$θ_{2}$$，解析消息并，生成片内交易 Tx2，并加入交易池 |
-| `createConfirm(txs []*core.Transaction)`                     | 当区块链上链后，区块中交易记录，分别产生 $$Confirmθ_{1}$$和 $$Confirmθ_{2}$$发送给 Broker 进行处理 |
+| `handleBrokerType1Mes(brokerType1Megs []*message.BrokerType1Meg)  ` | 处理来自 Broker 的 $θ_{1}$，解析消息并，生成片内交易 Tx1，并加入交易池 |
+| `handleBrokerType2Mes(brokerType2Megs []*message.BrokerType2Meg)  ` | 处理来自 Broker 的 $θ_{2}$，解析消息并，生成片内交易 Tx2，并加入交易池 |
+| `createConfirm(txs []*core.Transaction)`                     | 当区块链上链后，区块中交易记录，分别产生 $Confirmθ_{1}$和 $Confirmθ_{2}$发送给 Broker 进行处理 |
