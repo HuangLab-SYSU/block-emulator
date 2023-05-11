@@ -106,6 +106,6 @@ var worker PbftConsensusNode
 worker.NewPbftNode(sid, nid, pcc, "CLPA").
 ```
 
-### **3. 批处理****文件运行**
+### **3. 批处理文件运行**
 
 通过 .bat 文件运行多个 Worker Nodes 和 Supervisor 即可。
