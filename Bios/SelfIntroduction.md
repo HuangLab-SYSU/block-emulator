@@ -1,1 +1,0 @@
-The teammates of **HuangLab**
