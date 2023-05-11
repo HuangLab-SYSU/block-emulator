@@ -45,7 +45,7 @@ The following papers from HuangLab's publications have adopted **BlockEmulator**
 ## 4. Getting Started to Use BlockEmulator
 
 Quickly get started with BlockEmulator through the following document. Please refer to::
-[BlockEmulator help document](https://j4s9dl19cd.feishu.cn/docx/AEXIdlSJAob2Y4xHp2PcquE0nvd)
+[BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md)
 
 
 
