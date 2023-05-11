@@ -1,13 +1,13 @@
 
 **BrokerChain** cross-sharding mechanism, from the paper "BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding" included in INFOCOM2022. The paper proposes the BrokerChain cross-shard transaction mechanism for the problem of a large number of cross-distribution transactions in the current sharded blockchain system. That is, the state of the account selected as the broker is split so that it exists in each shard, and when there is a cross-shard transaction between the shards, the broker can be used to handle it. As illustrated in the following figure:
-<div algin=left><img src="./figures/broker.png" alt="Figures" ></div>
+![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/docs/en/broker.png)
 
 <center> A toy example of Broker</center>
 
 Broker account is an account using state segmentation technology, so that each shard in the existence of a broker. When a user submits a cross-shard transaction, such as account A in one shard that initiates a transaction to account B in another shard, then this cross-shard transaction can be split into two intra-shard transactions, one between account A and Broker account C in the same shard, and another between account B and Broker account C in the same shard. When the transaction is completed, implement cross-shard transaction processing to reduce the number of cross-shard transactions. 
 
-<div algin=left><img src="./figures/transactions.png" alt="Figures" ></div>
 
+![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/docs/en/transactions.png)
 
  The overall process for a cross-shard transaction in BrokerChain involves five steps:
 
@@ -41,9 +41,8 @@ $\theta_{2}$ message to the Broker account $C$ to complete the cross-shard trans
     - If A → B, A in 1 shard, B in 2 shards, after the broker detects the cross-shard transaction, after a series of information exchanges, the cross-shard transaction becomes A → BrokerAccount1 and BrokerAccount2 → B (BrokerAccount1 in A, BrokerAccount2 in B).
   
   - **BrokerMainAccount**: Responsible for maintaining the total assets of the broker account or performing state migration when switching brokers.(Unused)
-    <div algin=center><img src="./figures/PBFT.png" width=400 alt="Figures" title="PBFT"></div>
     
-
+   ![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/docs/en/PBFT.png)
 ## Implementation and Design
 
 ### Detailed Explaination
