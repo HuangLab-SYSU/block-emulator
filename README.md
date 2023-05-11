@@ -44,7 +44,7 @@ The following papers from HuangLab's publications have adopted **BlockEmulator**
 
 ## 4. Getting Started to Use BlockEmulator
 
-Quickly get started with BlockEmulator through the following document. Please refer to::
+Quickly get started with BlockEmulator through the following document. Please refer to:
 [BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md)
 
 
@@ -109,6 +109,7 @@ C. Account-partition mechanism, a.k.a [CLPA algorithm](https://github.com/HuangL
   - [INFOCOM'2022 BrokerChain] H. Huang, X. Peng, J. Zhan, S. Zhang, Y. Lin, Z. Zheng, and S. Guo, “Brokerchain: A cross-shard blockchain protocol for account/balance-based state sharding,” in Proc. of IEEE Conference on Computer Communications (INFOCOM’22), 2022, pp. 1–10. 
   
   - [SRDS'2022 Achieving] C. Li, H. Huang, Y. Zhao, X. Peng, R. Yang, Z. Zheng, and S. Guo, “Achieving scalability and load balance across blockchain shards for state sharding,” in Proc. of 2022 41st International Symposium on Reliable Distributed Systems (SRDS’22), 2022, pp. 284–294.
+
 
 # Contributors Page
 
