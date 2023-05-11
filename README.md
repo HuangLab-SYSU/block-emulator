@@ -135,13 +135,15 @@ Lin Jianjin, a research scientist engineer, has rich experience in the design an
 
 ![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/taotao.PNG)
 
-Taotao Li, Ph.D., a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University, received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He has participated in a number of national/provincial key R&D projects, and published many papers in international academic conferences and journals recommended by CCF in recent years. He participated in the development of BlockEmulator.  He also participated in the compilation of the blockchain textbook "From Blockchain to Web3", published by People's Posts and Telecommunications Press.
+Taotao Li is a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University, received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He has participated in a number of national/provincial key R&D projects, and published many papers in international academic conferences and journals. He participated in the development of BlockEmulator.
+
 
 # Xiaofei Luo
 
 ![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/Luo.png)
 
-Xiaofei Luo is currently at Sun Yat-sen University as a postdoctoral researcher. He received his Ph.D. degree in Computer Science and Engineering from the University of Aizu in March 2023, and participated in the research and development of RFID projects of the Ministry of Education,Culture,Sports,Science and Technology in Japan. His current research interests include blockchain, payment channel networks, reinforcement learning. The relevant research has been published in IEEE JSAC and other well-known international journals and conferences. He participated in the development of BlockEmulator and the compilation of the blockchain textbook "From Blockchain to Web3", published by People's Posts and Telecommunications Press.
+Xiaofei Luo is currently a postdoctoral researcher at Sun Yat-sen University. He received his Ph.D. degree in Computer Science and Engineering from the University of Aizu in March 2023. His current research interests include blockchain, payment channel networks, and reinforcement learning. His research has been published in IEEE JSAC and other well-known international journals and conferences. He participated in the development of BlockEmulator.
+
 
 #  Qinglin Yang
 
@@ -172,8 +174,3 @@ Guang is currently a student pursuing his bachelor's degree at the School of Com
 ![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/junhao.png)
 
 Junhao is an undergraduate student at the School of Software Engineering, Sun Yat-sen University. In September 2022, he joined HuangLab as an intern and participated in the development of BlockEmulator.
-
-
-   
-
-
