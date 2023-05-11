@@ -115,7 +115,7 @@ C. Account-partition mechanism, a.k.a CLPA algorithm [SRDS'2O22 Achieving]
 
 # Huawei Huang
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/huawei.PNG)
+![](./bios/huawei.PNG)
 
 An associate professor of Sun Yat-sen University, IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. He has served as a research fellow of JSPS, and an Assistant Professor at Kyoto University, Japan. His research interests include blockchain, Web3, metaverse, and distributed computing/protocols. He received the best paper award from TrustCom2016 and a best paper award runner-up from IEEE OJ-CS. He has more than 100 papers published in top journals such as IEEE/ACM Transactions on Networking (ToN/TNet), IEEE Journal on Selected Areas in Communications (JSAC), IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) and IEEE Transactions on Computers (TC), etc., as well as prestigious international conferences INFOCOM, ICDCS, SRDS, IWQoS, etc. He served as a lead guest editor for a blockchain special issue at IEEE JSAC. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), and Guangdong Basic and Applied Basic Research Foundation. He also published a blockchain book titled "From Blockchain to Web3 & Metaverse", published by Springer, 2023.
 
