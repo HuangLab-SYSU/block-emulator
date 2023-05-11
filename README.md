@@ -115,62 +115,63 @@ C. Account-partition mechanism, a.k.a [CLPA algorithm](https://github.com/HuangL
 
 # Huawei Huang
 
-![](./bios/huawei.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Huawei.PNG" width=200>
 
 An associate professor of Sun Yat-sen University, IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. He has served as a research fellow of JSPS, and an Assistant Professor at Kyoto University, Japan. His research interests include blockchain, Web3, metaverse, and distributed computing/protocols. He received the best paper award from TrustCom2016 and a best paper award runner-up from IEEE OJ-CS. He has more than 100 papers published in top journals such as IEEE/ACM Transactions on Networking (ToN/TNet), IEEE Journal on Selected Areas in Communications (JSAC), IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) and IEEE Transactions on Computers (TC), etc., as well as prestigious international conferences INFOCOM, ICDCS, SRDS, IWQoS, etc. He served as a lead guest editor for a blockchain special issue at IEEE JSAC. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), and Guangdong Basic and Applied Basic Research Foundation. He also published a blockchain book titled "From Blockchain to Web3 & Metaverse", published by Springer, 2023.
 
 # Zibin Zheng
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/zibin.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zibin.PNG" width=200>
 
 Zheng Zibin (SM’16-F’23) received his Ph.D. degree from the Chinese University of Hong Kong, Hong Kong, in 2012. He is a Professor at the School of Software Engineering, Sun Yat-Sen University, China. His current research interests include service computing, blockchain, and cloud computing. Prof. Zheng was a recipient of the Outstanding Ph.D. Dissertation Award of the Chinese University of Hong Kong in 2012, the ACM SIGSOFT Distinguished Paper Award at ICSE in 2010, the Best Student Paper Award at ICWS2010, and the IBM Ph.D. Fellowship Award in 2010. He served as a PC member for IEEE CLOUD, ICWS, SCC, ICSOC, and SOSE.
 
 # Jianru Lin
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/Jianru.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Jianru.png" width=200>
 
 Lin Jianjin, a research scientist engineer, has rich experience in the design and implementation of decentralized systems, smart contract languages, and virtual machines. He is the translator of the Chinese edition of Highly Scalable Systems. He is also the technical mentor of HuangLab, a blockchain laboratory at Sun Yat-sen University. Visit url{ https://github.com/Jianru-Lin/} to learn about his open-source projects.
 
 # Taotao Li
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/taotao.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/taotao.PNG" width=200>
+
 
 Taotao Li is a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University, received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He has participated in a number of national/provincial key R&D projects, and published many papers in international academic conferences and journals. He participated in the development of BlockEmulator.
 
 
 # Xiaofei Luo
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/Luo.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Luo.png" width=200>
 
 Xiaofei Luo is currently a postdoctoral researcher at Sun Yat-sen University. He received his Ph.D. degree in Computer Science and Engineering from the University of Aizu in March 2023. His current research interests include blockchain, payment channel networks, and reinforcement learning. His research has been published in IEEE JSAC and other well-known international journals and conferences. He participated in the development of BlockEmulator.
 
 
 #  Qinglin Yang
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/qinglin.PNG)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/qinglin.PNG" width=200>
 
 Qinglin Yang, Ph.D., research fellow, and IEEE member, received his Ph.D. in Computer Science and Engineering from the University of Aizu in March 2021. His research interests include intelligent edge cloud computing, federated learning privacy protection, and Web3. In recent years, he has published nearly 20 papers in international academic journals/conferences. He is also a guest editorial board member of the IEEE Open Journal of the Computer Society (OJ-CS). He has participated in the research and development of a number of national key R&D projects and projects of the National Natural Science Foundation of China. He participated in the development of BlockEmulator. He participated in the compilation of the blockchain textbook "From Blockchain to Web3", published by People's Posts and Telecommunications Press, and a blockchain book titled "From Blockchain to Web3 & Metaverse", published by Springer, 2023.
 
 # Qinde Chen
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/qinde.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/qinde.png" width=200>
 
 Qinde is a Ph.D. student at the School of Software Engineering, Sun Yat-sen University. His research interests mainly include blockchain. In August 2022, he joined HuangLab and participated in the development of BlockEmulator.
 
 # Guang Ye
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/yeguang.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/yeguang.png" width=200>
 
 Guang is currently a student pursuing his bachelor's degree at the School of Computer Science and Engineering, at Sun Yat-Sen University. His research interests mainly include Blockchain.  Since joining HuangLab as an undergraduate intern in August 2021, he has participated in the development of BlockEmulator.
 
 # Zhaokang Yin
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/zhaokang.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zhaokang.png" width=200>
 
  Zhaokang will enroll in the School of Software Engineering, Sun Yat-sen University in Fall 2023. His research interest mainly focuses on blockchain. In October 2022, he joined HuangLab to participate in the development of BlockEmulator.
 
 # Junhao Wu
 
-![](https://github.com/HuangLab-SYSU/block-emulator/edit/main/bios/junhao.png)
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/junhao.png" width=200>
 
 Junhao is an undergraduate student at the School of Software Engineering, Sun Yat-sen University. In September 2022, he joined HuangLab as an intern and participated in the development of BlockEmulator.
