@@ -7,7 +7,7 @@
   - 为共识节点设置共识协议与跨分片机制
   - 记录交易的处理数据，计算并输出系统性能
   - 控制全局节点的开始与终止
-  - ![img](https://j4s9dl19cd.feishu.cn/space/api/box/stream/download/asynccode/?code=MjIxNzk3Nzg4YTk3MTNiYjU2NjQzODQ4ODgyYTY4ZGRfSnB2WVg4aGNzMDlyOG1OSjlIanFYUENsYTRWaURrR1dfVG9rZW46TXc5M2JXQlZ3b3pTZzJ4SDNZQmNrZ2ZKbk1mXzE2ODM4MTIwNzA6MTY4MzgxNTY3MF9WNA)
+  - ![img](./fig/output.PNG)
 
 **系统结构图**
 
