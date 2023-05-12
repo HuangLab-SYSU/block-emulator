@@ -6,7 +6,7 @@ The dataset is from [Ethereum-On-chain data](https://xblock.pro/#/dataset/14)，
 
 ## 1.2 Configuration of the System Parameters
 
-open the configuration file [params/global_config.go](https://github.com/Jianru-Lin/block-emulator-v1/blob/79325c6ddd009c450a00ffbc0e06073a74f3c428/params/global_config.go), set up the Parameters, and the meaning of parameters are shown as follows:
+open the configuration file [params/global_config.go](https://github.com/HuangLab-SYSU/block-emulator/blob/main/params/global_config.go), configures the parameters. The meaning of parameters are shown as follows:
 
 ```
 1 Block_Interval  = 5000   // generate new block interval
@@ -32,7 +32,7 @@ open the configuration file [params/global_config.go](https://github.com/Jianru-
  7 -S, --shardNum int   indicate that how many shards are deployed (default 2)
 ```
 
-## 2.2 launch 
+## 2.2 Launch 
 1. Set the number of fragment nodes, number of fragments, and simulation mode, and start the supervisor client
    ```
    1 go run main.go -c -N 4 -S 2 -m 3 
