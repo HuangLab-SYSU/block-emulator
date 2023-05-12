@@ -1,11 +1,12 @@
 This is the **Help Documents** for BlockEmulator
+
 # 一 、Settings
 ## 1.1 Download Dataset
-The dataset is from [Ethereum-On-chain data](https://xblock.pro/#/dataset/14) which is published by [xblock](https://xblock.pro/#/).
+The dataset is from [Ethereum-On-chain data](https://xblock.pro/#/dataset/14)，which is published by [xblock.pro](https://xblock.pro/#/).
 
-## 1.2 Set up the System Parameters
+## 1.2 Configuration of the System Parameters
 
-open the Configuration file [params/global_config.go](https://github.com/Jianru-Lin/block-emulator-v1/blob/79325c6ddd009c450a00ffbc0e06073a74f3c428/params/global_config.go), set up the Parameters, and the meaning of parameters are shown as follows:
+open the configuration file [params/global_config.go](https://github.com/Jianru-Lin/block-emulator-v1/blob/79325c6ddd009c450a00ffbc0e06073a74f3c428/params/global_config.go), set up the Parameters, and the meaning of parameters are shown as follows:
 
 ```
 1 Block_Interval  = 5000   // generate new block interval
