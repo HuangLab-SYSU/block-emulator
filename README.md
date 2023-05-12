@@ -9,7 +9,7 @@ This is the official handbook of **BlockEmulator**(version 1.0).
 Initiated by **[HuangLab](http://xintelligence.pro/)**  (a research group in the School of Software Engineering, Sun Yat-sen University, China), ***BlockEmulator** is a blockchain testbed that enables researchers to verify their proposed new protocols and mechanisms. It supports multiple consensus protocols and particularly the cross-shard mechanism.
 
 
-The main purpose of this testbed is to help users (researchers, students, etc.) quickly verify their own blockchain consensus protocols and blockchain-sharing mechanisms. **BlockEmulator** is designed as an experimental platform that adopts lightweight system architecture.
+The main purpose of this testbed is to help users (researchers, students, etc.) quickly verify their own blockchain consensus protocols and blockchain-sharding mechanisms. **BlockEmulator** is designed as an experimental platform that adopts lightweight system architecture.
 
 It simplifies the implementation of industrial-class blockchains since **BlockEmulator** only implements the core functions of a blockchain, including the transaction pool, block packaging, consensus protocols, and on-chain transaction storage. It also supports common consensus protocols, such as Practical Byzantine Fault Tolerance (PBFT) and Proof of Work (PoW).
 
