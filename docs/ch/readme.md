@@ -32,7 +32,7 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
 
 - 如下几篇 HuangLab 产出的区块链论文使用了 BlockEmulator 作为实验平台。欢迎感兴趣的同行了解：
 
-- - BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF]( https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding) 】【[公众号介绍文章](https://mp.weixin.qq.com/s/5MelID6kVMQeM1LAET-37w)】
+- - BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)】【[公众号介绍文章](https://mp.weixin.qq.com/s/5MelID6kVMQeM1LAET-37w)】
   - Achieving Scalability and Load Balance across Blockchain Shards for State Sharding **(SRDS 2022)**【[PDF](https://ieeexplore.ieee.org/document/9996899)】【[公众号介绍文章](https://mp.weixin.qq.com/s/UMsQ7VIzyU-nzW5MzUXPfg)】
   - tMPT: Reconfiguration across Blockchain Shards via Trimmed Merkle Patricia Trie **(IWQoS 2023)**【[PDF](https://www.researchgate.net/publication/370633426_tMPT_Reconfiguration_across_Blockchain_Shards_via_Trimmed_Merkle_Patricia_Trie)】【[公众号介绍文章](https://mp.weixin.qq.com/s/M7KxjWTyheygrgKgDfz97g)】
   - MVCom: Scheduling Most Valuable Committees for the Large-Scale Sharded Blockchain **(ICDCS 2021) 【[PDF](https://ieeexplore.ieee.org/document/9546408)】【[公众号介绍文章](https://mp.weixin.qq.com/s/3EUO5Pt5-4hwGWtCJaFnIQ)】
