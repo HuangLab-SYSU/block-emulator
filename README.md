@@ -64,7 +64,7 @@ Zheng Zibin (SM’16-F’23) received his Ph.D. degree from the Chinese Universi
 
 # Jianru Lin
 
-Lin Jianjin, a research scientist engineer, has rich experience in the design and implementation of decentralized systems, smart contract languages, and virtual machines. He is the translator of the Chinese edition of Highly Scalable Systems. He is also the technical mentor of HuangLab, a blockchain laboratory at Sun Yat-sen University. Visit url{ https://github.com/Jianru-Lin/} to learn about his open-source projects.
+Lin Jianjin, a research scientist engineer, has rich experience in the design and implementation of decentralized systems, smart contract languages, and virtual machines. He is the translator of the Chinese edition of Highly Scalable Systems. He is also the technical mentor of HuangLab, a blockchain laboratory at Sun Yat-sen University. Visit url{ https://github.com/Jianru-Lin/ } to learn about his open-source projects.
 
 # Taotao Li
 
