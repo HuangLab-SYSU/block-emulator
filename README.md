@@ -42,7 +42,7 @@ The following papers from HuangLab's publications have adopted **BlockEmulator**
 ## 4. Getting Started to Use BlockEmulator
 
 Quickly get started with BlockEmulator through the following document. Please refer to:
-[BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md). More details of user guideline can be found at [Handbook of BlockEmulator (En)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/read.md) or [Handbook of BlockEmulator (ch)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme.md).
+[BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md). More details of user guideline can be found at [Handbook of BlockEmulator (Eng.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/read.md) or [Handbook of BlockEmulator (Chn.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme.md).
 
 ## Reference
   - [NSDI'2019 Monoxide] J. Wang and H. Wang, “Monoxide: Scale out blockchains with asynchronous consensus zones,” in 16th USENIX Symposium on Networked Systems Design and Implementation (NSDI 19), 2019, pp. 95–112.
