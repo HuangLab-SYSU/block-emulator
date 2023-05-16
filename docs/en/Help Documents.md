@@ -1,6 +1,6 @@
 This is the **Help Documents** for BlockEmulator
 
-# 一 、Settings
+# 1. Settings
 ## 1.1 Download Dataset
 The dataset is from [Ethereum-On-chain data](https://xblock.pro/#/dataset/14)，which is published by [xblock.pro](https://xblock.pro/#/).
 
@@ -19,7 +19,7 @@ open the configuration file [params/global_config.go](https://github.com/HuangLa
 8 FileInput           = "../2000000to2999999_BlockTransaction.csv" //the raw BlockTransaction data path
 ```
 
-# 二、Usages Explaination
+# 2. Usages Explaination
 
 ## 2.1 Command  Explaination
 ```
@@ -50,7 +50,7 @@ Set the number of fragments, number of nodes in fragments, and simulation mode t
 ``` 
 1 go run main.go -g -S 2 -N 4 -m 3 
 ```
-# 三、 Demos
+# 3. Demos
 Take the Relay cross-chain mechanism blockchain as an example, 2 shards, 4 nodes
 ## 3.1 manual start
 1. lanuch **Supervisor**
