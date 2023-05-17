@@ -104,8 +104,11 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) sendAccounts_and_Txs() {
 				beSend = ok2
 				beRemoved = ok2
 			} else if ptx.OriginalSender == ptx.Sender {
-				beSend = ok1
 				beRemoved = ok1
+				if ok1 {
+					rawTx := core.NewTransaction(ptx.Sender, ptx.FinalRecipient, ptx.Value, ptx.Nonce)
+					txsBeCross = append(txsBeCross, rawTx)
+				}
 			}
 
 			if beSend {
