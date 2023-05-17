@@ -27,21 +27,16 @@ Broker 账户也就是“做市商账户”，运用状态分割技术，让每�
 
 ### **1. 结构设计**
 
-- **Sender** ：目前 Sender 为区块链中矿工节点担任的角色（如 PBFT 中主节点，负责接收客户端发来的交易 和 给从节点和broker客户端发消息）。
+- **Sender** ：目前 Sender 为supervisor 担任。
   - 负责检测接收的交易是否为跨分片交易，如果是跨分片交易，则生成 $θ_{raw}$，并发送给 Broker
   - 负责处理来自 Broker 的 $θ_{1}$ ，主要步骤为验证消息、生成 Tx1 片内交易、添加 Tx1 到交易池
   - 负责处理来自 Broker 的 $θ_{2}$ ，主要步骤为验证消息、生成  Tx2 片内交易、添加 Tx2 到交易池
-  - 当新的区块打包上链后，负责筛选 BrokerTx，并分别生成 $Confirmθ_{1}$和 $Confirmθ_{2}$发送给 Broker客户端
-- **Broker** ：Broker 作为独立客户端，专门负责跨分片交易请求
-  - **BrokerAccount** : 在分片区块链网络中，Broker 账户将会被分割到各个分片中，也就是说 Broker 将拥有和分片数量对应的 account ，且 brokerAccount 不参与区块链网络的状态迁移。
-    - 如 A → B，A 在 1 分片，B 在 2 分片， Broker 检测到跨分片交易后，经过一系列信息交换，跨分片交易变为 A → BrokerAccount1 和 BrokerAccount2 → B （BrokerAccount1 在 A , BrokerAccount2 在 B）
-  - **BrokerMainAccount：**负责维护 Broker 账户的总资产或是切换 Broker 时进行状态迁移（目前未使用）
+  - 当新的区块打包上链后，负责筛选 BrokerTx，并分别生成 $Confirmθ_{1}$和 $Confirmθ_{2}$发送给 Broker
+- **Broker** ：Broker 为 supervisor 担任，专门负责跨分片交易请求
+  - **BrokerAddress** : 在分片区块链网络中，Broker 账户将会被分割到各个分片中，也就是说 Broker 将拥有和分片数量对应的 account ，且 brokerAccount 不参与区块链网络的状态迁移。
+    - 如 A → B，A 在 1 分片，B 在 2 分片， Broker 检测到跨分片交易后，经过一系列信息交换，跨分片交易变为 A → BrokerAddress 和 BrokerAddress → B 
 
-
-
-![img](./fig/pbft_example.PNG))
-
-图 3. PBFT 共识算法为例
+  
 
 
 
@@ -64,12 +59,12 @@ type Broker struct {
 }
 ```
 
-| 变量             | 类型                        | 说明                                             |
-| ---------------- | --------------------------- | ------------------------------------------------ |
-| `BrokerRawMegs`  | `map[string]*BrokerRawMeg ` | RawMeg 摘要和`*BrokerRawMeg `的映射              |
-| `ChainConfig`    | `*params.ChainConfig`       | 系统配置信息                                     |
-| `BrokerAddress`  | `[uint64]string`            | 分片和 Broker 地址的映射                         |
-| `rawTx2BrokerTx` | `map[string][]string`       | 原始跨分片交易和 Broker 产生的两个片内交易的映射 |
+| 变量             | 类型                    | 说明                                      |
+| ---------------- | --------------------- | ----------------------------------------- |
+| `BrokerRawMegs`  | `map[string]*BrokerRawMeg ` | RawMeg 摘要和`*BrokerRawMeg `的映射       |
+| `ChainConfig`    | `*params.ChainConfig` | 系统配置信息                              |
+| `BrokerAddress`  | `[]string`            | Broker 地址                         |
+| `rawTx2BrokerTx` | `map[string][]string` | 原始跨分片交易和 Broker 产生的两个片内交易的映射 |
 
 同时 Broker 实例提供了必要的功能，以下是各个功能对应的方法：
 
@@ -90,7 +85,10 @@ func handleBrokerRawMag(brokerRawMags []*message.BrokerRawMeg)
 func handleTx1ConfirmMag(mag1confirms []*message.Mag1Confirm) 
 
 // Handle the tx2
-func handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm) 
+func handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm)
+
+//init broker address
+func initBrokerAddr(num int) []string 
 ```
 
 ### 2. 消息结构
@@ -151,15 +149,15 @@ type mag2Confirm struct {
 
 以上的消息结构都提供了该有的使用方法：
 
-| `handleBrokerRawMag(brokerRawMags []*message.BrokerRawMeg) ` | 处理来自矿工节点的原始消息，产生并发送 $θ_{1}$    |
-| ------------------------------------------------------------ | --------------------------------------------------- |
-| `handleTx1ConfirmMag(mag1confirms []*message.Mag1Confirm) `  | 处理来自矿工节点的 $Confirmθ_{1}$，发送 $θ_{2}$ |
-| `handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm) `  | 处理来自矿工节点的 $Confirmθ_{2}$，记录结果       |
-| `fetchModifiedMap(key string) uint64 `                       | 用于判断交易中账户所属分片                          |
+| `handleBrokerRawMag(brokerRawMags []*message.BrokerRawMeg) ` | 处理原始消息，产生并发送 $θ_{1}$    |
+| ------------------------------------------------------------ | ------------------------------------- |
+| `handleTx1ConfirmMag(mag1confirms []*message.Mag1Confirm) `  | 处理 $Confirmθ_{1}$，发送 $θ_{2}$ |
+| `handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm) `  | 处理 $Confirmθ_{2}$，记录结果 |
+| `fetchModifiedMap(key string) uint64 `                       | 用于判断交易中账户所属分片                |
 
 ### 2.2 缓存池
 
-主要用于交易处理流程中缓存 $Confirmθ_{1}$和 $Confirmθ_{2}$消息，因为 Confirm 确认消息需要在交易上链之后才进行处理，所以需要用缓存池将 Confirm 确认消息缓存。
+主要用于交易处理流程中缓存 $Confirmθ_{1}$和 $Confirmθ_{2}$消息，因为 Confirm 确认消息需要在交易上链之后才进行处理，所以需要用缓存池将 Confirm 消息缓存。
 
 ```Go
 brokerConfirm1Pool = make(map[string]*mag1Confirm)

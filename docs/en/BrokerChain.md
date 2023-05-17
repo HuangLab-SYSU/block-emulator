@@ -26,7 +26,7 @@ $\theta_{2}$ message to the Broker account $C$ to complete the cross-shard trans
 
 ## Architecture Design
 
-- **Sender**: The current role of Sender for miner nodes in the blockchain (e.g. master node in PBFT, responsible for receiving transactions from clients and sending messages to slave nodes and broker clients).
+- **Sender**: The sender is assumed by the supervisor.
   - Responsible for detecting whether the received transaction is a cross-shard transaction, and if it is a cross-shard transaction, generate $θ_{raw}$ and send it to the broker.
   
   - Responsible for processing $θ_{1}$from the broker, the main steps are validation messages, generating tx1 on-chip transactions, and adding transaction pools.
@@ -35,15 +35,13 @@ $\theta_{2}$ message to the Broker account $C$ to complete the cross-shard trans
   
   - When the new block is packaged on the chain, it is responsible for filtering BrokerTx, and generating $Confirm θ_{1}$ and $Confirm θ_{2}$to send to the Broker client respectively - currently Sender plays the role of miner nodes in the blockchain (such as the master node in PBFT, responsible for receiving transactions from the client and sending messages to the slave node and the broker client).
 
-- **Broker**: Broker is viewed as isolated client and it is in charged of  the request of cross-shard transaction.
+- **Broker**:  The Broker is assumed by the supervisor and it is in charged of  the request of cross-shard transaction.
   
   - **BrokerAccount**: In the sharded blockchain network, in order to facilitate the division of blockchain accounts, according to the number of shards, the broker will have a corresponding number of accounts, each account corresponds to a shard, and the brokerAccount does not participate in state migration
-    - If A → B, A in 1 shard, B in 2 shards, after the broker detects the cross-shard transaction, after a series of information exchanges, the cross-shard transaction becomes A → BrokerAccount1 and BrokerAccount2 → B (BrokerAccount1 in A, BrokerAccount2 in B).
+    - If A → B, A in 1 shard, B in 2 shards, after the broker detects the cross-shard transaction, after a series of information exchanges, the cross-shard transaction becomes A → BrokerAccount and BrokerAccount → B .
+
   
-  - **BrokerMainAccount**: Responsible for maintaining the total assets of the broker account or performing state migration when switching brokers.(Unused)
-  
-    <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/PBFT.PNG" width=600>
-    
+
 ## Implementation and Design
 
 ### Detailed Explaination
@@ -68,7 +66,7 @@ The implementation of **BrokerChain** can be splited into two parts: The impleme
     |----|-------|--------|
     |BrokerRawMegs|map[string]*BrokerRawMeg |The abstract of RawMeg and the map of *BrokerRwaMeg
     |ChainConfig|*params.ChainConfig|The configuration information of system|
-    |BrokerAddress|[uint64]string|The map of shard and Broker address|
+    |BrokerAddress|[]string|Broker address|
     |rawTx2BrokerTx|map[string][]string|Mapping of the original cross-shard transaction and the two intra-slice transactions produced by the broker.|
 
     Additional mehtods:
@@ -90,7 +88,9 @@ The implementation of **BrokerChain** can be splited into two parts: The impleme
     14 func handleTx1ConfirmMag(mag1confirms []*message.Mag1Confirm) 
     15
     16 // Handle the tx2
-    17 func handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm) 
+    17 func handleTx2ConfirmMag(mag2confirms []*message.Mag2Confirm)
+    18 //init broker address
+    19 func initBrokerAddr(num int) []string  
     ```
 2. Message Structure
    
