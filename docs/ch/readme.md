@@ -115,6 +115,7 @@ go env -w GOPROXY=https://goproxy.cn,direct
 <h4>2.5 内置的共识协议和跨分片交易机制</h4>
 
 <h5>2.5.1 Monoxide 提出的 Relay Transaction 接力交易的跨分片机制 [NSDI'2019 Monoxide] </h4>
+
 [Relay 跨分片交易技术文档](./relay.md)
 
 
