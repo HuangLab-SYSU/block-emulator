@@ -96,6 +96,10 @@ func (bcm *BrokerCommitteeMod) txSending(txlist []*core.Transaction) {
 		}
 		tx := txlist[idx]
 		sendersid := bcm.fetchModifiedMap(tx.Sender)
+
+		if bcm.broker.IsBroker(tx.Sender) {
+			sendersid = bcm.fetchModifiedMap(tx.Recipient)
+		}
 		sendToShard[sendersid] = append(sendToShard[sendersid], tx)
 	}
 }
@@ -183,13 +187,16 @@ func (bcm *BrokerCommitteeMod) dealTxByBroker(txs []*core.Transaction) (itxs []*
 	for _, tx := range txs {
 		rSid := bcm.fetchModifiedMap(tx.Recipient)
 		sSid := bcm.fetchModifiedMap(tx.Sender)
-		if rSid != sSid {
+		if rSid != sSid && !bcm.broker.IsBroker(tx.Recipient) && !bcm.broker.IsBroker(tx.Sender) {
 			brokerRawMeg := &message.BrokerRawMeg{
 				Tx:     tx,
-				Broker: BrokerAddr,
+				Broker: bcm.broker.BrokerAddress[0],
 			}
 			brokerRawMegs = append(brokerRawMegs, brokerRawMeg)
 		} else {
+			if bcm.broker.IsBroker(tx.Recipient) || bcm.broker.IsBroker(tx.Sender) {
+				tx.HasBroker = true
+			}
 			itxs = append(itxs, tx)
 		}
 	}
@@ -261,11 +268,10 @@ func (bcm *BrokerCommitteeMod) handleBrokerRawMag(brokerRawMags []*message.Broke
 	bcm.brokerModuleLock.Lock()
 	for _, meg := range brokerRawMags {
 		b.BrokerRawMegs[string(bcm.getBrokerRawMagDigest(meg))] = meg
-		sid := bcm.fetchModifiedMap(meg.Tx.Sender)
 		brokerType1Mag := &message.BrokerType1Meg{
 			RawMeg:   meg,
 			Hcurrent: 0,
-			Broker:   b.BrokerAddress[sid],
+			Broker:   meg.Broker,
 		}
 		brokerType1Mags = append(brokerType1Mags, brokerType1Mag)
 	}
@@ -287,9 +293,8 @@ func (bcm *BrokerCommitteeMod) handleTx1ConfirmMag(mag1confirms []*message.Mag1C
 			continue
 		}
 		b.RawTx2BrokerTx[string(RawMeg.Tx.TxHash)] = append(b.RawTx2BrokerTx[string(RawMeg.Tx.TxHash)], string(mag1confirm.Tx1Hash))
-		sid := bcm.fetchModifiedMap(RawMeg.Tx.Recipient)
 		brokerType2Mag := &message.BrokerType2Meg{
-			Broker: b.BrokerAddress[sid],
+			Broker: bcm.broker.BrokerAddress[0],
 			RawMeg: RawMeg,
 		}
 		brokerType2Mags = append(brokerType2Mags, brokerType2Mag)

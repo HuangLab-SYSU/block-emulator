@@ -86,7 +86,7 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 	for i, tx := range txs {
 		// fmt.Printf("tx %d: %s, %s\n", i, tx.Sender, tx.Recipient)
 		// senderIn := false
-		if bc.Get_PartitionMap(tx.Sender) == bc.ChainConfig.ShardID {
+		if bc.Get_PartitionMap(tx.Sender) == bc.ChainConfig.ShardID || tx.HasBroker {
 			// senderIn = true
 			// fmt.Printf("the sender %s is in this shard %d, \n", tx.Sender, bc.ChainConfig.ShardID)
 			// modify local accountstate
@@ -111,7 +111,7 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 			cnt++
 		}
 		// recipientIn := false
-		if bc.Get_PartitionMap(tx.Recipient) == bc.ChainConfig.ShardID {
+		if bc.Get_PartitionMap(tx.Recipient) == bc.ChainConfig.ShardID || tx.HasBroker {
 			// fmt.Printf("the recipient %s is in this shard %d, \n", tx.Recipient, bc.ChainConfig.ShardID)
 			// recipientIn = true
 			// modify local state

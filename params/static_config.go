@@ -20,8 +20,6 @@ var (
 	DeciderShard     = uint64(0xffffffff)
 	Init_Balance, _  = new(big.Int).SetString("100000000000000000000000000000000000000000000", 10)
 	IPmap_nodeTable  = make(map[uint64]map[uint64]string)
-	NodesinShard     = 4
-	ShardNum         = 4
 	CommitteeMethod  = []string{"CLPA_Broker", "CLPA", "Broker", "Relay"}
 	MeasureBrokerMod = []string{"TPS_Broker", "TCL_Broker", "CrossTxRate_Broker", "TxNumberCount_Broker"}
 	MeasureRelayMod  = []string{"TPS_Relay", "TCL_Relay", "CrossTxRate_Relay", "TxNumberCount_Relay"}

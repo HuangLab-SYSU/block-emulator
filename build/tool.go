@@ -47,7 +47,7 @@ func GenerateVBSFile() {
 		log.Panic(err)
 	}
 	defer ofile.Close()
-	nodenum := params.NodesinShard
+	nodenum := params.NodesInShard
 	shardnum := params.ShardNum
 
 	ofile.WriteString("Dim shell\nSet shell = CreateObject(\"WScript.Shell\")\n")

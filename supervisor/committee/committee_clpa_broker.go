@@ -21,11 +21,6 @@ import (
 	"time"
 )
 
-const (
-	BrokerAddr = "00000000000"
-	BrokerIp   = "127.0.0.1:52443"
-)
-
 // CLPA committee operations
 type CLPACommitteeMod_Broker struct {
 	csvPath      string
@@ -132,6 +127,11 @@ func (ccm *CLPACommitteeMod_Broker) txSending(txlist []*core.Transaction) {
 		tx := txlist[idx]
 		ccm.clpaLock.Lock()
 		sendersid := ccm.fetchModifiedMap(tx.Sender)
+
+		if ccm.broker.IsBroker(tx.Sender) {
+			sendersid = ccm.fetchModifiedMap(tx.Recipient)
+		}
+
 		ccm.clpaLock.Unlock()
 		sendToShard[sendersid] = append(sendToShard[sendersid], tx)
 	}
@@ -252,6 +252,9 @@ func (ccm *CLPACommitteeMod_Broker) AdjustByBlockInfos(b *message.BlockInfoMsg) 
 
 	ccm.clpaLock.Lock()
 	for _, tx := range b.ExcutedTxs {
+		if tx.HasBroker {
+			continue
+		}
 		ccm.clpaGraph.AddEdge(partition.Vertex{Addr: tx.Sender}, partition.Vertex{Addr: tx.Recipient})
 	}
 	for _, b1tx := range b.Broker1Txs {
@@ -291,13 +294,16 @@ func (ccm *CLPACommitteeMod_Broker) dealTxByBroker(txs []*core.Transaction) (itx
 		rSid := ccm.fetchModifiedMap(tx.Recipient)
 		sSid := ccm.fetchModifiedMap(tx.Sender)
 		ccm.clpaLock.Unlock()
-		if rSid != sSid {
+		if rSid != sSid && !ccm.broker.IsBroker(tx.Recipient) && !ccm.broker.IsBroker(tx.Sender) {
 			brokerRawMeg := &message.BrokerRawMeg{
 				Tx:     tx,
-				Broker: BrokerAddr,
+				Broker: ccm.broker.BrokerAddress[0],
 			}
 			brokerRawMegs = append(brokerRawMegs, brokerRawMeg)
 		} else {
+			if ccm.broker.IsBroker(tx.Recipient) || ccm.broker.IsBroker(tx.Sender) {
+				tx.HasBroker = true
+			}
 			itxs = append(itxs, tx)
 		}
 	}
@@ -369,13 +375,11 @@ func (ccm *CLPACommitteeMod_Broker) handleBrokerRawMag(brokerRawMags []*message.
 	ccm.brokerModuleLock.Lock()
 	for _, meg := range brokerRawMags {
 		b.BrokerRawMegs[string(ccm.getBrokerRawMagDigest(meg))] = meg
-		ccm.clpaLock.Lock()
-		sid := ccm.fetchModifiedMap(meg.Tx.Sender)
-		ccm.clpaLock.Unlock()
+
 		brokerType1Mag := &message.BrokerType1Meg{
 			RawMeg:   meg,
 			Hcurrent: 0,
-			Broker:   b.BrokerAddress[sid],
+			Broker:   meg.Broker,
 		}
 		brokerType1Mags = append(brokerType1Mags, brokerType1Mag)
 	}
@@ -397,11 +401,9 @@ func (ccm *CLPACommitteeMod_Broker) handleTx1ConfirmMag(mag1confirms []*message.
 			continue
 		}
 		b.RawTx2BrokerTx[string(RawMeg.Tx.TxHash)] = append(b.RawTx2BrokerTx[string(RawMeg.Tx.TxHash)], string(mag1confirm.Tx1Hash))
-		ccm.clpaLock.Lock()
-		sid := ccm.fetchModifiedMap(RawMeg.Tx.Recipient)
-		ccm.clpaLock.Unlock()
+
 		brokerType2Mag := &message.BrokerType2Meg{
-			Broker: b.BrokerAddress[sid],
+			Broker: ccm.broker.BrokerAddress[0],
 			RawMeg: RawMeg,
 		}
 		brokerType2Mags = append(brokerType2Mags, brokerType2Mag)

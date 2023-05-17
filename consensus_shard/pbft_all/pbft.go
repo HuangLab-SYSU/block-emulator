@@ -132,7 +132,7 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 			pbftNode: p,
 			cdm:      ncdm,
 		}
-	case "Broker_Account":
+	case "Broker":
 		p.ihm = &RawBrokerPbftExtraHandleMod{
 			pbftNode: p,
 		}

@@ -3,7 +3,9 @@ package broker
 import (
 	"blockEmulator/message"
 	"blockEmulator/params"
-	"strconv"
+	"bufio"
+	"fmt"
+	"os"
 )
 
 type Broker struct {
@@ -17,10 +19,34 @@ func (b *Broker) NewBroker(pcc *params.ChainConfig) {
 	b.BrokerRawMegs = make(map[string]*message.BrokerRawMeg)
 	b.RawTx2BrokerTx = make(map[string][]string)
 	b.ChainConfig = pcc
-	b.BrokerAddress = make([]string, 0)
-	for i := 0; i < params.ShardNum; i++ {
-		tempAddr := "0x000000000000000000000"
-		tempAddr = tempAddr + strconv.Itoa(i)
-		b.BrokerAddress = append(b.BrokerAddress, tempAddr)
+	b.BrokerAddress = b.initBrokerAddr(params.BrokerNum)
+}
+
+func (b *Broker) IsBroker(address string) bool {
+	for _, brokerAddress := range b.BrokerAddress {
+		if brokerAddress == address {
+			return true
+		}
 	}
+	return false
+}
+
+func (b *Broker) initBrokerAddr(num int) []string {
+	brokerAddress := make([]string, 0)
+	filePath := `./broker/broker`
+	readFile, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	for fileScanner.Scan() {
+		brokerAddress = append(brokerAddress, fileScanner.Text())
+		num--
+		if num == 0 {
+			break
+		}
+	}
+	readFile.Close()
+	return brokerAddress
 }

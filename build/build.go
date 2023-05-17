@@ -20,14 +20,14 @@ func initConfig(nid, nnm, sid, snm uint64) *params.ChainConfig {
 	}
 	params.IPmap_nodeTable[params.DeciderShard] = make(map[uint64]string)
 	params.IPmap_nodeTable[params.DeciderShard][0] = params.SupervisorAddr
-	params.NodesinShard = int(nnm)
+	params.NodesInShard = int(nnm)
 	params.ShardNum = int(snm)
 
 	pcc := &params.ChainConfig{
 		ChainID:        sid,
 		NodeID:         nid,
 		ShardID:        sid,
-		Nodes_perShard: uint64(params.NodesinShard),
+		Nodes_perShard: uint64(params.NodesInShard),
 		ShardNums:      snm,
 		BlockSize:      uint64(params.MaxBlockSize_global),
 		BlockInterval:  uint64(params.Block_Interval),
