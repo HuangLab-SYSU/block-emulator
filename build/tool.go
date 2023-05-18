@@ -21,7 +21,7 @@ func getABpath() string {
 }
 
 func GenerateBatFile(nodenum, shardnum, modID int) {
-	ofile, err := os.OpenFile("batrun_showAll.bat", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 777)
+	ofile, err := os.OpenFile("batrun_showAll.bat", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
 	if err != nil {
 		log.Panic(err)
 	}

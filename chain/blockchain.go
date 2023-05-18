@@ -7,10 +7,11 @@ import (
 	"blockEmulator/core"
 	"blockEmulator/params"
 	"blockEmulator/storage"
+	"blockEmulator/utils"
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
+	"math/big"
 	"sync"
 	"time"
 
@@ -54,12 +55,7 @@ func (bc *BlockChain) Get_PartitionMap(key string) uint64 {
 	bc.pmlock.RLock()
 	defer bc.pmlock.RUnlock()
 	if _, ok := bc.PartitionMap[key]; !ok {
-		last16_addr := key[len(key)-8:]
-		num, err := strconv.ParseUint(last16_addr, 16, 64)
-		if err != nil {
-			log.Panic(err)
-		}
-		return num % bc.ChainConfig.ShardNums
+		return uint64(utils.Addr2Shard(key))
 	}
 	return bc.PartitionMap[key]
 }
@@ -94,9 +90,11 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 			var s_state *core.AccountState
 			if s_state_enc == nil {
 				// fmt.Println("missing account SENDER, now adding account")
+				ib := new(big.Int)
+				ib.Add(ib, params.Init_Balance)
 				s_state = &core.AccountState{
 					Nonce:   uint64(i),
-					Balance: params.Init_Balance,
+					Balance: ib,
 				}
 			} else {
 				s_state = core.DecodeAS(s_state_enc)
@@ -119,9 +117,11 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 			var r_state *core.AccountState
 			if r_state_enc == nil {
 				// fmt.Println("missing account RECIPIENT, now adding account")
+				ib := new(big.Int)
+				ib.Add(ib, params.Init_Balance)
 				r_state = &core.AccountState{
 					Nonce:   uint64(i),
-					Balance: params.Init_Balance,
+					Balance: ib,
 				}
 			} else {
 				r_state = core.DecodeAS(r_state_enc)
@@ -295,7 +295,10 @@ func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
 		}
 		// handle transactions, the signature check is ignored here
 		for i, addr := range ac {
-			st.Update([]byte(addr), as[i].Encode())
+			err = st.Update([]byte(addr), as[i].Encode())
+			if err != nil {
+				log.Panic(err)
+			}
 		}
 		// commit the memory trie to the database in the disk
 		rt, ns := st.Commit(false)
@@ -336,10 +339,11 @@ func (bc *BlockChain) FetchAccounts(addrs []string) []*core.AccountState {
 		asenc, _ := st.Get([]byte(addr))
 		var state_a *core.AccountState
 		if asenc == nil {
-			// fmt.Println("missing account SENDER, now adding account")
+			ib := new(big.Int)
+			ib.Add(ib, params.Init_Balance)
 			state_a = &core.AccountState{
 				Nonce:   uint64(0),
-				Balance: params.Init_Balance,
+				Balance: ib,
 			}
 		} else {
 			state_a = core.DecodeAS(asenc)
