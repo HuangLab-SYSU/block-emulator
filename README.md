@@ -94,7 +94,20 @@ Guang is currently a student pursuing his bachelor's degree at the School of Com
 
 # Zhaokang Yin
 
- Zhaokang will enroll in the School of Software Engineering, Sun Yat-sen University in Fall 2023. His research interest mainly focuses on blockchain. In October 2022, he joined HuangLab to participate in the development of BlockEmulator.
+Zhaokang will enroll in the School of Software Engineering, Sun Yat-sen University in Fall 2023. His research interest mainly focuses on blockchain. In October 2022, he joined HuangLab to participate in the development of BlockEmulator.
+
+# Xiaowen Peng 
+
+Xiaowen is currently a student pursuing his M.Sc. degree at the School of Computer Science and Engineering, Sun Yat-Sen University, China. His research interests mainly include blockchain. In August 2021, he has participated in the development of BlockEmulator.
+
+# Yue Lin
+
+Yue is currently a student pursuing his master's degree at the School of Computer Science and Engineering, at Sun Yat-Sen University. His research interests mainly include Blockchain. Since being a member of Huanglab in May 2021, he has been involved in two papers published in well-known conference and journal. He is an early developer of the BlockEmulator.
+
+# Miaoyong Xu
+
+Miaoyong is currently a student pursuing his master's degree at the School of Computer Science and Engineering, Sun Yat-sen University. His research interests mainly include blockchain. he joined HuangLab in October 2021, and participated in the development of BlockEmulator.
+
 
 # Junhao Wu
 
