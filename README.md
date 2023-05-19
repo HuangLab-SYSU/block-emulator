@@ -1,6 +1,10 @@
 # block-emulator
 This is the official handbook of **BlockEmulator**(version 1.0).
 
+# Version Updates
+View the updates of **BlockEmulator** here: 
+**[ Version Updates ](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/versionUpdate.md)**
+
 # Introduction 
 
 ## 1. The Background of BlockEmulator

@@ -67,6 +67,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendAccounts_and_Txs() {
 	asFetched := cphm.pbftNode.CurChain.FetchAccounts(accountToFetch)
 	// send the accounts to other shards
 	cphm.pbftNode.CurChain.Txpool.GetLocked()
+	cphm.pbftNode.pl.Plog.Println("The size of tx pool is: ", len(cphm.pbftNode.CurChain.Txpool.TxQueue))
 	for i := uint64(0); i < cphm.pbftNode.pbftChainConfig.ShardNums; i++ {
 		if i == cphm.pbftNode.ShardID {
 			continue
@@ -88,11 +89,11 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendAccounts_and_Txs() {
 		for head < tail {
 			ptx := cphm.pbftNode.CurChain.Txpool.TxQueue[head]
 			// if this is a normal transaction or ctx1 before re-sharding && the addr is correspond
-			_, ok := addrSet[ptx.Sender]
-			condition1 := ok && !ptx.Relayed
+			_, ok1 := addrSet[ptx.Sender]
+			condition1 := ok1 && !ptx.Relayed
 			// if this tx is ctx2
-			_, ok = addrSet[ptx.Recipient]
-			condition2 := ok && ptx.Relayed
+			_, ok2 := addrSet[ptx.Recipient]
+			condition2 := ok2 && ptx.Relayed
 			if condition1 || condition2 {
 				txSend = append(txSend, ptx)
 				tail--
@@ -118,6 +119,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendAccounts_and_Txs() {
 		networks.TcpDial(send_msg, cphm.pbftNode.ip_nodeTable[i][0])
 		cphm.pbftNode.pl.Plog.Printf("The message to shard %d is sent\n", i)
 	}
+	cphm.pbftNode.pl.Plog.Println("after sending, The size of tx pool is: ", len(cphm.pbftNode.CurChain.Txpool.TxQueue))
 	cphm.pbftNode.CurChain.Txpool.GetUnlocked()
 }
 
@@ -139,7 +141,17 @@ func (cphm *CLPAPbftInsideExtraHandleMod) proposePartition() (bool, *message.Req
 		cphm.cdm.ReceivedNewTx = append(cphm.cdm.ReceivedNewTx, at.Txs...)
 	}
 	// propose, send all txs to other nodes in shard
+	cphm.pbftNode.pl.Plog.Println("The number of ReceivedNewTx: ", len(cphm.cdm.ReceivedNewTx))
+	for _, tx := range cphm.cdm.ReceivedNewTx {
+		if !tx.Relayed && cphm.cdm.ModifiedMap[cphm.cdm.AccountTransferRound][tx.Sender] != cphm.pbftNode.ShardID {
+			log.Panic("error tx")
+		}
+		if tx.Relayed && cphm.cdm.ModifiedMap[cphm.cdm.AccountTransferRound][tx.Recipient] != cphm.pbftNode.ShardID {
+			log.Panic("error tx")
+		}
+	}
 	cphm.pbftNode.CurChain.Txpool.AddTxs2Pool(cphm.cdm.ReceivedNewTx)
+	cphm.pbftNode.pl.Plog.Println("The size of txpool: ", len(cphm.pbftNode.CurChain.Txpool.TxQueue))
 
 	atmaddr := make([]string, 0)
 	atmAs := make([]*core.AccountState, 0)
@@ -174,6 +186,8 @@ func (cphm *CLPAPbftInsideExtraHandleMod) accountTransfer_do(atm *message.Accoun
 	}
 	cphm.pbftNode.pl.Plog.Printf("%d key-vals are updated\n", cnt)
 	// add the account into the state trie
+	cphm.pbftNode.pl.Plog.Printf("%d addrs to add\n", len(atm.Addrs))
+	cphm.pbftNode.pl.Plog.Printf("%d accountstates to add\n", len(atm.AccountState))
 	cphm.pbftNode.CurChain.AddAccounts(atm.Addrs, atm.AccountState)
 
 	if uint64(len(cphm.cdm.ModifiedMap)) != atm.ATid {

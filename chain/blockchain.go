@@ -82,7 +82,7 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 	for i, tx := range txs {
 		// fmt.Printf("tx %d: %s, %s\n", i, tx.Sender, tx.Recipient)
 		// senderIn := false
-		if bc.Get_PartitionMap(tx.Sender) == bc.ChainConfig.ShardID || tx.HasBroker {
+		if !tx.Relayed && (bc.Get_PartitionMap(tx.Sender) == bc.ChainConfig.ShardID || tx.HasBroker) {
 			// senderIn = true
 			// fmt.Printf("the sender %s is in this shard %d, \n", tx.Sender, bc.ChainConfig.ShardID)
 			// modify local accountstate
@@ -100,7 +100,7 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 				s_state = core.DecodeAS(s_state_enc)
 			}
 			s_balance := s_state.Balance
-			if s_balance.Cmp(tx.Value) < 0 {
+			if s_balance.Cmp(tx.Value) == -1 {
 				fmt.Printf("the balance is less than the transfer amount\n")
 				continue
 			}
@@ -294,12 +294,20 @@ func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
 			log.Panic(err)
 		}
 		// handle transactions, the signature check is ignored here
+		cnt := 0
 		for i, addr := range ac {
+			if bc.Get_PartitionMap(addr) != bc.ChainConfig.ShardID {
+				log.Panic("err account")
+			}
+			if as[i].Balance.Cmp(params.Init_Balance) == 0 {
+				cnt++
+			}
 			err = st.Update([]byte(addr), as[i].Encode())
 			if err != nil {
 				log.Panic(err)
 			}
 		}
+		fmt.Println("accounts' balance are equal to init", cnt)
 		// commit the memory trie to the database in the disk
 		rt, ns := st.Commit(false)
 		err = bc.triedb.Update(trie.NewWithNodeSet(ns))
@@ -311,7 +319,7 @@ func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
 			log.Panic(err)
 		}
 	}
-
+	rt = bc.GetUpdateStatusTrie([]*core.Transaction{})
 	bh := &core.BlockHeader{
 		ParentBlockHash: bc.CurrentBlock.Hash,
 		StateRoot:       rt.Bytes(),
@@ -335,6 +343,7 @@ func (bc *BlockChain) FetchAccounts(addrs []string) []*core.AccountState {
 	if err != nil {
 		log.Panic(err)
 	}
+	cnt := 0
 	for _, addr := range addrs {
 		asenc, _ := st.Get([]byte(addr))
 		var state_a *core.AccountState
@@ -345,6 +354,7 @@ func (bc *BlockChain) FetchAccounts(addrs []string) []*core.AccountState {
 				Nonce:   uint64(0),
 				Balance: ib,
 			}
+			cnt++
 		} else {
 			state_a = core.DecodeAS(asenc)
 		}

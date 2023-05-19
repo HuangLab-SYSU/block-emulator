@@ -31,13 +31,13 @@ func (as *AccountState) Deduct(val *big.Int) bool {
 	if as.Balance.Cmp(val) < 0 {
 		return false
 	}
-	as.Balance = as.Balance.Sub(as.Balance, val)
+	as.Balance.Sub(as.Balance, val)
 	return true
 }
 
 // Increase the balance of an account
 func (s *AccountState) Deposit(value *big.Int) {
-	s.Balance = s.Balance.Add(s.Balance, value)
+	s.Balance.Add(s.Balance, value)
 }
 
 // Encode AccountState in order to store in the MPT
