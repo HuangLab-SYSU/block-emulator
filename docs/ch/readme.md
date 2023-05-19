@@ -211,8 +211,26 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zhaokang.png" width=200>
 
-
 殷昭伉，中山大学软件工程学院2023级研究生，目前的研究方向为区块链。2022年10月，通过研究生推免加入HuangLab，参与 BlockEmulator的开发。
+
+
+# 彭肖文
+
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Xiaowen.jpg" width=200>
+
+彭肖文，中山大学计算机学院 2020 级研究生，研究方向为区块链。自 2019 年 6 月加入HuangLab，先后参与两篇 CCF-A 类论文研究和 BlockEmulator 的开发。
+
+# 林岳
+
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Linyue.png" width=200>
+
+林岳，中山大学计算机学院 2021 级研究生，目前的研究方向为区块链。自 2021 年 5 月加入HuangLab，先后参与了一篇 CCF-A 会议论文和一篇 CCF-A 期刊论文，是 BlockEmulator 的早期开发者。
+
+# 许淼泳
+
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/MiaoYong.png" width=200>
+
+许淼泳，中山大学计算机学院 2022 级研究生，目前的研究方向为区块链。自 2021 年 10 月进入 HuangLab 研究学习， 参与 BlockEmulator 的开发。
 
 # 吴均豪
 
