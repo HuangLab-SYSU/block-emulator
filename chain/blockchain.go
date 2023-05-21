@@ -285,50 +285,40 @@ func (bc *BlockChain) IsValidBlock(b *core.Block) error {
 // add accounts
 func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
 	fmt.Printf("The len of accounts is %d, now adding the accounts\n", len(ac))
-	// the empty block (length of txs is 0) condition
-	rt := common.BytesToHash(bc.CurrentBlock.Header.StateRoot)
-	if len(ac) != 0 {
-		// build trie from the triedb (in disk)
-		st, err := trie.New(trie.TrieID(common.BytesToHash(bc.CurrentBlock.Header.StateRoot)), bc.triedb)
-		if err != nil {
-			log.Panic(err)
-		}
-		// handle transactions, the signature check is ignored here
-		cnt := 0
-		for i, addr := range ac {
-			if bc.Get_PartitionMap(addr) != bc.ChainConfig.ShardID {
-				log.Panic("err account")
-			}
-			if as[i].Balance.Cmp(params.Init_Balance) == 0 {
-				cnt++
-			}
-			err = st.Update([]byte(addr), as[i].Encode())
-			if err != nil {
-				log.Panic(err)
-			}
-		}
-		fmt.Println("accounts' balance are equal to init", cnt)
-		// commit the memory trie to the database in the disk
-		rt, ns := st.Commit(false)
-		err = bc.triedb.Update(trie.NewWithNodeSet(ns))
-		if err != nil {
-			log.Panic()
-		}
-		err = bc.triedb.Commit(rt, false)
-		if err != nil {
-			log.Panic(err)
+
+	// generate virtual txs
+	nowAccountStates := bc.FetchAccounts(ac)
+	txToGenerate := make([]*core.Transaction, 0)
+	for addrid, nas := range nowAccountStates {
+		newbalance := as[addrid].Balance
+		oldbalance := nas.Balance
+		if newbalance.Cmp(oldbalance) != -1 {
+			txToGenerate = append(txToGenerate, &core.Transaction{
+				Sender:    "0000000000000000000000",
+				Recipient: ac[addrid],
+				Value:     newbalance.Sub(newbalance, oldbalance),
+			})
+		} else {
+			txToGenerate = append(txToGenerate, &core.Transaction{
+				Recipient: "0000000000000000000000",
+				Sender:    ac[addrid],
+				Value:     oldbalance.Sub(oldbalance, newbalance),
+			})
 		}
 	}
-	rt = bc.GetUpdateStatusTrie([]*core.Transaction{})
+
 	bh := &core.BlockHeader{
 		ParentBlockHash: bc.CurrentBlock.Hash,
-		StateRoot:       rt.Bytes(),
 		Number:          bc.CurrentBlock.Header.Number + 1,
-		TxRoot:          GetTxTreeRoot([]*core.Transaction{}),
-		Miner:           0,
 		Time:            time.Time{},
 	}
-	b := core.NewBlock(bh, []*core.Transaction{})
+	// handle transactions to build root
+	rt := bc.GetUpdateStatusTrie(txToGenerate)
+
+	bh.StateRoot = rt.Bytes()
+	bh.TxRoot = GetTxTreeRoot(txToGenerate)
+	b := core.NewBlock(bh, txToGenerate)
+	b.Header.Miner = 0
 	b.Hash = b.Header.Hash()
 
 	bc.CurrentBlock = b
@@ -343,7 +333,6 @@ func (bc *BlockChain) FetchAccounts(addrs []string) []*core.AccountState {
 	if err != nil {
 		log.Panic(err)
 	}
-	cnt := 0
 	for _, addr := range addrs {
 		asenc, _ := st.Get([]byte(addr))
 		var state_a *core.AccountState
@@ -354,7 +343,6 @@ func (bc *BlockChain) FetchAccounts(addrs []string) []*core.AccountState {
 				Nonce:   uint64(0),
 				Balance: ib,
 			}
-			cnt++
 		} else {
 			state_a = core.DecodeAS(asenc)
 		}

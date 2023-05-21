@@ -97,12 +97,18 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 		cphm.pbftNode.CurChain.Txpool.RelayPool = make(map[uint64][]*core.Transaction)
 		relay1Txs := make([]*core.Transaction, 0)
 		for _, tx := range block.Body {
+			ssid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Sender)
 			rsid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Recipient)
-			if rsid != cphm.pbftNode.ShardID {
-				ntx := tx
-				ntx.Relayed = true
-				cphm.pbftNode.CurChain.Txpool.AddRelayTx(ntx, rsid)
+			if !tx.Relayed && ssid != cphm.pbftNode.ShardID {
+				log.Panic("incorrect tx")
+			}
+			if tx.Relayed && rsid != cphm.pbftNode.ShardID {
+				log.Panic("incorrect tx")
+			}
+			if !tx.Relayed && rsid != cphm.pbftNode.ShardID {
 				relay1Txs = append(relay1Txs, tx)
+				tx.Relayed = true
+				cphm.pbftNode.CurChain.Txpool.AddRelayTx(tx, rsid)
 			} else {
 				txExcuted = append(txExcuted, tx)
 			}
