@@ -27,6 +27,7 @@ type Transaction struct {
 	Relayed bool
 	// used in broker, if the tx is not a broker1 or broker2 tx, these values should be empty.
 	HasBroker      bool
+	SenderIsBroker bool
 	OriginalSender utils.Address
 	FinalRecipient utils.Address
 	RawTxHash      []byte
@@ -85,5 +86,6 @@ func NewTransaction(sender, recipient string, value *big.Int, nonce uint64) *Tra
 	tx.OriginalSender = ""
 	tx.RawTxHash = nil
 	tx.HasBroker = false
+	tx.SenderIsBroker = false
 	return tx
 }

@@ -303,6 +303,7 @@ func (ccm *CLPACommitteeMod_Broker) dealTxByBroker(txs []*core.Transaction) (itx
 		} else {
 			if ccm.broker.IsBroker(tx.Recipient) || ccm.broker.IsBroker(tx.Sender) {
 				tx.HasBroker = true
+				tx.SenderIsBroker = ccm.broker.IsBroker(tx.Sender)
 			}
 			itxs = append(itxs, tx)
 		}

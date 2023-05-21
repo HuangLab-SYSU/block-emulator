@@ -196,6 +196,7 @@ func (bcm *BrokerCommitteeMod) dealTxByBroker(txs []*core.Transaction) (itxs []*
 		} else {
 			if bcm.broker.IsBroker(tx.Recipient) || bcm.broker.IsBroker(tx.Sender) {
 				tx.HasBroker = true
+				tx.SenderIsBroker = bcm.broker.IsBroker(tx.Sender)
 			}
 			itxs = append(itxs, tx)
 		}

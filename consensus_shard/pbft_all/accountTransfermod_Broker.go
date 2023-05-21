@@ -95,20 +95,25 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) sendAccounts_and_Txs() {
 			_, ok1 := addrSet[ptx.Sender]
 			_, ok2 := addrSet[ptx.Recipient]
 			if ptx.RawTxHash == nil { // if this tx is an inner-shard tx...
-				if ok1 { // if the inner-shard tx should be transferred.
+				if ptx.HasBroker {
+					if ptx.SenderIsBroker {
+						beSend = ok2
+						beRemoved = ok2
+					} else {
+						beRemoved = ok1
+						beSend = ok1
+					}
+				} else if ok1 || ok2 { // if the inner-shard tx should be transferred.
 					txsBeCross = append(txsBeCross, ptx)
+					beRemoved = true
 				}
-				beRemoved = ok1
 				// all inner-shard tx should not be added into the account transfer message
 			} else if ptx.FinalRecipient == ptx.Recipient {
 				beSend = ok2
 				beRemoved = ok2
 			} else if ptx.OriginalSender == ptx.Sender {
 				beRemoved = ok1
-				if ok1 {
-					rawTx := core.NewTransaction(ptx.Sender, ptx.FinalRecipient, ptx.Value, ptx.Nonce)
-					txsBeCross = append(txsBeCross, rawTx)
-				}
+				beSend = ok1
 			}
 
 			if beSend {

@@ -91,7 +91,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 
 	// now try to relay txs to other shards (for main nodes)
 	if cphm.pbftNode.NodeID == cphm.pbftNode.view {
-		cphm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send relay txs at height = %d \n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID, block.Header.Number)
+		cphm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send broker confirm txs at height = %d \n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID, block.Header.Number)
 		// generate brokertxs and collect txs excuted
 		txExcuted := make([]*core.Transaction, 0)
 		broker1Txs := make([]*core.Transaction, 0)
@@ -101,6 +101,29 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 		for _, tx := range block.Body {
 			isBroker1Tx := tx.Sender == tx.OriginalSender
 			isBroker2Tx := tx.Recipient == tx.FinalRecipient
+
+			senderIsInshard := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Sender) == cphm.pbftNode.ShardID
+			recipientIsInshard := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Recipient) == cphm.pbftNode.ShardID
+			if isBroker1Tx && !senderIsInshard {
+				log.Panic("Err tx1")
+			}
+			if isBroker2Tx && !recipientIsInshard {
+				log.Panic("Err tx2")
+			}
+			if tx.RawTxHash == nil {
+				if tx.HasBroker {
+					if tx.SenderIsBroker && !recipientIsInshard {
+						log.Panic("err tx 1 - recipient")
+					}
+					if !tx.SenderIsBroker && !senderIsInshard {
+						log.Panic("err tx 1 - sender")
+					}
+				} else {
+					if !senderIsInshard || !recipientIsInshard {
+						log.Panic("err tx - without broker")
+					}
+				}
+			}
 
 			if isBroker2Tx {
 				broker2Txs = append(broker2Txs, tx)
