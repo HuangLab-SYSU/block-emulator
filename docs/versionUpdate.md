@@ -7,7 +7,7 @@ Debugs:
 - **Solution**: Use "Virtual transactions" to replace the *AddAccount* operation. For a just added account, we consider it as a virtual transaction (whose *Sender* or *Recipient* is "00000000000000"), so that we can use *GetUpdateStatusTrie* to do this operation. 
 - **Future**: Solve this problem without "Virtual transactions", because this implementation cost more.
 
-1. **Problem**: The transactions migrate to the incorrect shard (in CLPA + Broker mechanism)
+2. **Problem**: The transactions migrate to the incorrect shard (in CLPA + Broker mechanism)
 - **Reason**: The judge function is incorrect, leading to the wrong behaviors. 
 - **Solution**: Add a new attribute *SenderIsBroker* in broker tx, to identify whether the sender is a broker account (if *HasBroker && !SenderIsBroker* is true, then the *recipient* is a broker account), and modify the *sendAccounts_and_Txs* function in *accountTransfermod_Broker.go* file with this attribute. 
 
