@@ -286,44 +286,50 @@ func (bc *BlockChain) IsValidBlock(b *core.Block) error {
 func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
 	fmt.Printf("The len of accounts is %d, now adding the accounts\n", len(ac))
 
-	// generate virtual txs
-	nowAccountStates := bc.FetchAccounts(ac)
-	txToGenerate := make([]*core.Transaction, 0)
-	for addrid, nas := range nowAccountStates {
-		newbalance := as[addrid].Balance
-		oldbalance := nas.Balance
-		if newbalance.Cmp(oldbalance) != -1 {
-			txToGenerate = append(txToGenerate, &core.Transaction{
-				Sender:    "0000000000000000000000",
-				Recipient: ac[addrid],
-				Value:     newbalance.Sub(newbalance, oldbalance),
-			})
-		} else {
-			txToGenerate = append(txToGenerate, &core.Transaction{
-				Recipient: "0000000000000000000000",
-				Sender:    ac[addrid],
-				Value:     oldbalance.Sub(oldbalance, newbalance),
-			})
-		}
-	}
-
 	bh := &core.BlockHeader{
 		ParentBlockHash: bc.CurrentBlock.Hash,
 		Number:          bc.CurrentBlock.Header.Number + 1,
 		Time:            time.Time{},
 	}
 	// handle transactions to build root
-	rt := bc.GetUpdateStatusTrie(txToGenerate)
+	rt := common.BytesToHash(bc.CurrentBlock.Header.StateRoot)
+	if len(ac) != 0 {
+		st, err := trie.New(trie.TrieID(common.BytesToHash(bc.CurrentBlock.Header.StateRoot)), bc.triedb)
+		if err != nil {
+			log.Panic(err)
+		}
+		for i, addr := range ac {
+			if bc.Get_PartitionMap(addr) == bc.ChainConfig.ShardID {
+				ib := new(big.Int)
+				ib.Add(ib, as[i].Balance)
+				new_state := &core.AccountState{
+					Balance: ib,
+					Nonce:   as[i].Nonce,
+				}
+				st.Update([]byte(addr), new_state.Encode())
+			}
+		}
+		rrt, ns := st.Commit(false)
+		err = bc.triedb.Update(trie.NewWithNodeSet(ns))
+		if err != nil {
+			log.Panic(err)
+		}
+		err = bc.triedb.Commit(rt, false)
+		if err != nil {
+			log.Panic(err)
+		}
+		rt = rrt
+	}
 
+	emptyTxs := make([]*core.Transaction, 0)
 	bh.StateRoot = rt.Bytes()
-	bh.TxRoot = GetTxTreeRoot(txToGenerate)
-	b := core.NewBlock(bh, txToGenerate)
+	bh.TxRoot = GetTxTreeRoot(emptyTxs)
+	b := core.NewBlock(bh, emptyTxs)
 	b.Header.Miner = 0
 	b.Hash = b.Header.Hash()
 
 	bc.CurrentBlock = b
 	bc.Storage.AddBlock(b)
-	// fmt.Println("the block height is", b.Header.Number)
 }
 
 // fetch accounts

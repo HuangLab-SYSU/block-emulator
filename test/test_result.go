@@ -78,7 +78,7 @@ func Ttestresult(ShardNums int) {
 			NodeID:         0,
 			ShardID:        uint64(sid),
 			Nodes_perShard: uint64(params.NodesInShard),
-			ShardNums:      4,
+			ShardNums:      uint64(ShardNums),
 			BlockSize:      uint64(params.MaxBlockSize_global),
 			BlockInterval:  uint64(params.Block_Interval),
 			InjectSpeed:    uint64(params.InjectSpeed),

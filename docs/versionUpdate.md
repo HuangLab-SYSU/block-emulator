@@ -1,5 +1,10 @@
 # Version Updates
 
+## 2023/05/24
+1. FutureWork of [**2023/05/21 Debugs - 1**](#20230521)
+- 2023/05/21: **Future**: Solve this problem without "Virtual transactions", because this implementation cost more.
+- Now this function *blockChain.AddAccount* can operate correctly without invoking *GetUpdateStatusTrie* (the resource cost is reduced). 
+
 ## 2023/05/21
 Debugs:
 1. **Problem**: The function *blockChain.AddAccount* has no effect to the storage.  
