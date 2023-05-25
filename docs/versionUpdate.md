@@ -1,5 +1,10 @@
 # Version Updates
 
+## 2023/05/25
+1. Add query function
+- After the experiment is completed, query the account balance
+- After the experiment is completed, query the blocks and transactions information on the blockchain
+
 ## 2023/05/24
 1. FutureWork of [**2023/05/21 Debugs - 1**](#20230521)
 - 2023/05/21: **Future**: Solve this problem without "Virtual transactions", because this implementation cost more.
