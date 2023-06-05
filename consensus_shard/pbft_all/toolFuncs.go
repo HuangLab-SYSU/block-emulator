@@ -54,7 +54,7 @@ func (p *PbftConsensusNode) writeCSVline(str []string) {
 		defer file.Close()
 
 		w := csv.NewWriter(file)
-		title := []string{"tx", "ctx"}
+		title := []string{"txpool size", "tx", "ctx"}
 		w.Write(title)
 		w.Flush()
 		w.Write(str)

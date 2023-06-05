@@ -2,7 +2,6 @@
 package pbft_all
 
 import (
-	"blockEmulator/chain"
 	"blockEmulator/core"
 	"blockEmulator/message"
 	"blockEmulator/networks"
@@ -19,7 +18,6 @@ import (
 type RawRelayPbftExtraHandleMod struct {
 	pbftNode *PbftConsensusNode
 	// pointer to pbft data
-	pCurChain *chain.BlockChain
 }
 
 // propose request with different types
@@ -119,8 +117,9 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 		msg_send := message.MergeMessage(message.CBlockInfo, bByte)
 		go networks.TcpDial(msg_send, rphm.pbftNode.ip_nodeTable[params.DeciderShard][0])
 		rphm.pbftNode.pl.Plog.Printf("S%dN%d : sended excuted txs\n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID)
-
-		rphm.pbftNode.writeCSVline([]string{strconv.Itoa(len(txExcuted)), strconv.Itoa(int(bim.Relay1TxNum))})
+		rphm.pbftNode.CurChain.Txpool.GetLocked()
+		rphm.pbftNode.writeCSVline([]string{strconv.Itoa(len(rphm.pbftNode.CurChain.Txpool.TxQueue)), strconv.Itoa(len(txExcuted)), strconv.Itoa(int(bim.Relay1TxNum))})
+		rphm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}
 	return true
 }
