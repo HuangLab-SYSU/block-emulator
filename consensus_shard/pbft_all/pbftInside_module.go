@@ -131,7 +131,7 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleReqestforOldSeq(*message.RequestOl
 
 // the operation for sequential requests
 func (rphm *RawRelayPbftExtraHandleMod) HandleforSequentialRequest(som *message.SendOldMessage) bool {
-	if int(som.SeqStartHeight-som.SeqEndHeight) != len(som.OldRequest) {
+	if int(som.SeqEndHeight-som.SeqStartHeight+1) != len(som.OldRequest) {
 		rphm.pbftNode.pl.Plog.Printf("S%dN%d : the SendOldMessage message is not enough\n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID)
 	} else { // add the block into the node pbft blockchain
 		for height := som.SeqStartHeight; height <= som.SeqEndHeight; height++ {

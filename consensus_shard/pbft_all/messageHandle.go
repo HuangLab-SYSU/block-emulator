@@ -62,11 +62,15 @@ func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 	flag := false
 	if digest := getDigest(ppmsg.RequestMsg); string(digest) != string(ppmsg.Digest) {
 		p.pl.Plog.Printf("S%dN%d : the digest is not consistent, so refuse to prepare. \n", p.ShardID, p.NodeID)
-	} else if p.sequenceID != ppmsg.SeqID {
+	} else if p.sequenceID < ppmsg.SeqID {
+		p.requestPool[string(getDigest(ppmsg.RequestMsg))] = ppmsg.RequestMsg
+		p.height2Digest[ppmsg.SeqID] = string(getDigest(ppmsg.RequestMsg))
 		p.pl.Plog.Printf("S%dN%d : the Sequence id is not consistent, so refuse to prepare. \n", p.ShardID, p.NodeID)
 	} else {
 		// do your operation in this interface
 		flag = p.ihm.HandleinPrePrepare(ppmsg)
+		p.requestPool[string(getDigest(ppmsg.RequestMsg))] = ppmsg.RequestMsg
+		p.height2Digest[ppmsg.SeqID] = string(getDigest(ppmsg.RequestMsg))
 	}
 	// if the message is true, broadcast the prepare message
 	if flag {
@@ -97,7 +101,7 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 
 	if _, ok := p.requestPool[string(pmsg.Digest)]; !ok {
 		p.pl.Plog.Printf("S%dN%d : doesn't have the digest in the requst pool, refuse to commit\n", p.ShardID, p.NodeID)
-	} else if p.sequenceID != pmsg.SeqID {
+	} else if p.sequenceID < pmsg.SeqID {
 		p.pl.Plog.Printf("S%dN%d : inconsistent sequence ID, refuse to commit\n", p.ShardID, p.NodeID)
 	} else {
 		// if needed more operations, implement interfaces
@@ -168,7 +172,7 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 				IPaddr:  p.ip_nodeTable[p.ShardID][p.view],
 			}
 			orequest := message.RequestOldMessage{
-				SeqStartHeight: p.sequenceID,
+				SeqStartHeight: p.sequenceID + 1,
 				SeqEndHeight:   cmsg.SeqID,
 				ServerNode:     sn,
 				SenderNode:     p.RunningNode,
@@ -184,10 +188,11 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 		} else {
 			// implement interface
 			p.ihm.HandleinCommit(cmsg)
+			p.isReply[string(cmsg.Digest)] = true
+			p.pl.Plog.Printf("S%dN%d: this round of pbft %d is end \n", p.ShardID, p.NodeID, p.sequenceID)
+			p.sequenceID += 1
 		}
-		p.isReply[string(cmsg.Digest)] = true
-		p.pl.Plog.Printf("S%dN%d: this round of pbft %d is end \n", p.ShardID, p.NodeID, p.sequenceID)
-		p.sequenceID += 1
+
 		// if this node is a main node, then unlock the sequencelock
 		if p.NodeID == p.view {
 			p.sequenceLock.Unlock()
@@ -201,6 +206,11 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 // block back to the message sender.
 // now this function can send both block and partition
 func (p *PbftConsensusNode) handleRequestOldSeq(content []byte) {
+	if p.view != p.NodeID {
+		content = make([]byte, 0)
+		return
+	}
+
 	rom := new(message.RequestOldMessage)
 	err := json.Unmarshal(content, rom)
 	if err != nil {
@@ -238,7 +248,7 @@ func (p *PbftConsensusNode) handleRequestOldSeq(content []byte) {
 		log.Panic()
 	}
 	msg_send := message.MergeMessage(message.CSendOldrequest, sbByte)
-	go networks.TcpDial(msg_send, rom.SenderNode.IPaddr)
+	networks.TcpDial(msg_send, rom.SenderNode.IPaddr)
 	p.pl.Plog.Printf("S%dN%d : send blocks\n", p.ShardID, p.NodeID)
 }
 
@@ -253,6 +263,40 @@ func (p *PbftConsensusNode) handleSendOldSeq(content []byte) {
 
 	// implement interface for new consensus
 	p.ihm.HandleforSequentialRequest(som)
+	beginSeq := som.SeqStartHeight
+	for idx, r := range som.OldRequest {
+		p.requestPool[string(getDigest(r))] = r
+		p.height2Digest[uint64(idx)+beginSeq] = string(getDigest(r))
+		p.isReply[string(getDigest(r))] = true
+		p.pl.Plog.Printf("this round of pbft %d is end \n", uint64(idx)+beginSeq)
+	}
+	p.sequenceID = som.SeqEndHeight + 1
+	if rDigest, ok1 := p.height2Digest[p.sequenceID]; ok1 {
+		if r, ok2 := p.requestPool[rDigest]; ok2 {
+			ppmsg := &message.PrePrepare{
+				RequestMsg: r,
+				SeqID:      p.sequenceID,
+				Digest:     getDigest(r),
+			}
+			flag := false
+			flag = p.ihm.HandleinPrePrepare(ppmsg)
+			if flag {
+				pre := message.Prepare{
+					Digest:     ppmsg.Digest,
+					SeqID:      ppmsg.SeqID,
+					SenderNode: p.RunningNode,
+				}
+				prepareByte, err := json.Marshal(pre)
+				if err != nil {
+					log.Panic()
+				}
+				// broadcast
+				msg_send := message.MergeMessage(message.CPrepare, prepareByte)
+				networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+				p.pl.Plog.Printf("S%dN%d : has broadcast the prepare message \n", p.ShardID, p.NodeID)
+			}
+		}
+	}
 
 	p.askForLock.Unlock()
 }

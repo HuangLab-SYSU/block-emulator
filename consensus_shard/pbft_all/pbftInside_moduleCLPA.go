@@ -165,7 +165,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleReqestforOldSeq(*message.Request
 
 // the operation for sequential requests
 func (cphm *CLPAPbftInsideExtraHandleMod) HandleforSequentialRequest(som *message.SendOldMessage) bool {
-	if int(som.SeqStartHeight-som.SeqEndHeight) != len(som.OldRequest) {
+	if int(som.SeqEndHeight-som.SeqStartHeight+1) != len(som.OldRequest) {
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : the SendOldMessage message is not enough\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID)
 	} else { // add the block into the node pbft blockchain
 		for height := som.SeqStartHeight; height <= som.SeqEndHeight; height++ {
@@ -173,6 +173,9 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleforSequentialRequest(som *messag
 			if r.RequestType == message.BlockRequest {
 				b := core.DecodeB(r.Msg.Content)
 				cphm.pbftNode.CurChain.AddBlock(b)
+			} else {
+				atm := message.DecodeAccountTransferMsg(r.Msg.Content)
+				cphm.accountTransfer_do(atm)
 			}
 		}
 		cphm.pbftNode.sequenceID = som.SeqEndHeight + 1

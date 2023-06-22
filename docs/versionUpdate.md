@@ -1,5 +1,11 @@
 # Version Updates
 
+## 2023/06/22
+Debugs:
+1. **Problem**: The PBFT consensus will interrupt in a large scale experiment (large-size data & a number of shards).   
+- **Reason**: The implementation of the func *HandleforSequentialRequest* and *HandleforSequentialRequest* has bugs, which can result in laggards not being able to get old PBFT messages. 
+- **Solution**: We solved the logic errors in the func, and now the function can operate correctly. 
+
 ## 2023/05/25
 1. **New Features**: We have added query function. 
 - After the experiment is completed, users can query the account balance now. 

@@ -147,7 +147,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 				log.Panic()
 			}
 			msg_send := message.MergeMessage(message.CSeqIDinfo, sByte)
-			go networks.TcpDial(msg_send, cphm.pbftNode.ip_nodeTable[sid][0])
+			networks.TcpDial(msg_send, cphm.pbftNode.ip_nodeTable[sid][0])
 			cphm.pbftNode.pl.Plog.Printf("S%dN%d : sended sequence ids to %d\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID, sid)
 		}
 		// send txs excuted in this block to the listener
@@ -169,7 +169,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 			log.Panic()
 		}
 		msg_send := message.MergeMessage(message.CBlockInfo, bByte)
-		go networks.TcpDial(msg_send, cphm.pbftNode.ip_nodeTable[params.DeciderShard][0])
+		networks.TcpDial(msg_send, cphm.pbftNode.ip_nodeTable[params.DeciderShard][0])
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : sended excuted txs\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID)
 		cphm.pbftNode.CurChain.Txpool.GetLocked()
 		cphm.pbftNode.writeCSVline([]string{strconv.Itoa(len(cphm.pbftNode.CurChain.Txpool.TxQueue)), strconv.Itoa(len(txExcuted)), strconv.Itoa(int(bim.Relay1TxNum))})
@@ -185,7 +185,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleReqestforOldSeq(*messa
 
 // the operation for sequential requests
 func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleforSequentialRequest(som *message.SendOldMessage) bool {
-	if int(som.SeqStartHeight-som.SeqEndHeight) != len(som.OldRequest) {
+	if int(som.SeqEndHeight-som.SeqStartHeight+1) != len(som.OldRequest) {
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : the SendOldMessage message is not enough\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID)
 	} else { // add the block into the node pbft blockchain
 		for height := som.SeqStartHeight; height <= som.SeqEndHeight; height++ {
@@ -193,6 +193,9 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleforSequentialRequest(s
 			if r.RequestType == message.BlockRequest {
 				b := core.DecodeB(r.Msg.Content)
 				cphm.pbftNode.CurChain.AddBlock(b)
+			} else {
+				atm := message.DecodeAccountTransferMsg(r.Msg.Content)
+				cphm.accountTransfer_do(atm)
 			}
 		}
 		cphm.pbftNode.sequenceID = som.SeqEndHeight + 1
