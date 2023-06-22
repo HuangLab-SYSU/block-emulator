@@ -49,7 +49,7 @@ func (tat *TestModule_avgTPS_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg)
 	for _, tx := range b.Relay1Txs {
 		tat.relayTx[string(tx.TxHash)] = true
 	}
-	tat.excutedTxNum[epochid] += float64(b.Relay1TxNum)
+	tat.excutedTxNum[epochid] += float64(b.Relay1TxNum) / 2
 	for _, tx := range b.ExcutedTxs {
 		if _, ok := tat.relayTx[string(tx.TxHash)]; ok {
 			tat.excutedTxNum[epochid] += 0.5
