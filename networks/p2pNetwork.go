@@ -5,20 +5,30 @@ package networks
 import (
 	"log"
 	"net"
+	"sync"
 )
 
+var connMaplock sync.Mutex
+var connectionPool = make(map[string]net.Conn, 0)
+
 func TcpDial(context []byte, addr string) {
-	conn, err := net.Dial("tcp", addr)
+	var conn net.Conn
+	connMaplock.Lock()
+	defer connMaplock.Unlock()
+	if connectionPool[addr] == nil {
+		conn, err := net.Dial("tcp", addr)
+		if err != nil {
+			log.Println("connect error", err)
+			return
+		}
+		connectionPool[addr] = conn
+	}
+	conn = connectionPool[addr]
+
+	_, err := conn.Write(append(context, '\n'))
 	if err != nil {
-		log.Println("connect error", err)
 		return
 	}
-
-	_, err = conn.Write(context)
-	if err != nil {
-		log.Fatal(err)
-	}
-	conn.Close()
 }
 
 func Broadcast(sender string, receivers []string, msg []byte) {
@@ -27,6 +37,12 @@ func Broadcast(sender string, receivers []string, msg []byte) {
 			continue
 		}
 		go TcpDial(msg, ip)
+	}
+}
+
+func CloseAllConnInPool() {
+	for _, conn := range connectionPool {
+		conn.Close()
 	}
 }
 

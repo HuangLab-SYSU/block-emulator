@@ -1,5 +1,11 @@
 # Version Updates
 
+## 2023/07/18
+**Problem**: The tcp connection will report err if the number of shards or nodes is too large.   
+- **Reason**: The tcp connection is implemented as a *short connection*, which results in too many simultaneous connections due to tcp's wait_close time delaying the closing of the tcp connection. 
+- **Solution1**: We solved the problem by changing the *short connection* to *long connection*, which will not build or close tcp connection frequently.
+- **Solution2**: Users can split the commands and run blockEmulator in different PCs, and the relevant ip settings can be modified in *params/global_config.go* and *build/build.go*. 
+
 ## 2023/06/22
 Debugs:
 1. **Problem**: The PBFT consensus will interrupt in a large scale experiment (large-size data & a number of shards).   

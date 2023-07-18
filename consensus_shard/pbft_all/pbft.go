@@ -7,9 +7,10 @@ import (
 	"blockEmulator/consensus_shard/pbft_all/dataSupport"
 	"blockEmulator/consensus_shard/pbft_all/pbft_log"
 	"blockEmulator/message"
+	"blockEmulator/networks"
 	"blockEmulator/params"
 	"blockEmulator/shard"
-	"fmt"
+	"bufio"
 	"io"
 	"log"
 	"net"
@@ -52,6 +53,7 @@ type PbftConsensusNode struct {
 	sequenceLock sync.Mutex // the lock of sequence
 	lock         sync.Mutex // lock the stage
 	askForLock   sync.Mutex // lock for asking for a serise of requests
+	stopLock     sync.Mutex // lock the stop varient
 
 	// seqID of other Shards, to synchronize
 	seqIDMap   map[uint64]uint64
@@ -60,7 +62,8 @@ type PbftConsensusNode struct {
 	// logger
 	pl *pbft_log.PbftLog
 	// tcp control
-	tcpln net.Listener
+	tcpln       net.Listener
+	tcpPoolLock sync.Mutex
 
 	// to handle the message in the pbft
 	ihm PbftInsideExtraHandleMod
@@ -175,9 +178,51 @@ func (p *PbftConsensusNode) handleMessage(msg []byte) {
 	}
 }
 
-// listen to the request
+func (p *PbftConsensusNode) handleClientRequest(con net.Conn) {
+	defer con.Close()
+	clientReader := bufio.NewReader(con)
+	for {
+		clientRequest, err := clientReader.ReadBytes('\n')
+		if p.getStopSignal() {
+			return
+		}
+		switch err {
+		case nil:
+			p.tcpPoolLock.Lock()
+			p.handleMessage(clientRequest)
+			p.tcpPoolLock.Unlock()
+		case io.EOF:
+			log.Println("client closed the connection by terminating the process")
+			return
+		default:
+			log.Printf("error: %v\n", err)
+			return
+		}
+	}
+}
+
 func (p *PbftConsensusNode) TcpListen() {
 	ln, err := net.Listen("tcp", p.RunningNode.IPaddr)
+	p.tcpln = ln
+	if err != nil {
+		log.Panic(err)
+	}
+	for {
+		conn, err := p.tcpln.Accept()
+		if err != nil {
+			return
+		}
+		go p.handleClientRequest(conn)
+	}
+}
+
+// listen to the request
+func (p *PbftConsensusNode) OldTcpListen() {
+	ipaddr, err := net.ResolveTCPAddr("tcp", p.RunningNode.IPaddr)
+	if err != nil {
+		log.Panic(err)
+	}
+	ln, err := net.ListenTCP("tcp", ipaddr)
 	p.tcpln = ln
 	if err != nil {
 		log.Panic(err)
@@ -185,7 +230,7 @@ func (p *PbftConsensusNode) TcpListen() {
 	p.pl.Plog.Printf("S%dN%d begins listening：%s\n", p.ShardID, p.NodeID, p.RunningNode.IPaddr)
 
 	for {
-		if p.stop {
+		if p.getStopSignal() {
 			p.closePbft()
 			return
 		}
@@ -198,18 +243,30 @@ func (p *PbftConsensusNode) TcpListen() {
 			log.Panic(err)
 		}
 		p.handleMessage(b)
+		conn.(*net.TCPConn).SetLinger(0)
+		defer conn.Close()
 	}
 }
 
 // when received stop
 func (p *PbftConsensusNode) WaitToStop() {
-	fmt.Println("handling stop message")
+	p.pl.Plog.Println("handling stop message")
+	p.stopLock.Lock()
 	p.stop = true
+	p.stopLock.Unlock()
 	if p.NodeID == p.view {
 		p.pStop <- 1
 	}
+	networks.CloseAllConnInPool()
 	p.tcpln.Close()
-	fmt.Println("handled stop message")
+	p.closePbft()
+	p.pl.Plog.Println("handled stop message")
+}
+
+func (p *PbftConsensusNode) getStopSignal() bool {
+	p.stopLock.Lock()
+	defer p.stopLock.Unlock()
+	return p.stop
 }
 
 // close the pbft

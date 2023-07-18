@@ -5,6 +5,7 @@ var (
 	MaxBlockSize_global = 2000   // the block contains the maximum number of transactions
 	InjectSpeed         = 2000   // the transaction inject speed
 	TotalDataSize       = 100000 // the total number of txs
+	BatchSize           = 16000  // supervisor read a batch of txs then send them, it should be larger than inject speed
 	BrokerNum           = 10
 	NodesInShard        = 4
 	ShardNum            = 4

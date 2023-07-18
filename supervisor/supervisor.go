@@ -11,6 +11,7 @@ import (
 	"blockEmulator/supervisor/measure"
 	"blockEmulator/supervisor/signal"
 	"blockEmulator/supervisor/supervisor_log"
+	"bufio"
 	"encoding/csv"
 	"encoding/json"
 	"io"
@@ -18,6 +19,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -30,7 +32,7 @@ type Supervisor struct {
 	// tcp controll
 	listenStop bool
 	tcpLn      net.Listener
-
+	tcpLock    sync.Mutex
 	// logger module
 	sl *supervisor_log.SupervisorLog
 
@@ -53,17 +55,17 @@ func (d *Supervisor) NewSupervisor(ip string, pcc *params.ChainConfig, committee
 
 	d.sl = supervisor_log.NewSupervisorLog()
 
-	d.Ss = signal.NewStopSignal(10)
+	d.Ss = signal.NewStopSignal(2 * int(pcc.ShardNums))
 
 	switch committeeMethod {
 	case "CLPA_Broker":
-		d.comMod = committee.NewCLPACommitteeMod_Broker(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, 16000, 50)
+		d.comMod = committee.NewCLPACommitteeMod_Broker(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, params.BatchSize, 80)
 	case "CLPA":
-		d.comMod = committee.NewCLPACommitteeModule(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, 16000, 50)
+		d.comMod = committee.NewCLPACommitteeModule(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, params.BatchSize, 80)
 	case "Broker":
-		d.comMod = committee.NewBrokerCommitteeMod(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, 16000)
+		d.comMod = committee.NewBrokerCommitteeMod(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, params.BatchSize)
 	default:
-		d.comMod = committee.NewRelayCommitteeModule(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, 16000)
+		d.comMod = committee.NewRelayCommitteeModule(d.Ip_nodeTable, d.Ss, d.sl, params.FileInput, params.TotalDataSize, params.BatchSize)
 	}
 
 	d.testMeasureMods = make([]measure.MeasureModule, 0)
@@ -98,7 +100,6 @@ func (d *Supervisor) handleBlockInfos(content []byte) {
 	if err != nil {
 		log.Panic()
 	}
-
 	// StopSignal check
 	if bim.BlockBodyLength == 0 {
 		d.Ss.StopGap_Inc()
@@ -152,9 +153,48 @@ func (d *Supervisor) handleMessage(msg []byte) {
 	}
 }
 
-// tcp listen for Supervisor
+func (d *Supervisor) handleClientRequest(con net.Conn) {
+	defer con.Close()
+	clientReader := bufio.NewReader(con)
+	for {
+		clientRequest, err := clientReader.ReadBytes('\n')
+		switch err {
+		case nil:
+			d.tcpLock.Lock()
+			d.handleMessage(clientRequest)
+			d.tcpLock.Unlock()
+		case io.EOF:
+			log.Println("client closed the connection by terminating the process")
+			return
+		default:
+			log.Printf("error: %v\n", err)
+			return
+		}
+	}
+}
+
 func (d *Supervisor) TcpListen() {
 	ln, err := net.Listen("tcp", d.IPaddr)
+	if err != nil {
+		log.Panic(err)
+	}
+	d.tcpLn = ln
+	for {
+		conn, err := d.tcpLn.Accept()
+		if err != nil {
+			return
+		}
+		go d.handleClientRequest(conn)
+	}
+}
+
+// tcp listen for Supervisor
+func (d *Supervisor) OldTcpListen() {
+	ipaddr, err := net.ResolveTCPAddr("tcp", d.IPaddr)
+	if err != nil {
+		log.Panic(err)
+	}
+	ln, err := net.ListenTCP("tcp", ipaddr)
 	d.tcpLn = ln
 	if err != nil {
 		log.Panic(err)
@@ -174,6 +214,8 @@ func (d *Supervisor) TcpListen() {
 			log.Panic(err)
 		}
 		d.handleMessage(b)
+		conn.(*net.TCPConn).SetLinger(0)
+		defer conn.Close()
 	}
 }
 
@@ -232,6 +274,6 @@ func (d *Supervisor) CloseSupervisor() {
 		f.Close()
 		d.sl.Slog.Println(measureMod.OutputRecord())
 	}
-
+	networks.CloseAllConnInPool()
 	d.tcpLn.Close()
 }
