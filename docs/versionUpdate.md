@@ -1,5 +1,10 @@
 # Version Updates
 
+## 2023/07/21
+**Problem**: The account transferring led to the slight disorganization of txpool. 
+- **Reason**: The algorithm saved the cost, but mixed up the txpool. 
+- **Solution**: We rewrite the algorithm, so that it can keep the order of txpool with a small cost. 
+
 ## 2023/07/18
 **Problem**: The tcp connection will report err if the number of shards or nodes is too large.   
 - **Reason**: The tcp connection is implemented as a *short connection*, which results in too many simultaneous connections due to tcp's wait_close time delaying the closing of the tcp connection. 

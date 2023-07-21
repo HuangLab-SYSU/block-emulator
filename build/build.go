@@ -15,7 +15,7 @@ func initConfig(nid, nnm, sid, snm uint64) *params.ChainConfig {
 			params.IPmap_nodeTable[i] = make(map[uint64]string)
 		}
 		for j := uint64(0); j < nnm; j++ {
-			params.IPmap_nodeTable[i][j] = "127.0.0.1:" + strconv.Itoa(8800+int(i)*100+int(j))
+			params.IPmap_nodeTable[i][j] = "127.0.0.1:" + strconv.Itoa(28800+int(i)*100+int(j))
 		}
 	}
 	params.IPmap_nodeTable[params.DeciderShard] = make(map[uint64]string)
@@ -53,7 +53,6 @@ func BuildSupervisor(nnm, snm, mod uint64) {
 
 func BuildNewPbftNode(nid, nnm, sid, snm, mod uint64) {
 	worker := pbft_all.NewPbftNode(sid, nid, initConfig(nid, nnm, sid, snm), params.CommitteeMethod[mod])
-	time.Sleep(5 * time.Second)
 	if nid == 0 {
 		go worker.Propose()
 		worker.TcpListen()

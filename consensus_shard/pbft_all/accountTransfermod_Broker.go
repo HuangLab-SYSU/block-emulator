@@ -85,10 +85,9 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) sendAccounts_and_Txs() {
 		}
 		// fetch transactions to it, after the transactions is fetched, delete it in the pool
 		txSend := make([]*core.Transaction, 0)
-		head := 0
-		tail := len(cphm.pbftNode.CurChain.Txpool.TxQueue)
-		for head < tail {
-			ptx := cphm.pbftNode.CurChain.Txpool.TxQueue[head]
+		firstPtr := 0
+		for secondPtr := 0; secondPtr < len(cphm.pbftNode.CurChain.Txpool.TxQueue); secondPtr++ {
+			ptx := cphm.pbftNode.CurChain.Txpool.TxQueue[secondPtr]
 			// whether should be transfer or not
 			beSend := false
 			beRemoved := false
@@ -119,14 +118,12 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) sendAccounts_and_Txs() {
 			if beSend {
 				txSend = append(txSend, ptx)
 			}
-			if beRemoved {
-				tail--
-				cphm.pbftNode.CurChain.Txpool.TxQueue[head] = cphm.pbftNode.CurChain.Txpool.TxQueue[tail]
-			} else {
-				head++
+			if !beRemoved {
+				cphm.pbftNode.CurChain.Txpool.TxQueue[firstPtr] = cphm.pbftNode.CurChain.Txpool.TxQueue[secondPtr]
+				firstPtr++
 			}
 		}
-		cphm.pbftNode.CurChain.Txpool.TxQueue = cphm.pbftNode.CurChain.Txpool.TxQueue[:tail]
+		cphm.pbftNode.CurChain.Txpool.TxQueue = cphm.pbftNode.CurChain.Txpool.TxQueue[:firstPtr]
 
 		cphm.pbftNode.pl.Plog.Printf("The txSend to shard %d is generated \n", i)
 		ast := message.AccountStateAndTx{
