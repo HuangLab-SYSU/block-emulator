@@ -26,7 +26,7 @@ spv.NewSupervisor(supervisor_ip, chainConfig, committeeMethod, mearsureModNames.
 | 跨分片交易占比（CrossTxRate_Broker） | 针对 Broker account 方式的跨分片交易占比，指的是跨分片交易所占区块链系统处理的所有交易的占比；它常被用于评测一个账户重划分算法的性能好坏 |                                                              |
 | 交易总数(TxNumberCount_Broker)       | 测量交易总数，可以用来统计最终上链交易的数目。               |                                                              |
 
-以上指标会在 supervisor 程序运行结束时输出。这些指标的输出格式是：
+以上指标会在 supervisor 程序运行结束时输出（在此版本的 BlockEmulator 中，一笔跨分片交易将会被记为两笔0.5笔交易）。这些指标的输出格式是：
 
 ```Go
 var metricByEpoch []float // output the metric result in an array, the index of the metric result is set by epoch
