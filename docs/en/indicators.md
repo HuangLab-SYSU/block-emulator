@@ -43,7 +43,7 @@ Currently, **BlockEmulator** supports eight kinds of indicators (four classes):
     </tr>
 </table>
 
-
+(Note: This version of BlockEmulator will count a cross-shard transaction as two 0.5 transactions. )
 The above indicators will be outputed after the execution of **Supervisor** with the follows format:
 
     ```
