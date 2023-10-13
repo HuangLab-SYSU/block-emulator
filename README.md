@@ -1,4 +1,4 @@
-# block-emulator
+# BlockEmulator Handbook
 This is the official handbook of **BlockEmulator** (version 1.0).
 
 # Version Updates
