@@ -66,10 +66,10 @@ type PbftConsensusNode struct {
 	tcpPoolLock sync.Mutex
 
 	// to handle the message in the pbft
-	ihm PbftInsideExtraHandleMod
+	ihm ExtraOpInConsensus
 
 	// to handle the message outside of pbft
-	ohm PbftOutsideHandleMod
+	ohm OpInterShards
 }
 
 // generate a pbft consensus for a node

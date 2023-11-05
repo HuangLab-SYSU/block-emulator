@@ -3,7 +3,7 @@ package committee
 import "blockEmulator/message"
 
 type CommitteeModule interface {
-	AdjustByBlockInfos(*message.BlockInfoMsg)
-	TxHandling()
+	HandleBlockInfo(*message.BlockInfoMsg)
+	MsgSendingControl()
 	HandleOtherMessage([]byte)
 }
