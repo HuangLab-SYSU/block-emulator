@@ -121,6 +121,5 @@ If you publish work that uses BlockEmolator, please cite BlockEmolator as follow
       year={2023},
       eprint={2311.03612},
       archivePrefix={arXiv},
-      primaryClass={cs.CR}
-      }
+      primaryClass={cs.CR}}
 ```
