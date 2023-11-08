@@ -111,3 +111,14 @@ Miaoyong is currently a student pursuing his master's degree at the School of Co
 ## Junhao Wu
 
 Junhao is an undergraduate student at the School of Software Engineering, Sun Yat-sen University. In September 2022, he joined HuangLab as an intern and participated in the development of BlockEmulator.
+# Citations
+If you publish work that uses BlockEmolator, please cite BlockEmolator as follows:
+
+'''@article{huang2023blockemulator,
+      title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols}, 
+      author={Huawei Huang and Guang Ye and Qinde Chen and Zhaokang Yin and Xiaofei Luo and Jianru Lin and Qinglin Yang and Zibin Zheng},
+      year={2023},
+      eprint={2311.03612},
+      archivePrefix={arXiv},
+      primaryClass={cs.CR}
+      }'''
