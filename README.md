@@ -22,9 +22,9 @@ In particular, BlockEmulator offers the system-level design and implementation f
 BlockEmulator is oriented toward blockchain researchers. It provides a blockchain experimental platform for quickly implementing their own algorithms, protocols, and mechanisms. It also offers very helpful functions to help researchers collect experimental data, facilitating their plotting experimental figures.
 
 
-## 2. Citations
+## 2. Official Technical Paper & Citation
 
-We have written a technical handbook paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols", which has been uploaded to arXiv. Please cite our paper if you use BlockEmulator as your experiment tool.
+To provide an official handbook for BlockEmulator, we have written a technical paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols" [arXiv page](https://arxiv.org/abs/2311.03612). Please cite our paper if you use BlockEmulator as an experiment tool in your own paper.
 
 ```
 @article{huang2023blockemulator,
