@@ -15,14 +15,28 @@ Initiated by **[HuangLab](http://xintelligence.pro/)**  (a research group in the
 
 The main purpose of this testbed is to help users (researchers, students, etc.) quickly verify their own blockchain consensus protocols and blockchain-sharding protocols. 
 
-**BlockEmulator** is designed as an experimental platform that adopts a lightweight system architecture. It simplifies the implementation of industrial-class blockchains since **BlockEmulator** only implements the core functions of a blockchain, including the transaction pool, block packaging, consensus protocols, and on-chain transaction storage. It also supports common consensus protocols, such as Practical Byzantine Fault Tolerance (PBFT) and Proof of Work (PoW).
+**BlockEmulator** is designed as an experimental platform that adopts a lightweight system architecture. It simplifies the implementation of industrial-class blockchains since **BlockEmulator** only implements the core functions of a blockchain, including the transaction pool, block packaging, consensus protocols, and on-chain transaction storage. It also supports common consensus protocols, such as Practical Byzantine Fault Tolerance (PBFT).
 
-In particular, BlockEmulator offers the system-level design and implementation for blockchain-sharding mechanisms. For example, the cross-shard transaction mechanisms implemented by BlockEmulator include the following two representative solutions, i.e., i) **Relay transaction mechanism** proposed by **Monoxide** (NSDI'2019), and the **BrokerChain** protocol proposed by **BrokerChain** (INFOCOM'2022) [PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding).
+In particular, BlockEmulator offers the system-level design and implementation for blockchain-sharding mechanisms. For example, the cross-shard transaction mechanisms implemented by BlockEmulator include the following two representative solutions, i.e., i) **Relay transaction mechanism** proposed by **Monoxide** (NSDI'2019), and the **BrokerChain** protocol (INFOCOM'2022) [PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding).
 
 BlockEmulator is oriented toward blockchain researchers. It provides a blockchain experimental platform for quickly implementing their own algorithms, protocols, and mechanisms. It also offers very helpful functions to help researchers collect experimental data, facilitating their plotting experimental figures.
 
 
-## 2. Related Work
+## 2. Citations
+
+We have written a technical handbook paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols", which has been uploaded to arXiv. Please cite our paper if you use BlockEmulator as your experiment tool.
+
+```
+@article{huang2023blockemulator,
+   title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols},
+   author={Huang, Huawei and Ye, Guang and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Li, Taotao and Yang, Qinglin and Zheng, Zibin},
+   journal={arXiv preprint arXiv:2311.03612},
+   year={2023}
+   }
+```
+
+
+## 3. Related Work
 
 The following papers from HuangLab's publications have adopted **BlockEmulator** as an experimental tool.
 
@@ -35,14 +49,14 @@ The following papers from HuangLab's publications have adopted **BlockEmulator**
 4. **MVCom**: Scheduling Most Valuable Committees for the Large-Scale Sharded Blockchain (published at ICDCS 2021) [PDF](https://ieeexplore.ieee.org/document/9546408)
 
 
-## 3. Highlights of BlockEmulator
+## 4. Highlights of BlockEmulator
 
 1. **Lightweight**. BlockEmulator is a lightweight testbed platform for blockchain experiments.
 2. **Fast Configuration**. BlockEmulator enables users to set up their environments quickly and supports remote deployment on the Cloud.
 3. **Customization**. BlockEmulator is implemented using Goland language, which supports users' customization and modification.
 4. **Easy to Conduct Experiments**. BlockEmulator supports the replay of historical transactions of mainstream blockchains (such as Ethereum). It can automatically yield experimental log files. Using those log files, researchers can interpret plenty of metrics such as system throughput, confirmation latency of transactions, the queueing of the transaction pool, etc. This function is extremely helpful for researchers and students to facilitate their experimental data collection and plotting of experimental charts.
 
-## 4. Getting Started to Use BlockEmulator
+## 5. Getting Started to Use BlockEmulator
 
 Quickly get started with BlockEmulator through the following document. Please refer to:
 [BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md). More details of user guideline can be found at [Handbook of BlockEmulator (Eng.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/readme.md) or [Handbook of BlockEmulator (Chn.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme.md).
@@ -59,11 +73,11 @@ Quickly get started with BlockEmulator through the following document. Please re
 
 ## Huawei Huang
 
-An associate professor of Sun Yat-sen University, IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. He has served as a research fellow of JSPS, and an Assistant Professor at Kyoto University, Japan. His research interests include blockchain, Web3, metaverse, and distributed computing/protocols. He received the best paper award from TrustCom2016 and a best paper award runner-up from IEEE OJ-CS. He has more than 100 papers published in top journals such as IEEE/ACM Transactions on Networking (ToN), IEEE Journal on Selected Areas in Communications (JSAC), IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) and IEEE Transactions on Computers (TC), etc., as well as prestigious international conferences INFOCOM, ICDCS, SRDS, IWQoS, etc. He served as a lead guest editor for a blockchain special issue at IEEE JSAC. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), etc. He has published two blockchain books titled "From Blockchain to Web3 & Metaverse" and "Blockchain Scalability", both published by Springer in 2023.
+Huawei Huang is an associate professor at Sun Yat-sen University. He is an IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. His research interests include blockchain, Web3, metaverse, and distributed computing/protocols. He has more than 100 papers published in top journals or conferences such as IEEE/ACM ToN, JSAC, TPDS, TDSC, TMC, INFOCOM, ICDCS, SRDS, IWQoS, etc. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), etc. He has published two blockchain books titled "From Blockchain to Web3 & Metaverse" and "Blockchain Scalability", both published by Springer in 2023.
 
 ## Zibin Zheng
 
-Zheng Zibin (SM’16-F’23) received his Ph.D. degree from the Chinese University of Hong Kong, Hong Kong, in 2012. He is a Professor at the School of Software Engineering, Sun Yat-Sen University, China. His current research interests include service computing, blockchain, and cloud computing. Prof. Zheng was a recipient of the Outstanding Ph.D. Dissertation Award of the Chinese University of Hong Kong in 2012, the ACM SIGSOFT Distinguished Paper Award at ICSE in 2010, the Best Student Paper Award at ICWS2010, and the IBM Ph.D. Fellowship Award in 2010. He served as a PC member for IEEE CLOUD, ICWS, SCC, ICSOC, and SOSE.
+Zheng Zibin (IEEE Fellow) received his Ph.D. degree from the Chinese University of Hong Kong, Hong Kong, in 2012. He is a Professor at the School of Software Engineering, Sun Yat-Sen University, China. His current research interests include service computing, blockchain, and cloud computing.
 
 ## Jianru Lin
 
@@ -71,7 +85,7 @@ Lin Jianru, a research scientist engineer, has rich experience in the design and
 
 ## Taotao Li
 
-Taotao Li is a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University, received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He has participated in a number of national/provincial key R&D projects, and published many papers in international academic conferences and journals. He participated in the development of BlockEmulator.
+Taotao Li is a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University, received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He participated in the development of BlockEmulator.
 
 
 ## Xiaofei Luo
@@ -81,7 +95,7 @@ Xiaofei Luo is currently a postdoctoral researcher at Sun Yat-sen University. He
 
 ##  Qinglin Yang
 
-Qinglin Yang, Ph.D., research fellow, and IEEE member, received his Ph.D. in Computer Science and Engineering from the University of Aizu in March 2021. His research interests include intelligent edge cloud computing, federated learning privacy protection, and Web3. In recent years, he has published nearly 20 papers in international academic journals/conferences. He is also a guest editorial board member of the IEEE Open Journal of the Computer Society (OJ-CS). He has participated in the research and development of a number of national key R&D projects and projects of the National Natural Science Foundation of China. He participated in the development of BlockEmulator. He participated in the compilation of the blockchain textbook "From Blockchain to Web3", published by People's Posts and Telecommunications Press, and a blockchain book titled "From Blockchain to Web3 & Metaverse", published by Springer, 2023.
+Qinglin Yang, Ph.D., research fellow, and IEEE member, received his Ph.D. in Computer Science and Engineering from the University of Aizu in March 2021. His research interests include intelligent edge cloud computing, federated learning privacy protection, and Web3. In recent years, he has published nearly 20 papers in international academic journals/conferences. He is also a guest editorial board member of the IEEE Open Journal of the Computer Society (OJ-CS). He participated in the development of BlockEmulator. He is the co-author of the blockchain book titled "From Blockchain to Web3 & Metaverse", published by Springer, 2023.
 
 ## Qinde Chen
 
@@ -89,15 +103,15 @@ Qinde is a Ph.D. student at the School of Software Engineering, Sun Yat-sen Univ
 
 ## Guang Ye
 
-Guang is currently a student pursuing his bachelor's degree at the School of Computer Science and Engineering, at Sun Yat-Sen University. His research interests mainly include Blockchain.  Since joining HuangLab as an undergraduate intern in August 2021, he has participated in the development of BlockEmulator.
+Guang is currently a student pursuing his Master's degree at the School of Software and Engineering, at Sun Yat-Sen University. His research interests mainly include Blockchain.  Since joining HuangLab as an undergraduate intern in August 2021, he has participated in the development of BlockEmulator.
 
 ## Zhaokang Yin
 
-Zhaokang will enroll in the School of Software Engineering, Sun Yat-sen University in Fall 2023. His research interest mainly focuses on blockchain. In October 2022, he joined HuangLab to participate in the development of BlockEmulator.
+Zhaokang is currently a student pursuing his Master's degree at the School of Software and Engineering. His research interest mainly focuses on blockchain. In October 2022, he joined HuangLab to participate in the development of BlockEmulator.
 
 ## Xiaowen Peng 
 
-Xiaowen is currently a student pursuing his M.Sc. degree at the School of Computer Science and Engineering, Sun Yat-Sen University, China. His research interests mainly include blockchain. In August 2021, he participated in the development of BlockEmulator.
+Xiaowen received his M.Sc. degree from the School of Computer Science and Engineering in 2023, Sun Yat-Sen University, China. His research interests mainly include blockchain. In August 2021, he participated in the development of BlockEmulator.
 
 ## Yue Lin
 
@@ -111,15 +125,3 @@ Miaoyong is currently a student pursuing his master's degree at the School of Co
 ## Junhao Wu
 
 Junhao is an undergraduate student at the School of Software Engineering, Sun Yat-sen University. In September 2022, he joined HuangLab as an intern and participated in the development of BlockEmulator.
-# Citations
-If you publish work that uses BlockEmolator, please cite BlockEmolator as follows:
-
-```
-@misc{huang2023blockemulator,
-      title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols}, 
-      author={Huawei Huang and Guang Ye and Qinde Chen and Zhaokang Yin and Xiaofei Luo and Jianru Lin and Qinglin Yang and Zibin Zheng},
-      year={2023},
-      eprint={2311.03612},
-      archivePrefix={arXiv},
-      primaryClass={cs.CR}}
-```
