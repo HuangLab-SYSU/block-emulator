@@ -1,5 +1,7 @@
 # BlockEmulator Handbook
 This is the official handbook of **BlockEmulator** (version 1.0).
+We also provide a **[Chinese-version handbook](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme_ChnVersion.md)**.
+
 
 # Version Updates
 View the updates of **BlockEmulator** here: 
