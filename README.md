@@ -55,13 +55,13 @@ The following papers from HuangLab's publications have adopted **BlockEmulator**
 
 1. **Lightweight**. BlockEmulator is a lightweight testbed platform for blockchain experiments.
 2. **Fast Configuration**. BlockEmulator enables users to set up their environments quickly and supports remote deployment on the Cloud.
-3. **Customization**. BlockEmulator is implemented using Goland language, which supports users' customization and modification.
-4. **Easy to Conduct Experiments**. BlockEmulator supports the replay of historical transactions of mainstream blockchains (such as Ethereum). It can automatically yield experimental log files. Using those log files, researchers can interpret plenty of metrics such as system throughput, confirmation latency of transactions, the queueing of the transaction pool, etc. This function is extremely helpful for researchers and students to facilitate their experimental data collection and plotting of experimental charts.
+3. **Customization**. BlockEmulator is implemented using goland language, which supports users' customization and modification.
+4. **Easy to Conduct Experiments**. BlockEmulator supports the replay of historical transactions of mainstream blockchains (such as Ethereum). It can automatically yield experimental log files. Using those log files, researchers can interpret plenty of metrics such as system throughput, confirmation latency of transactions, the queueing of the transaction pool, etc. This function is very useful for researchers and students to facilitate their experimental data collection and plotting of experimental charts.
 
 ## 5. Getting Started to Use BlockEmulator
 
 Quickly get started with BlockEmulator through the following document. Please refer to:
-[BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md). More details of user guideline can be found at [Handbook of BlockEmulator (Eng.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/readme.md) or [Handbook of BlockEmulator (Chn.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme.md).
+[BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md). More details of the user guidebook can be found at [Handbook of BlockEmulator (Eng.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/readme.md) or [Handbook of BlockEmulator (Chn.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme_ChnVersion.md).
 
 ## Reference
   - [NSDI'2019 Monoxide] J. Wang and H. Wang, “Monoxide: Scale out blockchains with asynchronous consensus zones,” in 16th USENIX Symposium on Networked Systems Design and Implementation (NSDI 19), 2019, pp. 95–112.
@@ -87,7 +87,7 @@ Lin Jianru, a research scientist engineer, has rich experience in the design and
 
 ## Taotao Li
 
-Taotao Li is a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University, received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He participated in the development of BlockEmulator.
+Taotao Li is a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University. He received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He participated in the development of BlockEmulator.
 
 
 ## Xiaofei Luo
