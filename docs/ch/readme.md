@@ -28,13 +28,14 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
 <h3>2. 官方技术论文 </h3>
 为了提供一个严谨的官方文档，我们近期撰写了一篇技术论文，题目为 "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols"，已经上传到了 arXiv. 如果您使用了 BlockEmulator 当做实验工具，请别忘记引用我们这篇技术论文，bib 信息如下：
 
+'''
 @article{huang2023blockemulator,
    title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols},
    author={Huang, Huawei and Ye, Guang and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Li, Taotao and Yang, Qinglin and Zheng, Zibin},
    journal={arXiv preprint arXiv:2311.03612},
    year={2023}
    }
-
+'''
 
 <h3>3. 相关工作 -- BlockEmulator 产出的论文</h3>
 
