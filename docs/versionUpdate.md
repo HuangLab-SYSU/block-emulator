@@ -1,5 +1,11 @@
 # Version Updates
 
+## 2023/12/12
+1. **New Features**: We have added the *shell generator function* in *Linux*. 
+- When users use the command 
+`go run main.go -g ` to
+ generate the *.bat* file for *Windows*, a *.shell* file will be generated, too.
+
 ## 2023/07/21
 **Problem**: The account transferring led to the slight disorganization of txpool. 
 - **Reason**: The algorithm saved the cost, but mixed up the txpool. 

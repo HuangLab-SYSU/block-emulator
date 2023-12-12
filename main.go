@@ -28,6 +28,7 @@ func main() {
 
 	if isGen {
 		build.GenerateBatFile(nodeNum, shardNum, modID)
+		build.GenerateShellFile(nodeNum, shardNum, modID)
 		return
 	}
 
