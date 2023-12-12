@@ -137,7 +137,7 @@ func (ccm *CLPACommitteeMod_Broker) txSending(txlist []*core.Transaction) {
 	}
 }
 
-func (ccm *CLPACommitteeMod_Broker) TxHandling() {
+func (ccm *CLPACommitteeMod_Broker) MsgSendingControl() {
 	txfile, err := os.Open(ccm.csvPath)
 	if err != nil {
 		log.Panic(err)
@@ -238,7 +238,7 @@ func (ccm *CLPACommitteeMod_Broker) clpaReset() {
 	}
 }
 
-func (ccm *CLPACommitteeMod_Broker) AdjustByBlockInfos(b *message.BlockInfoMsg) {
+func (ccm *CLPACommitteeMod_Broker) HandleBlockInfo(b *message.BlockInfoMsg) {
 	ccm.sl.Slog.Printf("received from shard %d in epoch %d.\n", b.SenderShardID, b.Epoch)
 	if b.BlockBodyLength == 0 {
 		return

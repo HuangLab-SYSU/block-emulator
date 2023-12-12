@@ -87,7 +87,7 @@ func (rthm *RelayCommitteeModule) txSending(txlist []*core.Transaction) {
 }
 
 // read transactions, the Number of the transactions is - batchDataNum
-func (rthm *RelayCommitteeModule) TxHandling() {
+func (rthm *RelayCommitteeModule) MsgSendingControl() {
 	txfile, err := os.Open(rthm.csvPath)
 	if err != nil {
 		log.Panic(err)
@@ -124,6 +124,6 @@ func (rthm *RelayCommitteeModule) TxHandling() {
 }
 
 // no operation here
-func (rthm *RelayCommitteeModule) AdjustByBlockInfos(b *message.BlockInfoMsg) {
+func (rthm *RelayCommitteeModule) HandleBlockInfo(b *message.BlockInfoMsg) {
 	rthm.sl.Slog.Printf("received from shard %d in epoch %d.\n", b.SenderShardID, b.Epoch)
 }

@@ -104,7 +104,7 @@ func (bcm *BrokerCommitteeMod) txSending(txlist []*core.Transaction) {
 	}
 }
 
-func (bcm *BrokerCommitteeMod) TxHandling() {
+func (bcm *BrokerCommitteeMod) MsgSendingControl() {
 	txfile, err := os.Open(bcm.csvPath)
 	if err != nil {
 		log.Panic(err)
@@ -145,7 +145,7 @@ func (bcm *BrokerCommitteeMod) TxHandling() {
 
 }
 
-func (bcm *BrokerCommitteeMod) AdjustByBlockInfos(b *message.BlockInfoMsg) {
+func (bcm *BrokerCommitteeMod) HandleBlockInfo(b *message.BlockInfoMsg) {
 	bcm.sl.Slog.Printf("received from shard %d in epoch %d.\n", b.SenderShardID, b.Epoch)
 	if b.BlockBodyLength == 0 {
 		return

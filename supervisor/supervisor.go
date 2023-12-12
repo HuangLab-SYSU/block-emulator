@@ -107,7 +107,7 @@ func (d *Supervisor) handleBlockInfos(content []byte) {
 		d.Ss.StopGap_Reset()
 	}
 
-	d.comMod.AdjustByBlockInfos(bim)
+	d.comMod.HandleBlockInfo(bim)
 
 	// measure update
 	for _, measureMod := range d.testMeasureMods {
@@ -119,7 +119,7 @@ func (d *Supervisor) handleBlockInfos(content []byte) {
 // read transactions from dataFile. When the number of data is enough,
 // the Supervisor will do re-partition and send partitionMSG and txs to leaders.
 func (d *Supervisor) SupervisorTxHandling() {
-	d.comMod.TxHandling()
+	d.comMod.MsgSendingControl()
 
 	// TxHandling is end
 	for !d.Ss.GapEnough() { // wait all txs to be handled
