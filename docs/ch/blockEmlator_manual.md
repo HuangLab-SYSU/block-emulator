@@ -103,10 +103,27 @@ go run main.go -n 0 -N 4 -s 1 -S 2 -m 3
 
 ### 自动启动
 
-1.生成 Bat 批处理文件
+#### Windows 
+1.生成 Bat 批处理文件，如
 
 ```Go
 go run main.go -g -S 2 -N 4 -m 3
 ```
 
-2.点击项目路径下的 `batrun_showAll.bat` 文件运行系统
+2.点击项目路径下的 `bat_shardNum=2_NodeNum=4_mod=Relay.bat` 文件运行系统
+
+#### Linux
+<font color='red'>注意：如果通过命令行访问 Linux 系统，需要提前做好杀死进程的准备，防止程序运行出现问题导致进程无法关闭。
+比如：
+```
+pkill
+```
+</font>
+
+1. 生成 shell 批处理文件，如
+
+```Go
+go run main.go -g -S 2 -N 4 -m 3
+```
+
+2.点击项目路径下的 `bat_shardNum=2_NodeNum=4_mod=Relay.shell` 文件运行系统

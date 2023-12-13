@@ -77,8 +77,31 @@ Take the Relay cross-chain mechanism blockchain as an example, 2 shards, 4 nodes
 go run main.go -n 0 -N 4 -s 1 -S 2 -m 3 
 ```
 ## 3.2 auto start
-1. generate bat files
+
+### Windows 
+1. Generate bat files
+
+```Go
+go run main.go -g -S 2 -N 4 -m 3
 ```
-1 go run main.go -g -S 2 -N 4 -m 3
+
+2. click the `bat_shardNum=2_NodeNum=4_mod=Relay.bat` that is in the path of project to run the system 
+
+
+### Linux
+<font color='red'>Note: When using the command line in Linux, be ready to terminate processes in advance to avoid complications during program execution.
+
+For example：
 ```
-2. click the **batrun_showAll.bat** that is in the path of project to run the system 
+pkill
+```
+</font>
+
+1. Generate shell files
+
+```Go
+go run main.go -g -S 2 -N 4 -m 3
+```
+
+2. click the `bat_shardNum=2_NodeNum=4_mod=Relay.shell` that is in the path of project to run the system
+
