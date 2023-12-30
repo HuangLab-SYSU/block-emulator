@@ -86,20 +86,20 @@ func ReadFromConn(addr string) {
 			break
 		}
 
-		// 将读取到的数据追加到消息缓冲区
+		// add message to buffer
 		messageBuffer.Write(buffer[:n])
 
-		// 处理完整的消息
+		// handle the full message
 		for {
 			message, err := readMessage(&messageBuffer)
 			if err == io.ErrShortBuffer {
-				// 缓冲区不够大，继续读取
+				// continue to load if buffer is short
 				break
 			} else if err == nil {
-				// 处理完整的消息
+				// log the full message
 				log.Println("Received from", addr, ":", message)
 			} else {
-				// 处理其他错误
+				// handle other errs
 				log.Println("Error processing message for address", addr, ":", err)
 				break
 			}
