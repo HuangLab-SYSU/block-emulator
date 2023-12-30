@@ -1,6 +1,7 @@
 package networks
 
 import (
+	"bytes"
 	"io"
 	"log"
 	"net"
@@ -72,15 +73,44 @@ func CloseAllConnInPool() {
 // ReadFromConn reads data from a connection.
 func ReadFromConn(addr string) {
 	conn := connectionPool[addr]
+
 	buffer := make([]byte, 1024)
+	var messageBuffer bytes.Buffer
+
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
 			if err != io.EOF {
-				log.Println("Read error:", err)
+				log.Println("Read error for address", addr, ":", err)
 			}
 			break
 		}
-		log.Println("Received:", string(buffer[:n]))
+
+		// 将读取到的数据追加到消息缓冲区
+		messageBuffer.Write(buffer[:n])
+
+		// 处理完整的消息
+		for {
+			message, err := readMessage(&messageBuffer)
+			if err == io.ErrShortBuffer {
+				// 缓冲区不够大，继续读取
+				break
+			} else if err == nil {
+				// 处理完整的消息
+				log.Println("Received from", addr, ":", message)
+			} else {
+				// 处理其他错误
+				log.Println("Error processing message for address", addr, ":", err)
+				break
+			}
+		}
 	}
+}
+
+func readMessage(buffer *bytes.Buffer) (string, error) {
+	message, err := buffer.ReadBytes('\n')
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+	return string(message), nil
 }
