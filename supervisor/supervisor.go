@@ -29,7 +29,7 @@ type Supervisor struct {
 	ChainConfig  *params.ChainConfig
 	Ip_nodeTable map[uint64]map[uint64]string
 
-	// tcp controll
+	// tcp control
 	listenStop bool
 	tcpLn      net.Listener
 	tcpLock    sync.Mutex
@@ -48,7 +48,7 @@ type Supervisor struct {
 	// diy, add more structures or classes here ...
 }
 
-func (d *Supervisor) NewSupervisor(ip string, pcc *params.ChainConfig, committeeMethod string, mearsureModNames ...string) {
+func (d *Supervisor) NewSupervisor(ip string, pcc *params.ChainConfig, committeeMethod string, measureModNames ...string) {
 	d.IPaddr = ip
 	d.ChainConfig = pcc
 	d.Ip_nodeTable = params.IPmap_nodeTable
@@ -69,7 +69,7 @@ func (d *Supervisor) NewSupervisor(ip string, pcc *params.ChainConfig, committee
 	}
 
 	d.testMeasureMods = make([]measure.MeasureModule, 0)
-	for _, mModName := range mearsureModNames {
+	for _, mModName := range measureModNames {
 		switch mModName {
 		case "TPS_Relay":
 			d.testMeasureMods = append(d.testMeasureMods, measure.NewTestModule_avgTPS_Relay())
@@ -92,7 +92,7 @@ func (d *Supervisor) NewSupervisor(ip string, pcc *params.ChainConfig, committee
 	}
 }
 
-// Supervisor received the block informatino from the leaders, and handle these
+// Supervisor received the block information from the leaders, and handle these
 // message to measure the performances.
 func (d *Supervisor) handleBlockInfos(content []byte) {
 	bim := new(message.BlockInfoMsg)
