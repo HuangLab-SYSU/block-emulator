@@ -1,5 +1,8 @@
 # Version Updates
 
+## 2024/03/01
+1. **FAQ Added**: We have added the **[*FAQ.md*](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/FAQ.md)**
+
 ## 2023/12/12
 1. **New Features**: We have added the *shell generator function* in *Linux*. 
 - When users use the command 
