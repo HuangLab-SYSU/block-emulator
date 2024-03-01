@@ -1,5 +1,9 @@
 # BlockEmulator 介绍文档
 
+**常见问题**见 [FAQ](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/FAQ.md)。
+
+**版本更新**见 [Version Update](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/versionUpdate.md)。
+
 这里是 BlockEmulator 官方中文版，本文档根据当前 BlockEmulator 1.0 版本编写。
 
 <h2>一、项目介绍</h2>
