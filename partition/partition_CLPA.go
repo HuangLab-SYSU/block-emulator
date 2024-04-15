@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 )
 
@@ -101,7 +102,7 @@ func (cs *CLPAState) PrintCLPA() {
 func (cs *CLPAState) ComputeEdges2Shard() {
 	cs.Edges2Shard = make([]int, cs.ShardNum)
 	interEdge := make([]int, cs.ShardNum)
-	cs.MinEdges2Shard = 0x7fffffff // INT_MAX
+	cs.MinEdges2Shard = math.MaxInt
 
 	for idx := 0; idx < cs.ShardNum; idx++ {
 		cs.Edges2Shard[idx] = 0
@@ -157,7 +158,7 @@ func (cs *CLPAState) changeShardRecompute(v Vertex, old int) {
 			cs.CrossShardEdgeNum++
 		}
 	}
-	cs.MinEdges2Shard = 0x7ffffffff
+	cs.MinEdges2Shard = math.MaxInt
 	// 修改 MinEdges2Shard, CrossShardEdgeNum
 	for _, val := range cs.Edges2Shard {
 		if cs.MinEdges2Shard > val {
