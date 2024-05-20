@@ -1,7 +1,8 @@
 # 常见问题
 
 ## 我该在哪下载数据集？
-我们使用的数据集是来自 **[xblock 收集的以太坊历史交易](https://xblock.pro/xblock-eth.html)**。
+- (updated in 2024/05/20) 为了帮助用户更快运行 blockEmulator，我们生成了 ''TestTx_1M.csv'' 文件，其中包含一百万条随机生成的交易。如果用户不考虑真实区块链历史交易中的分布，可以借用这个文件进行实验。
+- 我们使用的数据集是来自 **[xblock 收集的以太坊历史交易](https://xblock.pro/xblock-eth.html)**。
 
 ## 下载完数据集后，我该如何运行 blockEmulator？
 具体步骤可参见 **[blockEmulator 使用帮助](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/blockEmlator_manual.md)**。
