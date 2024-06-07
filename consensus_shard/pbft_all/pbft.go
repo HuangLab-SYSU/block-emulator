@@ -251,16 +251,16 @@ func (p *PbftConsensusNode) OldTcpListen() {
 // when received stop
 func (p *PbftConsensusNode) WaitToStop() {
 	p.pl.Plog.Println("handling stop message")
-	p.stopLock.Lock()
-	p.stop = true
-	p.stopLock.Unlock()
 	if p.NodeID == p.view {
 		p.pStop <- 1
 	}
+	p.stopLock.Lock()
+	p.stop = true
+	p.stopLock.Unlock()
 	networks.CloseAllConnInPool()
-	p.tcpln.Close()
 	p.closePbft()
 	p.pl.Plog.Println("handled stop message")
+	p.tcpln.Close()
 }
 
 func (p *PbftConsensusNode) getStopSignal() bool {
