@@ -2,6 +2,9 @@ package pbft_all
 
 import "blockEmulator/message"
 
+// Define operations in a PBFT.
+// This may be varied by different consensus protocols.
+
 type ExtraOpInConsensus interface {
 	// mining / message generation
 	HandleinPropose() (bool, *message.Request)
@@ -17,6 +20,8 @@ type ExtraOpInConsensus interface {
 	HandleforSequentialRequest(*message.SendOldMessage) bool
 }
 
+// Define operations among some PBFTs.
+// This may be varied by different consensus protocols.
 type OpInterShards interface {
 	// operation inter-shards
 	HandleMessageOutsidePBFT(message.MessageType, []byte) bool

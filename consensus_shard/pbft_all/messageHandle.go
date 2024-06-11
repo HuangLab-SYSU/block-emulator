@@ -3,6 +3,7 @@ package pbft_all
 import (
 	"blockEmulator/message"
 	"blockEmulator/networks"
+	"blockEmulator/params"
 	"blockEmulator/shard"
 	"encoding/json"
 	"fmt"
@@ -19,7 +20,15 @@ func (p *PbftConsensusNode) Propose() {
 		select {
 		case <-p.pStop:
 			p.pl.Plog.Printf("S%dN%d stop...\n", p.ShardID, p.NodeID)
+
+			// Forward stop message to other nodes in this shard.
+			stopmsg := message.MergeMessage(message.CStop, []byte("this is a stop message~"))
+			p.pl.Plog.Println("main node: now sending cstop message to all nodes")
+			for nid := 1; nid < params.NodesInShard; nid++ {
+				networks.TcpDial(stopmsg, params.IPmap_nodeTable[p.ShardID][(uint64(nid))])
+			}
 			return
+
 		default:
 		}
 		time.Sleep(time.Duration(int64(p.pbftChainConfig.BlockInterval)) * time.Millisecond)
@@ -47,9 +56,13 @@ func (p *PbftConsensusNode) Propose() {
 		}
 		msg_send := message.MergeMessage(message.CPrePrepare, ppbyte)
 		networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+		p.pbftStage.Store(2)
 	}
 }
 
+// Handle pre-prepare messages here.
+// If you want to do more operations in the pre-prepare stage, you can implement the interface "ExtraOpInConsensus",
+// and call the function: **ExtraOpInConsensus.HandleinPrePrepare**
 func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 	p.RunningNode.PrintNode()
 	fmt.Println("received the PrePrepare ...")
@@ -59,6 +72,14 @@ func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	p.pbftLock.Lock()
+	defer p.pbftLock.Unlock()
+	for p.pbftStage.Load() < 1 && ppmsg.SeqID == p.sequenceID {
+		p.conditionalVarpbftLock.Wait()
+	}
+	defer p.conditionalVarpbftLock.Broadcast()
+
 	flag := false
 	if digest := getDigest(ppmsg.RequestMsg); string(digest) != string(ppmsg.Digest) {
 		p.pl.Plog.Printf("S%dN%d : the digest is not consistent, so refuse to prepare. \n", p.ShardID, p.NodeID)
@@ -87,9 +108,15 @@ func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 		msg_send := message.MergeMessage(message.CPrepare, prepareByte)
 		networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
 		p.pl.Plog.Printf("S%dN%d : has broadcast the prepare message \n", p.ShardID, p.NodeID)
+
+		// Pbft stage add 1. It means that this round of pbft goes into the next stage, i.e., Prepare stage.
+		p.pbftStage.Add(1)
 	}
 }
 
+// Handle prepare messages here.
+// If you want to do more operations in the prepare stage, you can implement the interface "ExtraOpInConsensus",
+// and call the function: **ExtraOpInConsensus.HandleinPrepare**
 func (p *PbftConsensusNode) handlePrepare(content []byte) {
 	p.pl.Plog.Printf("S%dN%d : received the Prepare ...\n", p.ShardID, p.NodeID)
 	// decode the message
@@ -98,6 +125,13 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	p.pbftLock.Lock()
+	defer p.pbftLock.Unlock()
+	for p.pbftStage.Load() < 2 && pmsg.SeqID == p.sequenceID {
+		p.conditionalVarpbftLock.Wait()
+	}
+	defer p.conditionalVarpbftLock.Broadcast()
 
 	if _, ok := p.requestPool[string(pmsg.Digest)]; !ok {
 		p.pl.Plog.Printf("S%dN%d : doesn't have the digest in the requst pool, refuse to commit\n", p.ShardID, p.NodeID)
@@ -137,10 +171,15 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 			networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
 			p.isCommitBordcast[string(pmsg.Digest)] = true
 			p.pl.Plog.Printf("S%dN%d : commit is broadcast\n", p.ShardID, p.NodeID)
+
+			p.pbftStage.Add(1)
 		}
 	}
 }
 
+// Handle commit messages here.
+// If you want to do more operations in the commit stage, you can implement the interface "ExtraOpInConsensus",
+// and call the function: **ExtraOpInConsensus.HandleinCommit**
 func (p *PbftConsensusNode) handleCommit(content []byte) {
 	// decode the message
 	cmsg := new(message.Commit)
@@ -148,12 +187,17 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	p.pbftLock.Lock()
+	defer p.pbftLock.Unlock()
+	for p.pbftStage.Load() < 3 && cmsg.SeqID == p.sequenceID {
+		p.conditionalVarpbftLock.Wait()
+	}
+	defer p.conditionalVarpbftLock.Broadcast()
+
 	p.pl.Plog.Printf("S%dN%d received the Commit from ...%d\n", p.ShardID, p.NodeID, cmsg.SenderNode.NodeID)
 	p.set2DMap(false, string(cmsg.Digest), cmsg.SenderNode)
-	cnt := 0
-	for range p.cntCommitConfirm[string(cmsg.Digest)] {
-		cnt++
-	}
+	cnt := len(p.cntCommitConfirm[string(cmsg.Digest)])
 
 	p.lock.Lock()
 	defer p.lock.Unlock()
@@ -193,6 +237,8 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 			p.sequenceID += 1
 		}
 
+		p.pbftStage.Store(1)
+
 		// if this node is a main node, then unlock the sequencelock
 		if p.NodeID == p.view {
 			p.sequenceLock.Unlock()
@@ -207,7 +253,6 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 // now this function can send both block and partition
 func (p *PbftConsensusNode) handleRequestOldSeq(content []byte) {
 	if p.view != p.NodeID {
-		content = make([]byte, 0)
 		return
 	}
 

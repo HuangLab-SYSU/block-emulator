@@ -16,6 +16,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -40,7 +41,7 @@ type PbftConsensusNode struct {
 
 	// the control message and message checking utils in pbft
 	sequenceID        uint64                          // the message sequence id of the pbft
-	stop              bool                            // send stop signal
+	stopSignal        atomic.Bool                     // send stop signal
 	pStop             chan uint64                     // channle for stopping consensus
 	requestPool       map[string]*message.Request     // RequestHash to Request
 	cntPrepareConfirm map[string]map[*shard.Node]bool // count the prepare confirm message, [messageHash][Node]bool
@@ -49,11 +50,15 @@ type PbftConsensusNode struct {
 	isReply           map[string]bool                 // denote whether the message is reply
 	height2Digest     map[uint64]string               // sequence (block height) -> request, fast read
 
+	// pbft stage wait
+	pbftStage              atomic.Int32 // 1->Preprepare, 2->Prepare, 3->Commit, 4->Done
+	pbftLock               sync.Mutex
+	conditionalVarpbftLock sync.Cond
+
 	// locks about pbft
 	sequenceLock sync.Mutex // the lock of sequence
 	lock         sync.Mutex // lock the stage
 	askForLock   sync.Mutex // lock for asking for a serise of requests
-	stopLock     sync.Mutex // lock the stop varient
 
 	// seqID of other Shards, to synchronize
 	seqIDMap   map[uint64]uint64
@@ -97,7 +102,7 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 		IPaddr:  p.ip_nodeTable[shardID][nodeID],
 	}
 
-	p.stop = false
+	p.stopSignal.Store(false)
 	p.sequenceID = p.CurChain.CurrentBlock.Header.Number + 1
 	p.pStop = make(chan uint64)
 	p.requestPool = make(map[string]*message.Request)
@@ -151,6 +156,10 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 		}
 	}
 
+	// set pbft stage now
+	p.conditionalVarpbftLock = *sync.NewCond(&p.pbftLock)
+	p.pbftStage.Store(1)
+
 	return p
 }
 
@@ -160,15 +169,20 @@ func (p *PbftConsensusNode) handleMessage(msg []byte) {
 	switch msgType {
 	// pbft inside message type
 	case message.CPrePrepare:
-		p.handlePrePrepare(content)
+		// use "go" to start a go routine to handle this message, so that a pre-arrival message will not be aborted.
+		go p.handlePrePrepare(content)
 	case message.CPrepare:
-		p.handlePrepare(content)
+		// use "go" to start a go routine to handle this message, so that a pre-arrival message will not be aborted.
+		go p.handlePrepare(content)
 	case message.CCommit:
-		p.handleCommit(content)
+		// use "go" to start a go routine to handle this message, so that a pre-arrival message will not be aborted.
+		go p.handleCommit(content)
+
 	case message.CRequestOldrequest:
 		p.handleRequestOldSeq(content)
 	case message.CSendOldrequest:
 		p.handleSendOldSeq(content)
+
 	case message.CStop:
 		p.WaitToStop()
 
@@ -183,7 +197,7 @@ func (p *PbftConsensusNode) handleClientRequest(con net.Conn) {
 	clientReader := bufio.NewReader(con)
 	for {
 		clientRequest, err := clientReader.ReadBytes('\n')
-		if p.getStopSignal() {
+		if p.stopSignal.Load() {
 			return
 		}
 		switch err {
@@ -201,6 +215,7 @@ func (p *PbftConsensusNode) handleClientRequest(con net.Conn) {
 	}
 }
 
+// A consensus node starts tcp-listen.
 func (p *PbftConsensusNode) TcpListen() {
 	ln, err := net.Listen("tcp", p.RunningNode.IPaddr)
 	p.tcpln = ln
@@ -216,57 +231,17 @@ func (p *PbftConsensusNode) TcpListen() {
 	}
 }
 
-// listen to the request
-func (p *PbftConsensusNode) OldTcpListen() {
-	ipaddr, err := net.ResolveTCPAddr("tcp", p.RunningNode.IPaddr)
-	if err != nil {
-		log.Panic(err)
-	}
-	ln, err := net.ListenTCP("tcp", ipaddr)
-	p.tcpln = ln
-	if err != nil {
-		log.Panic(err)
-	}
-	p.pl.Plog.Printf("S%dN%d begins listening：%s\n", p.ShardID, p.NodeID, p.RunningNode.IPaddr)
-
-	for {
-		if p.getStopSignal() {
-			p.closePbft()
-			return
-		}
-		conn, err := p.tcpln.Accept()
-		if err != nil {
-			log.Panic(err)
-		}
-		b, err := io.ReadAll(conn)
-		if err != nil {
-			log.Panic(err)
-		}
-		p.handleMessage(b)
-		conn.(*net.TCPConn).SetLinger(0)
-		defer conn.Close()
-	}
-}
-
-// when received stop
+// When receiving a stop message, this node try to stop.
 func (p *PbftConsensusNode) WaitToStop() {
 	p.pl.Plog.Println("handling stop message")
 	if p.NodeID == p.view {
 		go func() { p.pStop <- 1 }()
 	}
-	p.stopLock.Lock()
-	p.stop = true
-	p.stopLock.Unlock()
+	p.stopSignal.Store(true)
 	networks.CloseAllConnInPool()
 	p.closePbft()
 	p.pl.Plog.Println("handled stop message")
 	p.tcpln.Close()
-}
-
-func (p *PbftConsensusNode) getStopSignal() bool {
-	p.stopLock.Lock()
-	defer p.stopLock.Unlock()
-	return p.stop
 }
 
 // close the pbft

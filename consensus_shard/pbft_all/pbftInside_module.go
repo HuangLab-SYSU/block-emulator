@@ -33,7 +33,7 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinPropose() (bool, *message.Reques
 	return true, r
 }
 
-// the diy operation in preprepare
+// the DIY operation in preprepare
 func (rphm *RawRelayPbftExtraHandleMod) HandleinPrePrepare(ppmsg *message.PrePrepare) bool {
 	if rphm.pbftNode.CurChain.IsValidBlock(core.DecodeB(ppmsg.RequestMsg.Msg.Content)) != nil {
 		rphm.pbftNode.pl.Plog.Printf("S%dN%d : not a valid block\n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID)

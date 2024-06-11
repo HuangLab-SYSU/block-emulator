@@ -1,5 +1,8 @@
 # Version Updates
 
+## 2024/06/11 
+1. **Bug fixed**: Fixed some bugs in the PBFT consensus, which could cause PBFT consensus nodes to discard early arriving messages in cases of unstable network latency.
+
 ## 2024/05/20
 1. **New Dataset**：Users can take experiments on a test dataset "./TestTx_1M.csv".
 
