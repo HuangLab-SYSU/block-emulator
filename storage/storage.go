@@ -1,55 +1,46 @@
-// storage is a key-value database and its interfaces indeed
-// the information of block will be saved in storage
-
 package storage
 
 import (
 	"blockEmulator/core"
-	"blockEmulator/params"
 	"errors"
-	"fmt"
 	"log"
-	"os"
-	"strconv"
+
+	"blockEmulator/params"
 
 	"github.com/boltdb/bolt"
 )
 
+const (
+	dbFile                = "blockchain_db"
+	blocksBucket          = "blocks"
+	blockHeaderBucket     = "blockHeaders"
+	newestBlockHashBucket = "newBlockHash"
+	stateTreeBucket       = "stateTree"
+)
+
 type Storage struct {
-	dbFilePath            string // path to the database
-	blockBucket           string // bucket in bolt database
-	blockHeaderBucket     string // bucket in bolt database
-	newestBlockHashBucket string // bucket in bolt database
-	DataBase              *bolt.DB
+	dbFile                string
+	blocksBucket          string
+	blockHeaderBucket     string
+	newestBlockHashBucket string
+	DB                    *bolt.DB
 }
 
-// new a storage, build a bolt datase
-func NewStorage(cc *params.ChainConfig) *Storage {
-	_, errStat := os.Stat("./record")
-	if os.IsNotExist(errStat) {
-		errMkdir := os.Mkdir("./record", os.ModePerm)
-		if errMkdir != nil {
-			log.Panic(errMkdir)
-		}
-	} else if errStat != nil {
-		log.Panic(errStat)
-	}
-
+func NewStorage(chainConfig *params.ChainConfig) *Storage {
 	s := &Storage{
-		dbFilePath:            "./record/" + strconv.FormatUint(cc.ShardID, 10) + "_" + strconv.FormatUint(cc.NodeID, 10) + "_database",
-		blockBucket:           "block",
-		blockHeaderBucket:     "blockHeader",
-		newestBlockHashBucket: "newestBlockHash",
+		dbFile:                chainConfig.ShardID + "_" + chainConfig.NodeID + "_" + dbFile,
+		blocksBucket:          blocksBucket,
+		blockHeaderBucket:     blockHeaderBucket,
+		newestBlockHashBucket: newestBlockHashBucket,
 	}
 
-	db, err := bolt.Open(s.dbFilePath, 0600, nil)
+	db, err := bolt.Open(s.dbFile, 0600, nil)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	// create buckets
 	db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(s.blockBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(s.blocksBucket))
 		if err != nil {
 			log.Panic("create blocksBucket failed")
 		}
@@ -66,101 +57,153 @@ func NewStorage(cc *params.ChainConfig) *Storage {
 
 		return nil
 	})
-	s.DataBase = db
+
+	s.DB = db
+
 	return s
 }
 
-// update the newest block in the database
-func (s *Storage) UpdateNewestBlock(newestbhash []byte) {
-	err := s.DataBase.Update(func(tx *bolt.Tx) error {
-		nbhBucket := tx.Bucket([]byte(s.newestBlockHashBucket))
-		// the bucket has the only key "OnlyNewestBlock"
-		err := nbhBucket.Put([]byte("OnlyNewestBlock"), newestbhash)
+func (s *Storage) AddBlock(block *core.Block) {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		blockBucket := tx.Bucket([]byte(s.blocksBucket))
+		err := blockBucket.Put(block.Hash, block.Encode())
 		if err != nil {
 			log.Panic()
 		}
 		return nil
 	})
 	if err != nil {
-		log.Panic()
+		log.Panic(err)
 	}
-	fmt.Println("The newest block is updated")
+	s.AddBlockHeader(block.Hash, block.Header)
+
+	s.UpdateNewestBlockHash(block.Hash)
+
 }
 
-// add a blockheader into the database
-func (s *Storage) AddBlockHeader(blockhash []byte, bh *core.BlockHeader) {
-	err := s.DataBase.Update(func(tx *bolt.Tx) error {
-		bhbucket := tx.Bucket([]byte(s.blockHeaderBucket))
-		err := bhbucket.Put(blockhash, bh.Encode())
+func (s *Storage) GetBlock(blockHash []byte) (*core.Block, error) {
+	var block *core.Block
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blocksBucket))
+
+		blockData := b.Get(blockHash[:])
+
+		if blockData == nil {
+			return errors.New("block is not found")
+		}
+
+		block = core.DecodeBlock(blockData)
+
+		return nil
+	})
+	if err != nil {
+		return block, err
+	}
+
+	return block, nil
+}
+
+func (s *Storage) AddBlockHeader(blockHash []byte, header *core.BlockHeader) {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		blockHeaderBucket := tx.Bucket([]byte(s.blockHeaderBucket))
+		err := blockHeaderBucket.Put(blockHash, header.Encode())
 		if err != nil {
 			log.Panic()
 		}
 		return nil
 	})
 	if err != nil {
-		log.Panic()
+		log.Panic(err)
 	}
 }
 
-// add a block into the database
-func (s *Storage) AddBlock(b *core.Block) {
-	err := s.DataBase.Update(func(tx *bolt.Tx) error {
-		bbucket := tx.Bucket([]byte(s.blockBucket))
-		err := bbucket.Put(b.Hash, b.Encode())
+func (s *Storage) GetBlockHeader(blockHash []byte) (*core.BlockHeader, error) {
+	var blockHeader *core.BlockHeader
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		bh := tx.Bucket([]byte(blockHeaderBucket))
+
+		blockHeaderData := bh.Get(blockHash[:])
+
+		if blockHeaderData == nil {
+			return errors.New("blockHeader is not found")
+		}
+
+		blockHeader = core.DecodeBlockHeader(blockHeaderData)
+
+		return nil
+	})
+	if err != nil {
+		return blockHeader, err
+	}
+
+	return blockHeader, nil
+}
+
+// func (s *Storage) UpdateStateTree(statusTree *trie.Trie) {
+// 	err := s.DB.Update(func(tx *bolt.Tx) error {
+// 		stateTreeBucket := tx.Bucket([]byte(stateTreeBucket))
+// 		err := stateTreeBucket.Put([]byte(s.stateTreeBucket), statusTree.Encode())
+// 		if err != nil {
+// 			log.Panic()
+// 		}
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		log.Panic(err)
+// 	}
+// }
+
+// func (s *Storage) GetStatusTree() (*trie.Trie, error) {
+// 	var stateTree *trie.Trie
+
+// 	err := s.DB.View(func(tx *bolt.Tx) error {
+// 		st := tx.Bucket([]byte(stateTreeBucket))
+
+// 		stateTreeData := st.Get([]byte(s.stateTreeBucket))
+// 		if stateTreeData == nil {
+// 			return errors.New("stateTree is not found")
+// 		}
+// 		stateTree = trie.DecodeStateTree(stateTreeData)
+
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		return stateTree, err
+// 	}
+
+// 	return stateTree, nil
+// }
+
+func (s *Storage) UpdateNewestBlockHash(blockHash []byte) {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		newestBlockHashBucket := tx.Bucket([]byte(newestBlockHashBucket))
+		// the bucket has the only key "newBlockHash"
+		err := newestBlockHashBucket.Put([]byte(s.newestBlockHashBucket), blockHash)
 		if err != nil {
 			log.Panic()
 		}
 		return nil
 	})
 	if err != nil {
-		log.Panic()
+		log.Panic(err)
 	}
-	s.AddBlockHeader(b.Hash, b.Header)
-	s.UpdateNewestBlock(b.Hash)
-	fmt.Println("Block is added")
 }
 
-// read a blockheader from the database
-func (s *Storage) GetBlockHeader(bhash []byte) (*core.BlockHeader, error) {
-	var res *core.BlockHeader
-	err := s.DataBase.View(func(tx *bolt.Tx) error {
-		bhbucket := tx.Bucket([]byte(s.blockHeaderBucket))
-		bh_encoded := bhbucket.Get(bhash)
-		if bh_encoded == nil {
-			return errors.New("the block is not existed")
-		}
-		res = core.DecodeBH(bh_encoded)
-		return nil
-	})
-	return res, err
-}
-
-// read a block from the database
-func (s *Storage) GetBlock(bhash []byte) (*core.Block, error) {
-	var res *core.Block
-	err := s.DataBase.View(func(tx *bolt.Tx) error {
-		bbucket := tx.Bucket([]byte(s.blockBucket))
-		b_encoded := bbucket.Get(bhash)
-		if b_encoded == nil {
-			return errors.New("the block is not existed")
-		}
-		res = core.DecodeB(b_encoded)
-		return nil
-	})
-	return res, err
-}
-
-// read the Newest block hash
 func (s *Storage) GetNewestBlockHash() ([]byte, error) {
-	var nhb []byte
-	err := s.DataBase.View(func(tx *bolt.Tx) error {
-		bhbucket := tx.Bucket([]byte(s.newestBlockHashBucket))
-		// the bucket has the only key "OnlyNewestBlock"
-		nhb = bhbucket.Get([]byte("OnlyNewestBlock"))
-		if nhb == nil {
-			return errors.New("cannot find the newest block hash")
+	var newestBlockHash []byte
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		nh := tx.Bucket([]byte(newestBlockHashBucket))
+		// the bucket has the only key "newBlockHash"
+		newestBlockHash = nh.Get([]byte(newestBlockHashBucket))
+		if newestBlockHash == nil {
+			return errors.New("newestBlockHash is not found")
 		}
+
 		return nil
 	})
-	return nhb, err
+
+	return newestBlockHash, err
 }

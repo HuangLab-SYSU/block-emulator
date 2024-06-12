@@ -1,40 +1,38 @@
 package main
 
 import (
-	"blockEmulator/build"
-
-	"github.com/spf13/pflag"
+	"blockEmulator/test"
 )
 
-var (
-	shardNum int
-	nodeNum  int
-	shardID  int
-	nodeID   int
-	modID    int
-	isClient bool
-	isGen    bool
-)
+// "fmt"
+
+// GO111MODULE=on go run main.go
 
 func main() {
-	pflag.IntVarP(&shardNum, "shardNum", "S", 2, "indicate that how many shards are deployed")
-	pflag.IntVarP(&nodeNum, "nodeNum", "N", 4, "indicate how many nodes of each shard are deployed")
-	pflag.IntVarP(&shardID, "shardID", "s", 0, "id of the shard to which this node belongs, for example, 0")
-	pflag.IntVarP(&nodeID, "nodeID", "n", 0, "id of this node, for example, 0")
-	pflag.IntVarP(&modID, "modID", "m", 3, "choice Committee Method,for example, 0, [CLPA_Broker,CLPA,Broker,Relay] ")
-	pflag.BoolVarP(&isClient, "client", "c", false, "whether this node is a client")
-	pflag.BoolVarP(&isGen, "gen", "g", false, "generation bat")
-	pflag.Parse()
+	// test.Test_account()
+	// test.Test_blockChain()
+	// test.Test_pbft()
+	// test.Test_node()
+	// test.Test_random()
+	// test.Test_pool()
+	// fmt.Println(len("a1e4380a3b1f749673e270229993ee55f35663b4"))
+	// path := "len4_test8.csv"
+	// test.Acc2shard(path)
+	// test.LoadTx(path)
+	// txs := test.Newcsv(path)
+	// test.WriteToCsv(txs)
+	// test.F()
+	// time.Sleep(10000*time.Millisecond)
+	// test.TxDelayCsv()
+	// test.Goru()
 
-	if isGen {
-		build.GenerateBatFile(nodeNum, shardNum, modID)
-		build.GenerateShellFile(nodeNum, shardNum, modID)
-		return
-	}
+	test.Test_shard()
 
-	if isClient {
-		build.BuildSupervisor(uint64(nodeNum), uint64(shardNum), uint64(modID))
-	} else {
-		build.BuildNewPbftNode(uint64(nodeID), uint64(nodeNum), uint64(shardID), uint64(shardNum), uint64(modID))
-	}
+	// test.Test_DB("S0", "N0")
+	// fmt.Println()
+	// test.Test_DB("S0", "N1")
+	// fmt.Println()
+	// test.Test_DB("S1", "N0")
+	// fmt.Println()
+	// test.Test_DB("S1", "N1")
 }

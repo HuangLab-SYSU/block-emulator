@@ -1,19 +1,23 @@
-// Here the blockchain structrue is defined
-// each node in this system will maintain a blockchain object.
-
 package chain
 
 import (
-	"blockEmulator/core"
-	"blockEmulator/params"
-	"blockEmulator/storage"
-	"blockEmulator/utils"
-	"errors"
+	"bytes"
+	"encoding/csv"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"math/big"
-	"sync"
+	"os"
+	"strings"
 	"time"
+
+	"blockEmulator/account"
+	"blockEmulator/core"
+	"blockEmulator/params"
+	"blockEmulator/storage"
+
+	// "blockEmulator/trie"
+	"blockEmulator/utils"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/rawdb"
@@ -21,15 +25,622 @@ import (
 	"github.com/ethereum/go-ethereum/trie"
 )
 
+var (
+	blocktimelog, queuelenlog *csv.Writer
+)
+
 type BlockChain struct {
-	db           ethdb.Database      // the leveldb database to store in the disk, for status trie
-	triedb       *trie.Database      // the trie database which helps to store the status trie
-	ChainConfig  *params.ChainConfig // the chain configuration, which can help to identify the chain
-	CurrentBlock *core.Block         // the top block in this blockchain
-	Storage      *storage.Storage    // Storage is the bolt-db to store the blocks
-	Txpool       *core.TxPool        // the transaction pool
-	PartitionMap map[string]uint64   // the partition map which is defined by some algorithm can help account parition
-	pmlock       sync.RWMutex
+	ChainConfig *params.ChainConfig // Chain configuration
+
+	CurrentBlock *core.Block // Current head of the block chain
+
+	Storage *storage.Storage
+	db      ethdb.Database // the leveldb database to store in the disk, for status trie
+	Triedb  *trie.Database // the trie database which helps to store the status trie
+
+	// StatusTrie *trie.Trie
+
+	Tx_pool *core.Tx_pool
+
+	TXmig1_pool *core.TXmig1_pool
+
+	TXmig2_pool *core.TXmig2_pool
+
+	TXann_pool *core.TXann_pool
+
+	TXns_pool *core.TXns_pool
+}
+
+func NewBlockChain(chainConfig *params.ChainConfig) (*BlockChain, error) {
+	var err error
+	if chainConfig.NodeID == "N0" {
+		csvFile, err := os.Create("./log/" + chainConfig.ShardID + "_blocktime.csv")
+		if err != nil {
+			log.Panic(err)
+		}
+		// defer csvFile.Close()
+		blocktimelog = csv.NewWriter(csvFile)
+		blocktimelog.Write([]string{"height", "block", "tx", "mig1", "mig2", "ann", "ns"})
+		blocktimelog.Flush()
+
+		csvFile1, err := os.Create("./log/" + chainConfig.ShardID + "_queueLen.csv")
+		if err != nil {
+			log.Panic(err)
+		}
+		queuelenlog = csv.NewWriter(csvFile1)
+		queuelenlog.Write([]string{"block", "queueLen"})
+		queuelenlog.Flush()
+	}
+
+	fmt.Printf("%v\n", chainConfig)
+	bc := &BlockChain{
+		ChainConfig: chainConfig,
+		Storage:     storage.NewStorage(chainConfig),
+		Tx_pool:     core.NewTxPool(),
+
+		//不停止时要用的
+		TXmig1_pool: core.NewTXmig1Pool(),
+		TXmig2_pool: core.NewTXmig2Pool(),
+		TXann_pool:  core.NewTXannPool(),
+		TXns_pool:   core.NewTXnsPool(),
+	}
+	//filepath
+	fp := "./record/triedb/" + chainConfig.ShardID + "_" + chainConfig.NodeID
+	// cache=0 和 handles=1 只要小于16，都会被设为16
+	bc.db, err = rawdb.NewLevelDBDatabase(fp, 0, 1, "accountState", false)
+	if err != nil {
+		log.Panic("cannot get the level db")
+	}
+
+	blockHash, err := bc.Storage.GetNewestBlockHash()
+	if err != nil {
+		if err.Error() == "newestBlockHash is not found" {
+			genesisBlock := bc.NewGenesisBlock()
+			bc.AddGenesisBlock(genesisBlock)
+			return bc, nil
+		}
+		log.Panic()
+	}
+
+	// there is a blockchain in the storage
+	block, err := bc.Storage.GetBlock(blockHash)
+	if err != nil {
+		log.Panic()
+	}
+	bc.CurrentBlock = block
+	// stateTree, err := bc.Storage.GetStatusTree()
+	// if err != nil {
+	// 	log.Panic()
+	// }
+	// bc.StatusTrie = stateTree
+	triedb := trie.NewDatabaseWithConfig(bc.db, &trie.Config{
+		Cache:     0,
+		Preimages: true,
+	})
+	bc.Triedb = triedb
+	// check the existence of the trie database
+	_, err = trie.New(trie.TrieID(common.BytesToHash(block.Header.StateRoot)), triedb)
+	if err != nil {
+		log.Panic()
+	}
+	fmt.Println("The status trie can be built")
+
+	return bc, nil
+}
+
+// 本地化存储，修改内存、存储至硬盘。返回要迁出账户的余额
+func (bc *BlockChain) AddBlock(block *core.Block) map[string]*big.Int {
+	iobegin := time.Now().UnixMilli()
+	bc.Storage.AddBlock(block)
+	var outbalance map[string]*big.Int
+
+	if !bc.ChainConfig.Stop_When_Migrating {
+		// 将迁入账户映射到本分片
+		for _, v := range block.TXmig2s {
+			account.Account2ShardLock.Lock()
+			account.Account2Shard[v.Address] = params.ShardTable[params.Config.ShardID]
+			account.AccountInOwnShard[v.Address] = true
+			account.Account2ShardLock.Unlock()
+		}
+	}
+
+	updatetree := time.Now().UnixMilli()
+	stateroothash, outbalance := bc.getUpdatedTreeOfState(1, block.Header.Number, block.Transactions, block.TXmig1s, block.TXmig2s, block.Anns, block.NSs)
+	if !bytes.Equal(block.Header.StateRoot, stateroothash){
+		log.Panicf("二者不等，Ins长度为%v\n", len(block.TXmig2s))
+	}
+	fmt.Printf("更新树花时间为: %v\n", time.Now().UnixMilli()-updatetree)
+
+	if !bc.ChainConfig.Stop_When_Migrating && params.Config.NodeID != "N0" {
+		// 将删除账户从本分片映射删去，并设为对应分片
+		for _, v := range block.Anns {
+			account.Account2ShardLock.Lock()
+			account.Account2Shard[v.Address] = v.ToshardID
+			delete(account.AccountInOwnShard, v.Address)
+			account.Account2ShardLock.Unlock()
+
+			if bc.ChainConfig.Lock_Acc_When_Migrating {
+				account.Lock_Acc_Lock.Lock()
+				delete(account.Lock_Acc, v.Address)
+				account.Lock_Acc_Lock.Unlock()
+			}
+		}
+	}
+
+	// 若要锁账户，就把账户锁住
+	if params.Config.Lock_Acc_When_Migrating && params.Config.NodeID != "N0" {
+		account.Lock_Acc_Lock.Lock()
+		for _, v := range block.TXmig1s {
+			account.Lock_Acc[v.Address] = true
+			// if params.Config.NodeID == "N0" {
+			// 	bc.Tx_pool.Locking_TX_Pools[k] = make([]*core.Transaction, 0)
+			// }
+		}
+		account.Lock_Acc_Lock.Unlock()
+	}
+
+	if params.Config.Fail && params.Config.Fail_Time+1 == block.Header.Number && params.Config.Lock_Acc_When_Migrating {
+		account.Lock_Acc_Lock.Lock()
+		account.Lock_Acc["489338d5e8d42e8c923d1f47361d979503d4ad68"] = false
+		account.Lock_Acc_Lock.Unlock()
+	}
+
+	bc.CurrentBlock = block
+
+	fmt.Printf("写数据库IO花时间为: %v\n", time.Now().UnixMilli()-iobegin)
+
+	// relay
+	// if bc.ChainConfig.NodeID == "N0" {
+	// 	bc.genRelayTxs(block)
+	// }
+	return outbalance
+}
+
+// func (bc *BlockChain) genRelayTxs(block *core.Block) {
+// 	for _, tx := range block.Transactions {
+// 		shardID := account.Addr2Shard(hex.EncodeToString(tx.Recipient))
+// 		if shardID != params.ShardTable[bc.ChainConfig.ShardID] {
+// 			bc.Tx_pool.AddRelayTx(tx, params.ShardTableInt2Str[shardID])
+// 		}
+// 	}
+// }
+
+func (bc *BlockChain) GenerateBlock(id int) *core.Block {
+	quota := params.Config.MaxMigSize
+	mig1s := []*core.TXmig1{}
+	mig2s := []*core.TXmig2{}
+	anns := []*core.TXann{}
+	// deleted := []*core.Delete{}
+	nss := []*core.TXns{}
+	if !params.Config.Stop_When_Migrating {
+		//得到新的映射（只有要改变的
+
+		if params.Config.Algorithm || params.Config.Pressure {
+			mig1s = bc.TXmig1_pool.FetchTXmig1s2Pack2()
+		} else {
+			mig1s, quota = bc.TXmig1_pool.FetchTXmig1s2Pack()
+		}
+
+		// bc.Tx_pool.Lock.Lock()
+		// new_migration := make(map[string]int)
+		// tmp, _ := json.Marshal(&bc.Tx_pool.Migration_Pool)
+		// _ = json.Unmarshal(tmp, &new_migration)
+		// bc.Tx_pool.Migration_Pool = make(map[string]int)
+		// bc.Tx_pool.Lock.Unlock()
+
+		// account.Account2ShardLock.Lock()
+		// //找到要迁移出去的
+		// for addr, shard := range new_migration {
+		// 	if account.AccountInOwnShard[addr] && shard != params.ShardTable[params.Config.ShardID] {
+		// 		out[addr] = shard
+		// 	}
+		// }
+		// account.Account2ShardLock.Unlock()
+
+		if !params.Config.Bu_Tong_Shi_Jian {
+			if params.Config.Algorithm || params.Config.Pressure {
+				mig2s = bc.TXmig2_pool.FetchTXmig2s2Pack2()
+			} else {
+				//将全部迁入请求包进来
+				mig2s, quota = bc.TXmig2_pool.FetchTXmig2s2Pack(quota)
+			}
+		} else if id == params.Config.Bu_Tong_Shi_Jian_Jian_Ge {
+			//将全部迁入请求包进来
+			mig2s, _ = bc.TXmig2_pool.FetchTXmig2s2Pack(10000000)
+		}
+
+		// //将全部该删除账户包进来
+		// if params.Config.Algorithm || params.Config.Pressure {
+		// 	deleted = bc.Delete_pool.FetchDels2Pack2()
+		// } else {
+		// 	deleted = bc.Delete_pool.FetchDels2Pack()
+		// }
+
+		//将全部announce包进来
+		if params.Config.Algorithm || params.Config.Pressure {
+			anns = bc.TXann_pool.FetchTXanns2Pack2()
+		} else {
+			anns, quota = bc.TXann_pool.FetchTXanns2Pack(quota)
+		}
+
+		//将全部加（减）钱请求包进来
+		if params.Config.Algorithm || params.Config.Pressure {
+			nss = bc.TXns_pool.FetchTXnss2Pack2()
+		} else {
+			nss, quota = bc.TXns_pool.FetchTXnss2Pack(quota)
+		}
+	}
+
+	txs := []*core.Transaction{}
+	queueLen := 0
+	if params.Config.Cross_Chain && id != 1 {
+		if params.Config.ShardID == "S0" && (params.Config.Fail || (!params.Config.Fail && !params.Config.Lock_Acc_When_Migrating)) {
+			txs, queueLen = bc.Tx_pool.FetchTxs2Pack(params.Config.MaxBlockSize, bc.CurrentBlock.Header.Number+1)
+		} else if params.Config.Lock_Acc_When_Migrating && params.Config.ShardID == "S1" && !params.Config.Fail {
+			account.Account2ShardLock.Lock()
+			if account.AccountInOwnShard["489338d5e8d42e8c923d1f47361d979503d4ad68"] {
+				account.Account2ShardLock.Unlock()
+				txs, queueLen = bc.Tx_pool.FetchTxs2Pack(params.Config.MaxBlockSize, bc.CurrentBlock.Header.Number+1)
+			} else {
+				account.Account2ShardLock.Unlock()
+			}
+		}
+	} else if (!params.Config.Bu_Tong_Bi_Li && !params.Config.Bu_Tong_Shi_Jian && !params.Config.Fail && !params.Config.Cross_Chain) || id != 1 {
+		if params.Config.Algorithm || params.Config.Pressure {
+			txs, queueLen = bc.Tx_pool.FetchTxs2Pack(params.Config.MaxBlockSize - len(mig1s) - len(mig2s) - len(anns) - len(nss), bc.CurrentBlock.Header.Number + 1)
+		} else {
+			txs, queueLen = bc.Tx_pool.FetchTxs2Pack(params.Config.MaxBlockSize - len(mig1s) - len(mig2s) - len(anns) - len(nss), bc.CurrentBlock.Header.Number + 1)
+			// txs = bc.Tx_pool.FetchTxs2Pack(params.Config.MaxBlockSize - params.Config.MaxMigSize + quota)
+		}
+	}
+
+	blockHeader := &core.BlockHeader{
+		ParentHash: bc.CurrentBlock.Hash,
+		Number:     bc.CurrentBlock.Header.Number + 1,
+		Time:       uint64(time.Now().Unix()),
+	}
+
+	block := core.NewBlock(blockHeader, txs, mig1s, mig2s, anns, nss)
+
+	//普通交易树
+	block.Header.TxHash = GetTxTreeRoot(txs)
+
+	//迁移交易树
+	block.Header.MigHash = GetMigTreeRoot(mig1s, mig2s, anns, nss)
+
+	//0 代表不更新到磁盘
+	block.Header.StateRoot, _ = bc.getUpdatedTreeOfState(0, blockHeader.Number, txs, mig1s, mig2s, anns, nss)
+
+	block.Hash = block.GetHash()
+
+	if !params.Config.Stop_When_Migrating {
+		if !params.Config.Lock_Acc_When_Migrating {
+			account.Outing_Acc_Before_Announce_Lock.Lock()
+			for _,lockedtxs := range bc.Tx_pool.Outing_Before_Announce_TX_Pools {
+				queueLen += len(lockedtxs)
+			}
+			account.Outing_Acc_Before_Announce_Lock.Unlock()
+		}else {
+			account.Lock_Acc_Lock.Lock()
+			for _,lockedtxs := range bc.Tx_pool.Locking_TX_Pools {
+				queueLen += len(lockedtxs)
+			}
+			account.Lock_Acc_Lock.Unlock()
+		}
+
+	}
+	s := fmt.Sprintf("%v %v", blockHeader.Number, queueLen)
+	queuelenlog.Write(strings.Split(s, " "))
+	queuelenlog.Flush()
+
+	return block
+}
+
+// 输出更新后的状态树 以及 要迁出的账户的余额
+func (bc *BlockChain) getUpdatedTreeOfState(commit int, height int, txs []*core.Transaction, mig1s []*core.TXmig1, mig2s []*core.TXmig2, anns []*core.TXann, nss []*core.TXns) ([]byte, map[string]*big.Int) {
+	// build trie from the triedb (in disk)
+	start_execute := time.Now().UnixMicro()
+	st, err := trie.New(trie.TrieID(common.BytesToHash(bc.CurrentBlock.Header.StateRoot)), bc.Triedb)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	mig2start := time.Now().UnixMicro()
+	if !bc.ChainConfig.Stop_When_Migrating {
+		// 将迁入账户加到状态树
+		for _, v := range mig2s {
+			hex_address, _ := hex.DecodeString(v.Address)
+			s_state_enc := st.Get(hex_address)
+			if s_state_enc == nil {
+				log.Panic()
+			}
+			account_state := account.DecodeAccountState(s_state_enc)
+			account_state.Balance.Set(v.Value)
+			account_state.Migrate = -1
+			account_state.Location = params.ShardTable[bc.ChainConfig.ShardID]
+			st.Update(hex_address, account_state.Encode())
+		}
+	}
+	mig2time := time.Now().UnixMicro() - mig2start
+
+	// stateTree := bc.preExecute(txs)
+	outbalance := make(map[string]*big.Int)
+
+	txstart := time.Now().UnixMicro()
+	for _, tx := range txs {
+		// 确保发送地址属于此分片，即此交易不是其它分片发来的relay交易
+		// if account.Addr2Shard(hex.EncodeToString(tx.Sender)) == params.ShardTable[bc.ChainConfig.ShardID] {
+		if !tx.IsRelay && !tx.Relay_Lock {
+			s_state_enc := st.Get(tx.Sender)
+			if s_state_enc == nil {
+				fmt.Printf("sender属于该分片吗：%v\n", account.AccountInOwnShard[hex.EncodeToString(tx.Sender)])
+				fmt.Printf("sender地址为：%v\n", hex.EncodeToString(tx.Sender))
+				fmt.Printf("sender属于分片：%v\n", account.Account2Shard[hex.EncodeToString(tx.Sender)])
+				fmt.Printf("rec地址为：%v\n", hex.EncodeToString(tx.Recipient))
+				fmt.Printf("rec属于分片：%v\n", account.Account2Shard[hex.EncodeToString(tx.Recipient)])
+				log.Panic()
+			}
+			account_state := account.DecodeAccountState(s_state_enc)
+			account_state.Balance.Sub(account_state.Balance, tx.Value)
+			st.Update(tx.Sender, account_state.Encode())
+		}
+
+
+		r_state_enc := st.Get(tx.Recipient)
+		if r_state_enc == nil {
+			fmt.Printf("rec属于该分片吗：%v\n", account.AccountInOwnShard[hex.EncodeToString(tx.Recipient)])
+			fmt.Printf("rec地址为：%v\n", hex.EncodeToString(tx.Recipient))
+			fmt.Printf("rec属于分片：%v\n", account.Account2Shard[hex.EncodeToString(tx.Recipient)])
+			fmt.Printf("txid：%v\n", tx.Id)
+			log.Panic()
+		}
+		account_state := account.DecodeAccountState(r_state_enc)
+		// 接收地址不在此分片，不对该状态进行修改
+		if account_state.Location != params.ShardTable[bc.ChainConfig.ShardID] {
+			continue
+			// 接收者为锁定账户，不对该状态进行修改
+		} else if account_state.Migrate != -1 && params.Config.Lock_Acc_When_Migrating{
+			continue
+		}
+
+		// 接收者为锁定账户，不对该状态进行修改
+		// if params.Config.RelayLock && tx.Rec_Suppose_on_chain == height {
+		// 	continue
+		// }
+
+		// 接收者为锁定账户，不对该状态进行修改
+		// if params.Config.Lock_Acc_When_Migrating {
+		// 	account.Lock_Acc_Lock.Lock()
+		// 	if account.Lock_Acc[hex.EncodeToString(tx.Recipient)] {
+		// 		account.Lock_Acc_Lock.Unlock()
+		// 		continue
+		// 	}
+		// 	account.Lock_Acc_Lock.Unlock()
+		// }
+
+		
+		account_state.Balance.Add(account_state.Balance, tx.Value)
+		if commit == 1 && account_state.Migrate != -1 {
+			tx.HalfLock = true
+		}
+		st.Update(tx.Recipient, account_state.Encode())
+
+	}
+	txtime := time.Now().UnixMicro() - txstart
+
+	mig1time := int64(0)
+	anntime := int64(0)
+	nstime := int64(0)
+	if !bc.ChainConfig.Stop_When_Migrating {
+		// 状态树中记录要迁出的账户的去向
+		mig1start := time.Now().UnixMicro()
+		for _, v := range mig1s {
+			hex_address, _ := hex.DecodeString(v.Address)
+			encoded := st.Get(hex_address)
+			if encoded == nil {
+				log.Panic()
+			}
+			account_state := account.DecodeAccountState(encoded)
+			account_state.Migrate = v.ToshardID
+			outbalance[v.Address] = new(big.Int).Set(account_state.Balance)
+			st.Update(hex_address, account_state.Encode())
+		}
+		mig1time = time.Now().UnixMicro() - mig1start
+
+		// 状态树中记录announce的账户
+		annstart := time.Now().UnixMicro()
+		for _, v := range anns {
+			hex_address, _ := hex.DecodeString(v.Address)
+			s_state_enc := st.Get(hex_address)
+			if s_state_enc == nil {
+				log.Panic()
+			}
+			account_state := account.DecodeAccountState(s_state_enc)
+			account_state.Migrate = -1
+			account_state.Location = v.ToshardID
+			st.Update(hex_address, account_state.Encode())
+			// encoded := st.Get(hex_address)
+			// account_state := &account.AccountState{
+			// 	Migrate:  -1,
+			// 	Location: v.ToshardID,
+			// }
+			// if encoded != nil {
+			// 	account_state = account.DecodeAccountState(encoded)
+			// 	account_state.Migrate = -1
+			// 	account_state.Location = v.ToshardID
+			// }
+
+			// st.Update(hex_address, account_state.Encode())
+		}
+		anntime = time.Now().UnixMicro() - annstart
+
+		// // 将迁入账户加到状态树
+		// for _, v := range in1s {
+		// 	hex_address, _ := hex.DecodeString(v.Address)
+
+		// 	account_state := &account.AccountState{
+		// 		Balance: v.Value,
+		// 		Migrate: -1,
+		// 	}
+		// 	stateTree.Put(hex_address, account_state.Encode())
+		// }
+
+		// // 从状态树中删除指定账户
+		// for _, v := range deletes {
+		// 	hex_address, _ := hex.DecodeString(v.Address)
+		// 	stateTree.Delete(hex_address)
+		// }
+
+		// 将加减钱改到状态树
+		nsstart := time.Now().UnixMicro()
+		for _, v := range nss {
+			hex_address, _ := hex.DecodeString(v.Address)
+
+			encoded := st.Get(hex_address)
+			if encoded == nil {
+				log.Panic()
+			}
+			account_state := account.DecodeAccountState(encoded)
+			account_state.Balance.Add(account_state.Balance, v.Change)
+			st.Update(hex_address, account_state.Encode())
+		}
+		nstime = time.Now().UnixMicro() - nsstart
+	}
+
+	st_hash_bytes := st.Hash().Bytes()
+	//只是生成区块
+	if commit == 0 {
+		return st_hash_bytes, outbalance
+	}
+
+	//区块上链，要写到磁盘
+	// commit the memory trie to the database in the disk
+	rt, ns := st.Commit(false)
+	//空块
+	if ns == nil {
+		blocktime := time.Now().UnixMicro() - start_execute
+		if commit == 1 && params.Config.NodeID == "N0" {
+			s := fmt.Sprintf("%v %v %v %v %v %v %v", height, blocktime, txtime, mig1time, mig2time, anntime, nstime)
+			blocktimelog.Write(strings.Split(s, " "))
+			blocktimelog.Flush()
+		}
+		return st_hash_bytes, outbalance
+	}
+	err = bc.Triedb.Update(trie.NewWithNodeSet(ns))
+	if err != nil {
+		log.Panic()
+	}
+	err = bc.Triedb.Commit(rt, false)
+	if err != nil {
+		log.Panic(err)
+	}
+	blocktime := time.Now().UnixMicro() - start_execute
+	if commit == 1 && params.Config.NodeID == "N0" {
+		s := fmt.Sprintf("%v %v %v %v %v %v %v", height, blocktime, txtime, mig1time, mig2time, anntime, nstime)
+		blocktimelog.Write(strings.Split(s, " "))
+		blocktimelog.Flush()
+	}
+	return rt.Bytes(), outbalance
+}
+
+func (bc *BlockChain) NewGenesisBlock() *core.Block {
+	blockHeader := &core.BlockHeader{
+		Number: 0,
+		Time:   uint64(time.Date(2022, 05, 28, 17, 11, 0, 0, time.Local).Unix()),
+	}
+
+	txs := make([]*core.Transaction, 0)
+	mig1s := make([]*core.TXmig1, 0)
+	mig2s := make([]*core.TXmig2, 0)
+	anns := make([]*core.TXann, 0)
+	nss := make([]*core.TXns, 0)
+	block := core.NewBlock(blockHeader, txs, mig1s, mig2s, anns, nss)
+
+	// build a new trie database by db
+	triedb := trie.NewDatabaseWithConfig(bc.db, &trie.Config{
+		Cache:     0,
+		Preimages: true,
+	})
+	bc.Triedb = triedb
+	statusTrie := trie.NewEmpty(triedb)
+	block.Header.StateRoot = bc.genesisStateTree(statusTrie.Hash().Bytes())
+	block.Header.TxHash = GetTxTreeRoot(txs)
+	block.Hash = block.GetHash()
+
+	return block
+}
+
+func (bc *BlockChain) AddGenesisBlock(block *core.Block) {
+	bc.Storage.AddBlock(block)
+
+	// 重新从数据库中获取最新内容
+	newestBlockHash, err := bc.Storage.GetNewestBlockHash()
+	if err != nil {
+		log.Panic()
+	}
+	curBlock, err := bc.Storage.GetBlock(newestBlockHash)
+	if err != nil {
+		log.Panic()
+	}
+	bc.CurrentBlock = curBlock
+}
+
+// 创世区块中初始化几个账户
+// func genesisStateTree() *trie.Trie {
+// 	trie := trie.NewTrie()
+// 	for i := 0; i < len(params.Init_addrs); i++ {
+// 		address := params.Init_addrs[i]
+// 		if utils.Addr2Shard(address) != params.ShardTable[params.Config.ShardID] {
+// 			continue
+// 		}
+// 		value, _ := strconv.ParseFloat(params.Init_balance, 64)
+// 		accountState := &account.AccountState{
+// 			Balance: value,
+// 			Migrate: -1,
+// 		}
+// 		hex_address, _ := hex.DecodeString(address)
+// 		trie.Put(hex_address, accountState.Encode())
+// 	}
+// 	return trie
+// }
+
+// 创世区块中初始化几个账户
+func (bc *BlockChain) genesisStateTree(stateroot []byte) []byte {
+	// build trie from the triedb (in disk)
+	st, err := trie.New(trie.TrieID(common.BytesToHash(stateroot)), bc.Triedb)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	for i := 0; i < len(params.Init_addrs); i++ {
+		address := params.Init_addrs[i]
+		// if utils.Addr2Shard(address) != params.ShardTable[params.Config.ShardID] {
+		// 	continue
+		// }
+		value := new(big.Int)
+		value, ok := value.SetString(params.Init_balance, 10)
+		if !ok {
+			log.Panic()
+		}
+		accountState := &account.AccountState{
+			Balance:  value,
+			Migrate:  -1,
+			Location: utils.Addr2Shard(address),
+		}
+		hex_address, _ := hex.DecodeString(address)
+		st.Update(hex_address, accountState.Encode())
+	}
+	// commit the memory trie to the database in the disk
+	rt, ns := st.Commit(false)
+	err = bc.Triedb.Update(trie.NewWithNodeSet(ns))
+	if err != nil {
+		log.Panic()
+	}
+	err = bc.Triedb.Commit(rt, false)
+	if err != nil {
+		log.Panic(err)
+	}
+	return rt.Bytes()
 }
 
 // Get the transaction root, this root can be used to check the transactions
@@ -43,337 +654,28 @@ func GetTxTreeRoot(txs []*core.Transaction) []byte {
 	return transactionTree.Hash().Bytes()
 }
 
-// Write Partition Map
-func (bc *BlockChain) Update_PartitionMap(key string, val uint64) {
-	bc.pmlock.Lock()
-	defer bc.pmlock.Unlock()
-	bc.PartitionMap[key] = val
+// Get the transaction root, this root can be used to check the transactions
+func GetMigTreeRoot(mig1s []*core.TXmig1, mig2s []*core.TXmig2, anns []*core.TXann, nss []*core.TXns) []byte {
+	// use a memory trie database to do this, instead of disk database
+	triedb := trie.NewDatabase(rawdb.NewMemoryDatabase())
+	transactionTree := trie.NewEmpty(triedb)
+	for _, tx := range mig1s {
+		transactionTree.Update(tx.Hash(), tx.Encode())
+	}
+	for _, tx := range mig2s {
+		transactionTree.Update(tx.Hash(), tx.Encode())
+	}
+	for _, tx := range anns {
+		transactionTree.Update(tx.Hash(), tx.Encode())
+	}
+	for _, tx := range nss {
+		transactionTree.Update(tx.Hash(), tx.Encode())
+	}
+	return transactionTree.Hash().Bytes()
 }
 
-// Get parition (if not exist, return default)
-func (bc *BlockChain) Get_PartitionMap(key string) uint64 {
-	bc.pmlock.RLock()
-	defer bc.pmlock.RUnlock()
-	if _, ok := bc.PartitionMap[key]; !ok {
-		return uint64(utils.Addr2Shard(key))
-	}
-	return bc.PartitionMap[key]
-}
+func (bc *BlockChain) IsBlockValid(block *core.Block) bool {
+	// todo
 
-// Send a transaction to the pool (need to decide which pool should be sended)
-func (bc *BlockChain) SendTx2Pool(txs []*core.Transaction) {
-	bc.Txpool.AddTxs2Pool(txs)
-}
-
-// handle transactions and modify the status trie
-func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
-	fmt.Printf("The len of txs is %d\n", len(txs))
-	// the empty block (length of txs is 0) condition
-	if len(txs) == 0 {
-		return common.BytesToHash(bc.CurrentBlock.Header.StateRoot)
-	}
-	// build trie from the triedb (in disk)
-	st, err := trie.New(trie.TrieID(common.BytesToHash(bc.CurrentBlock.Header.StateRoot)), bc.triedb)
-	if err != nil {
-		log.Panic(err)
-	}
-	cnt := 0
-	// handle transactions, the signature check is ignored here
-	for i, tx := range txs {
-		// fmt.Printf("tx %d: %s, %s\n", i, tx.Sender, tx.Recipient)
-		// senderIn := false
-		if !tx.Relayed && (bc.Get_PartitionMap(tx.Sender) == bc.ChainConfig.ShardID || tx.HasBroker) {
-			// senderIn = true
-			// fmt.Printf("the sender %s is in this shard %d, \n", tx.Sender, bc.ChainConfig.ShardID)
-			// modify local accountstate
-			s_state_enc, _ := st.Get([]byte(tx.Sender))
-			var s_state *core.AccountState
-			if s_state_enc == nil {
-				// fmt.Println("missing account SENDER, now adding account")
-				ib := new(big.Int)
-				ib.Add(ib, params.Init_Balance)
-				s_state = &core.AccountState{
-					Nonce:   uint64(i),
-					Balance: ib,
-				}
-			} else {
-				s_state = core.DecodeAS(s_state_enc)
-			}
-			s_balance := s_state.Balance
-			if s_balance.Cmp(tx.Value) == -1 {
-				fmt.Printf("the balance is less than the transfer amount\n")
-				continue
-			}
-			s_state.Deduct(tx.Value)
-			st.Update([]byte(tx.Sender), s_state.Encode())
-			cnt++
-		}
-		// recipientIn := false
-		if bc.Get_PartitionMap(tx.Recipient) == bc.ChainConfig.ShardID || tx.HasBroker {
-			// fmt.Printf("the recipient %s is in this shard %d, \n", tx.Recipient, bc.ChainConfig.ShardID)
-			// recipientIn = true
-			// modify local state
-			r_state_enc, _ := st.Get([]byte(tx.Recipient))
-			var r_state *core.AccountState
-			if r_state_enc == nil {
-				// fmt.Println("missing account RECIPIENT, now adding account")
-				ib := new(big.Int)
-				ib.Add(ib, params.Init_Balance)
-				r_state = &core.AccountState{
-					Nonce:   uint64(i),
-					Balance: ib,
-				}
-			} else {
-				r_state = core.DecodeAS(r_state_enc)
-			}
-			r_state.Deposit(tx.Value)
-			st.Update([]byte(tx.Recipient), r_state.Encode())
-			cnt++
-		}
-
-		// if senderIn && !recipientIn {
-		// 	// change this part to the pbft stage
-		// 	fmt.Printf("this transaciton is cross-shard txs, will be sent to relaypool later\n")
-		// }
-	}
-	// commit the memory trie to the database in the disk
-	if cnt == 0 {
-		return common.BytesToHash(bc.CurrentBlock.Header.StateRoot)
-	}
-	rt, ns := st.Commit(false)
-	err = bc.triedb.Update(trie.NewWithNodeSet(ns))
-	if err != nil {
-		log.Panic()
-	}
-	err = bc.triedb.Commit(rt, false)
-	if err != nil {
-		log.Panic(err)
-	}
-	fmt.Println("modified account number is ", cnt)
-	return rt
-}
-
-// generate (mine) a block, this function return a block
-func (bc *BlockChain) GenerateBlock() *core.Block {
-	// pack the transactions from the txpool
-	txs := bc.Txpool.PackTxs(bc.ChainConfig.BlockSize)
-	bh := &core.BlockHeader{
-		ParentBlockHash: bc.CurrentBlock.Hash,
-		Number:          bc.CurrentBlock.Header.Number + 1,
-		Time:            time.Now(),
-	}
-	// handle transactions to build root
-	rt := bc.GetUpdateStatusTrie(txs)
-
-	bh.StateRoot = rt.Bytes()
-	bh.TxRoot = GetTxTreeRoot(txs)
-	b := core.NewBlock(bh, txs)
-	b.Header.Miner = 0
-	b.Hash = b.Header.Hash()
-	return b
-}
-
-// new a genisis block, this func will be invoked only once for a blockchain object
-func (bc *BlockChain) NewGenisisBlock() *core.Block {
-	body := make([]*core.Transaction, 0)
-	bh := &core.BlockHeader{
-		Number: 0,
-	}
-	// build a new trie database by db
-	triedb := trie.NewDatabaseWithConfig(bc.db, &trie.Config{
-		Cache:     0,
-		Preimages: true,
-	})
-	bc.triedb = triedb
-	statusTrie := trie.NewEmpty(triedb)
-	bh.StateRoot = statusTrie.Hash().Bytes()
-	bh.TxRoot = GetTxTreeRoot(body)
-	b := core.NewBlock(bh, body)
-	b.Hash = b.Header.Hash()
-	return b
-}
-
-// add the genisis block in a blockchain
-func (bc *BlockChain) AddGenisisBlock(gb *core.Block) {
-	bc.Storage.AddBlock(gb)
-	newestHash, err := bc.Storage.GetNewestBlockHash()
-	if err != nil {
-		log.Panic()
-	}
-	curb, err := bc.Storage.GetBlock(newestHash)
-	if err != nil {
-		log.Panic()
-	}
-	bc.CurrentBlock = curb
-}
-
-// add a block
-func (bc *BlockChain) AddBlock(b *core.Block) {
-	if b.Header.Number != bc.CurrentBlock.Header.Number+1 {
-		fmt.Println("the block height is not correct")
-		return
-	}
-	// if this block is mined by the node, the transactions is no need to be handled again
-	if b.Header.Miner != bc.ChainConfig.NodeID {
-		rt := bc.GetUpdateStatusTrie(b.Body)
-		fmt.Println(bc.CurrentBlock.Header.Number+1, "the root = ", rt.Bytes())
-	}
-	bc.CurrentBlock = b
-	bc.Storage.AddBlock(b)
-}
-
-// new a blockchain.
-// the ChainConfig is pre-defined to identify the blockchain; the db is the status trie database in disk
-func NewBlockChain(cc *params.ChainConfig, db ethdb.Database) (*BlockChain, error) {
-	fmt.Println("Generating a new blockchain", db)
-	bc := &BlockChain{
-		db:           db,
-		ChainConfig:  cc,
-		Txpool:       core.NewTxPool(),
-		Storage:      storage.NewStorage(cc),
-		PartitionMap: make(map[string]uint64),
-	}
-	curHash, err := bc.Storage.GetNewestBlockHash()
-	if err != nil {
-		fmt.Println("Get newest block hash err")
-		// if the Storage bolt database cannot find the newest blockhash,
-		// it means the blockchain should be built in height = 0
-		if err.Error() == "cannot find the newest block hash" {
-			genisisBlock := bc.NewGenisisBlock()
-			bc.AddGenisisBlock(genisisBlock)
-			fmt.Println("New genisis block")
-			return bc, nil
-		}
-		log.Panic()
-	}
-
-	// there is a blockchain in the storage
-	fmt.Println("Existing blockchain found")
-	curb, err := bc.Storage.GetBlock(curHash)
-	if err != nil {
-		log.Panic()
-	}
-
-	bc.CurrentBlock = curb
-	triedb := trie.NewDatabaseWithConfig(db, &trie.Config{
-		Cache:     0,
-		Preimages: true,
-	})
-	bc.triedb = triedb
-	// check the existence of the trie database
-	_, err = trie.New(trie.TrieID(common.BytesToHash(curb.Header.StateRoot)), triedb)
-	if err != nil {
-		log.Panic()
-	}
-	fmt.Println("The status trie can be built")
-	fmt.Println("Generated a new blockchain successfully")
-	return bc, nil
-}
-
-// check a block is valid or not in this blockchain config
-func (bc *BlockChain) IsValidBlock(b *core.Block) error {
-	if string(b.Header.ParentBlockHash) != string(bc.CurrentBlock.Hash) {
-		fmt.Println("the parentblock hash is not equal to the current block hash")
-		return errors.New("the parentblock hash is not equal to the current block hash")
-	} else if string(GetTxTreeRoot(b.Body)) != string(b.Header.TxRoot) {
-		fmt.Println("the transaction root is wrong")
-		return errors.New("the transaction root is wrong")
-	}
-	return nil
-}
-
-// add accounts
-func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
-	fmt.Printf("The len of accounts is %d, now adding the accounts\n", len(ac))
-
-	bh := &core.BlockHeader{
-		ParentBlockHash: bc.CurrentBlock.Hash,
-		Number:          bc.CurrentBlock.Header.Number + 1,
-		Time:            time.Time{},
-	}
-	// handle transactions to build root
-	rt := common.BytesToHash(bc.CurrentBlock.Header.StateRoot)
-	if len(ac) != 0 {
-		st, err := trie.New(trie.TrieID(common.BytesToHash(bc.CurrentBlock.Header.StateRoot)), bc.triedb)
-		if err != nil {
-			log.Panic(err)
-		}
-		for i, addr := range ac {
-			if bc.Get_PartitionMap(addr) == bc.ChainConfig.ShardID {
-				ib := new(big.Int)
-				ib.Add(ib, as[i].Balance)
-				new_state := &core.AccountState{
-					Balance: ib,
-					Nonce:   as[i].Nonce,
-				}
-				st.Update([]byte(addr), new_state.Encode())
-			}
-		}
-		rrt, ns := st.Commit(false)
-		err = bc.triedb.Update(trie.NewWithNodeSet(ns))
-		if err != nil {
-			log.Panic(err)
-		}
-		err = bc.triedb.Commit(rt, false)
-		if err != nil {
-			log.Panic(err)
-		}
-		rt = rrt
-	}
-
-	emptyTxs := make([]*core.Transaction, 0)
-	bh.StateRoot = rt.Bytes()
-	bh.TxRoot = GetTxTreeRoot(emptyTxs)
-	b := core.NewBlock(bh, emptyTxs)
-	b.Header.Miner = 0
-	b.Hash = b.Header.Hash()
-
-	bc.CurrentBlock = b
-	bc.Storage.AddBlock(b)
-}
-
-// fetch accounts
-func (bc *BlockChain) FetchAccounts(addrs []string) []*core.AccountState {
-	res := make([]*core.AccountState, 0)
-	st, err := trie.New(trie.TrieID(common.BytesToHash(bc.CurrentBlock.Header.StateRoot)), bc.triedb)
-	if err != nil {
-		log.Panic(err)
-	}
-	for _, addr := range addrs {
-		asenc, _ := st.Get([]byte(addr))
-		var state_a *core.AccountState
-		if asenc == nil {
-			ib := new(big.Int)
-			ib.Add(ib, params.Init_Balance)
-			state_a = &core.AccountState{
-				Nonce:   uint64(0),
-				Balance: ib,
-			}
-		} else {
-			state_a = core.DecodeAS(asenc)
-		}
-		res = append(res, state_a)
-	}
-	return res
-}
-
-// close a blockChain, close the database inferfaces
-func (bc *BlockChain) CloseBlockChain() {
-	bc.Storage.DataBase.Close()
-	bc.triedb.CommitPreimages()
-}
-
-// print the details of a blockchain
-func (bc *BlockChain) PrintBlockChain() string {
-	vals := []interface{}{
-		bc.CurrentBlock.Header.Number,
-		bc.CurrentBlock.Hash,
-		bc.CurrentBlock.Header.StateRoot,
-		bc.CurrentBlock.Header.Time,
-		bc.triedb,
-		// len(bc.Txpool.RelayPool[1]),
-	}
-	res := fmt.Sprintf("%v\n", vals)
-	fmt.Println(res)
-	return res
+	return true
 }

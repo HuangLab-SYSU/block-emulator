@@ -1,47 +1,55 @@
-// Definition of transaction
-
 package core
 
 import (
-	"blockEmulator/utils"
+	"blockEmulator/account"
 	"bytes"
 	"crypto/sha256"
-	"encoding/gob"
 	"fmt"
 	"log"
 	"math/big"
-	"time"
+
+	"encoding/gob"
+	"encoding/hex"
 )
 
 type Transaction struct {
-	Sender    utils.Address
-	Recipient utils.Address
-	Nonce     uint64
-	Signature []byte // not implemented now.
-	Value     *big.Int
-	TxHash    []byte
-
-	Time time.Time // the time adding in pool
-
-	// used in transaction relaying
-	Relayed bool
-	// used in broker, if the tx is not a broker1 or broker2 tx, these values should be empty.
-	HasBroker      bool
-	SenderIsBroker bool
-	OriginalSender utils.Address
-	FinalRecipient utils.Address
-	RawTxHash      []byte
+	Sender             []byte `json:"sender"`
+	Recipient          []byte `json:"recipient"`
+	TxHash             []byte
+	Id                 int
+	Success            bool
+	IsRelay            bool
+	SenLock            bool
+	RecLock            bool
+	Value              *big.Int `json:"value"`
+	RequestTime        int64
+	Second_RequestTime int64
+	CommitTime         int64
+	LockTime           int64
+	UnlockTime         int64
+	LockTime2          int64
+	UnlockTime2        int64
+	HalfLock           bool
+	Rec_Suppose_on_chain   int
+	Sen_Suppose_on_chain   int
+	Relay_Lock         bool
 }
 
-func (tx *Transaction) PrintTx() string {
+func (tx *Transaction) PrintTx() {
 	vals := []interface{}{
-		tx.Sender[:],
-		tx.Recipient[:],
+		hex.EncodeToString(tx.Sender),
+		account.Addr2Shard(hex.EncodeToString(tx.Sender)),
+		hex.EncodeToString(tx.Recipient),
+		account.Addr2Shard(hex.EncodeToString(tx.Recipient)),
 		tx.Value,
-		string(tx.TxHash[:]),
+		// hex.EncodeToString(tx.TxHash),
 	}
-	res := fmt.Sprintf("%v\n", vals)
-	return res
+	fmt.Printf("%v\n", vals)
+}
+
+func (tx *Transaction) Hash() []byte {
+	hash := sha256.Sum256(tx.Encode())
+	return hash[:]
 }
 
 // Encode transaction for storing
@@ -57,7 +65,6 @@ func (tx *Transaction) Encode() []byte {
 	return buff.Bytes()
 }
 
-// Decode transaction
 func DecodeTx(to_decode []byte) *Transaction {
 	var tx Transaction
 
@@ -68,24 +75,4 @@ func DecodeTx(to_decode []byte) *Transaction {
 	}
 
 	return &tx
-}
-
-// new a transaction
-func NewTransaction(sender, recipient string, value *big.Int, nonce uint64) *Transaction {
-	tx := &Transaction{
-		Sender:    sender,
-		Recipient: recipient,
-		Value:     value,
-		Nonce:     nonce,
-	}
-
-	hash := sha256.Sum256(tx.Encode())
-	tx.TxHash = hash[:]
-	tx.Relayed = false
-	tx.FinalRecipient = ""
-	tx.OriginalSender = ""
-	tx.RawTxHash = nil
-	tx.HasBroker = false
-	tx.SenderIsBroker = false
-	return tx
 }
