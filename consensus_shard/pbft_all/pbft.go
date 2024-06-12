@@ -234,14 +234,12 @@ func (p *PbftConsensusNode) TcpListen() {
 // When receiving a stop message, this node try to stop.
 func (p *PbftConsensusNode) WaitToStop() {
 	p.pl.Plog.Println("handling stop message")
-	if p.NodeID == p.view {
-		go func() { p.pStop <- 1 }()
-	}
 	p.stopSignal.Store(true)
 	networks.CloseAllConnInPool()
-	p.closePbft()
-	p.pl.Plog.Println("handled stop message")
 	p.tcpln.Close()
+	p.closePbft()
+	p.pl.Plog.Println("handled stop message in TCPListen Routine")
+	p.pStop <- 1
 }
 
 // close the pbft

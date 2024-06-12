@@ -3,7 +3,6 @@ package pbft_all
 import (
 	"blockEmulator/message"
 	"blockEmulator/networks"
-	"blockEmulator/params"
 	"blockEmulator/shard"
 	"encoding/json"
 	"fmt"
@@ -13,50 +12,53 @@ import (
 
 // this func is only invoked by main node
 func (p *PbftConsensusNode) Propose() {
-	if p.view != p.NodeID {
-		return
-	}
+	// wait other nodes to start TCPlistening, sleep 5 sec.
+	time.Sleep(time.Second * 5)
+	nextRoundBeginSignal := make(chan bool)
+	go func() {
+		for {
+			time.Sleep(time.Duration(int64(p.pbftChainConfig.BlockInterval)) * time.Millisecond)
+			// send a signal to another GO-Routine. It will block until a GO-Routine try to fetch data from this channel.
+			nextRoundBeginSignal <- true
+		}
+	}()
+
 	for {
 		select {
-		case <-p.pStop:
-			p.pl.Plog.Printf("S%dN%d stop...\n", p.ShardID, p.NodeID)
-
-			// Forward stop message to other nodes in this shard.
-			stopmsg := message.MergeMessage(message.CStop, []byte("this is a stop message~"))
-			p.pl.Plog.Println("main node: now sending cstop message to all nodes")
-			for nid := 1; nid < params.NodesInShard; nid++ {
-				networks.TcpDial(stopmsg, params.IPmap_nodeTable[p.ShardID][(uint64(nid))])
+		case <-nextRoundBeginSignal:
+			// if this node is not leader, do not propose.
+			if p.view != p.NodeID {
+				continue
 			}
+			p.sequenceLock.Lock()
+			p.pl.Plog.Printf("S%dN%d get sequenceLock locked, now trying to propose...\n", p.ShardID, p.NodeID)
+			// propose
+			// implement interface to generate propose
+			_, r := p.ihm.HandleinPropose()
+
+			digest := getDigest(r)
+			p.requestPool[string(digest)] = r
+			p.pl.Plog.Printf("S%dN%d put the request into the pool ...\n", p.ShardID, p.NodeID)
+
+			ppmsg := message.PrePrepare{
+				RequestMsg: r,
+				Digest:     digest,
+				SeqID:      p.sequenceID,
+			}
+			p.height2Digest[p.sequenceID] = string(digest)
+			// marshal and broadcast
+			ppbyte, err := json.Marshal(ppmsg)
+			if err != nil {
+				log.Panic()
+			}
+			msg_send := message.MergeMessage(message.CPrePrepare, ppbyte)
+			networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+			p.pbftStage.Store(2)
+
+		case <-p.pStop:
+			p.pl.Plog.Printf("S%dN%d get stopSignal in Propose Routine, now stop...\n", p.ShardID, p.NodeID)
 			return
-
-		default:
 		}
-		time.Sleep(time.Duration(int64(p.pbftChainConfig.BlockInterval)) * time.Millisecond)
-
-		p.sequenceLock.Lock()
-		p.pl.Plog.Printf("S%dN%d get sequenceLock locked, now trying to propose...\n", p.ShardID, p.NodeID)
-		// propose
-		// implement interface to generate propose
-		_, r := p.ihm.HandleinPropose()
-
-		digest := getDigest(r)
-		p.requestPool[string(digest)] = r
-		p.pl.Plog.Printf("S%dN%d put the request into the pool ...\n", p.ShardID, p.NodeID)
-
-		ppmsg := message.PrePrepare{
-			RequestMsg: r,
-			Digest:     digest,
-			SeqID:      p.sequenceID,
-		}
-		p.height2Digest[p.sequenceID] = string(digest)
-		// marshal and broadcast
-		ppbyte, err := json.Marshal(ppmsg)
-		if err != nil {
-			log.Panic()
-		}
-		msg_send := message.MergeMessage(message.CPrePrepare, ppbyte)
-		networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
-		p.pbftStage.Store(2)
 	}
 }
 
