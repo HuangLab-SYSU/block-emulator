@@ -1,5 +1,8 @@
 # Version Updates
 
+## 2024/06/12
+1. **Fine-tune Lock**: The source codes of **Fine-tune Lock**(INFOCOM'24) has been added to the branch **Fine-tune Lock**. 
+
 ## 2024/06/11 
 1. **Bug fixed**: Fixed some bugs in the PBFT consensus, which could cause PBFT consensus nodes to discard early arriving messages in cases of unstable network latency.
 
