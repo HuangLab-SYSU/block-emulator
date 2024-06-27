@@ -30,7 +30,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendPartitionReady() {
 	send_msg := message.MergeMessage(message.CPartitionReady, pByte)
 	for sid := 0; sid < int(cphm.pbftNode.pbftChainConfig.ShardNums); sid++ {
 		if sid != int(pr.FromShard) {
-			networks.TcpDial(send_msg, cphm.pbftNode.ip_nodeTable[uint64(sid)][0])
+			go networks.TcpDial(send_msg, cphm.pbftNode.ip_nodeTable[uint64(sid)][0])
 		}
 	}
 	cphm.pbftNode.pl.Plog.Print("Ready for partition\n")

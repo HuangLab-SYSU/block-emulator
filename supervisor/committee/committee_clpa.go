@@ -15,6 +15,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -26,6 +27,7 @@ type CLPACommitteeModule struct {
 	batchDataNum int
 
 	// additional variants
+	curEpoch            int32
 	clpaLock            sync.Mutex
 	clpaGraph           *partition.CLPAState
 	modifiedMap         map[string]uint64
@@ -55,6 +57,7 @@ func NewCLPACommitteeModule(Ip_nodeTable map[uint64]map[uint64]string, Ss *signa
 		IpNodeTable:         Ip_nodeTable,
 		Ss:                  Ss,
 		sl:                  sl,
+		curEpoch:            0,
 	}
 }
 
@@ -107,7 +110,7 @@ func (ccm *CLPACommitteeModule) MsgSendingControl() {
 	defer txfile.Close()
 	reader := csv.NewReader(txfile)
 	txlist := make([]*core.Transaction, 0) // save the txs in this epoch (round)
-
+	clpaCnt := 0
 	for {
 		data, err := reader.Read()
 		if err == io.EOF {
@@ -138,15 +141,21 @@ func (ccm *CLPACommitteeModule) MsgSendingControl() {
 
 		if !ccm.clpaLastRunningTime.IsZero() && time.Since(ccm.clpaLastRunningTime) >= time.Duration(ccm.clpaFreq)*time.Second {
 			ccm.clpaLock.Lock()
+			clpaCnt++
 			mmap, _ := ccm.clpaGraph.CLPA_Partition()
+
 			ccm.clpaMapSend(mmap)
 			for key, val := range mmap {
 				ccm.modifiedMap[key] = val
 			}
 			ccm.clpaReset()
 			ccm.clpaLock.Unlock()
-			time.Sleep(10 * time.Second)
+
+			for atomic.LoadInt32(&ccm.curEpoch) != int32(clpaCnt) {
+				time.Sleep(time.Second)
+			}
 			ccm.clpaLastRunningTime = time.Now()
+			ccm.sl.Slog.Println("Next CLPA epoch begins. ")
 		}
 
 		if ccm.nowDataNum == ccm.dataTotalNum {
@@ -159,6 +168,7 @@ func (ccm *CLPACommitteeModule) MsgSendingControl() {
 		time.Sleep(time.Second)
 		if time.Since(ccm.clpaLastRunningTime) >= time.Duration(ccm.clpaFreq)*time.Second {
 			ccm.clpaLock.Lock()
+			clpaCnt++
 			mmap, _ := ccm.clpaGraph.CLPA_Partition()
 			ccm.clpaMapSend(mmap)
 			for key, val := range mmap {
@@ -166,7 +176,11 @@ func (ccm *CLPACommitteeModule) MsgSendingControl() {
 			}
 			ccm.clpaReset()
 			ccm.clpaLock.Unlock()
-			time.Sleep(10 * time.Second)
+
+			for atomic.LoadInt32(&ccm.curEpoch) != int32(clpaCnt) {
+				time.Sleep(time.Second)
+			}
+			ccm.sl.Slog.Println("Next CLPA epoch begins. ")
 			ccm.clpaLastRunningTime = time.Now()
 		}
 	}
@@ -184,7 +198,7 @@ func (ccm *CLPACommitteeModule) clpaMapSend(m map[string]uint64) {
 	send_msg := message.MergeMessage(message.CPartitionMsg, pmByte)
 	// send to worker shards
 	for i := uint64(0); i < uint64(params.ShardNum); i++ {
-		networks.TcpDial(send_msg, ccm.IpNodeTable[i][0])
+		go networks.TcpDial(send_msg, ccm.IpNodeTable[i][0])
 	}
 	ccm.sl.Slog.Println("Supervisor: all partition map message has been sent. ")
 }
@@ -199,6 +213,9 @@ func (ccm *CLPACommitteeModule) clpaReset() {
 
 func (ccm *CLPACommitteeModule) HandleBlockInfo(b *message.BlockInfoMsg) {
 	ccm.sl.Slog.Printf("Supervisor: received from shard %d in epoch %d.\n", b.SenderShardID, b.Epoch)
+	if atomic.CompareAndSwapInt32(&ccm.curEpoch, int32(b.Epoch-1), int32(b.Epoch)) {
+		ccm.sl.Slog.Println("this curEpoch is updated", b.Epoch)
+	}
 	if b.BlockBodyLength == 0 {
 		return
 	}

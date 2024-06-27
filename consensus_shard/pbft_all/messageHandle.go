@@ -26,34 +26,36 @@ func (p *PbftConsensusNode) Propose() {
 	for {
 		select {
 		case <-nextRoundBeginSignal:
-			// if this node is not leader, do not propose.
-			if p.view != p.NodeID {
-				continue
-			}
-			p.sequenceLock.Lock()
-			p.pl.Plog.Printf("S%dN%d get sequenceLock locked, now trying to propose...\n", p.ShardID, p.NodeID)
-			// propose
-			// implement interface to generate propose
-			_, r := p.ihm.HandleinPropose()
+			go func() {
+				// if this node is not leader, do not propose.
+				if p.view != p.NodeID {
+					return
+				}
+				p.sequenceLock.Lock()
+				p.pl.Plog.Printf("S%dN%d get sequenceLock locked, now trying to propose...\n", p.ShardID, p.NodeID)
+				// propose
+				// implement interface to generate propose
+				_, r := p.ihm.HandleinPropose()
 
-			digest := getDigest(r)
-			p.requestPool[string(digest)] = r
-			p.pl.Plog.Printf("S%dN%d put the request into the pool ...\n", p.ShardID, p.NodeID)
+				digest := getDigest(r)
+				p.requestPool[string(digest)] = r
+				p.pl.Plog.Printf("S%dN%d put the request into the pool ...\n", p.ShardID, p.NodeID)
 
-			ppmsg := message.PrePrepare{
-				RequestMsg: r,
-				Digest:     digest,
-				SeqID:      p.sequenceID,
-			}
-			p.height2Digest[p.sequenceID] = string(digest)
-			// marshal and broadcast
-			ppbyte, err := json.Marshal(ppmsg)
-			if err != nil {
-				log.Panic()
-			}
-			msg_send := message.MergeMessage(message.CPrePrepare, ppbyte)
-			networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
-			p.pbftStage.Store(2)
+				ppmsg := message.PrePrepare{
+					RequestMsg: r,
+					Digest:     digest,
+					SeqID:      p.sequenceID,
+				}
+				p.height2Digest[p.sequenceID] = string(digest)
+				// marshal and broadcast
+				ppbyte, err := json.Marshal(ppmsg)
+				if err != nil {
+					log.Panic()
+				}
+				msg_send := message.MergeMessage(message.CPrePrepare, ppbyte)
+				go networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+				p.pbftStage.Store(2)
+			}()
 
 		case <-p.pStop:
 			p.pl.Plog.Printf("S%dN%d get stopSignal in Propose Routine, now stop...\n", p.ShardID, p.NodeID)
