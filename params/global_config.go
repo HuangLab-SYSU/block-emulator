@@ -9,8 +9,8 @@ var (
 	BrokerNum           = 10
 	NodesInShard        = 4
 	ShardNum            = 4
-	DataWrite_path      = "./result/"       // measurement data result output path
-	LogWrite_path       = "./log"           // log output path
-	SupervisorAddr      = "127.0.0.1:18800" //supervisor ip address
-	FileInput           = `./TestTx_1M.csv` //the raw BlockTransaction data path
+	DataWrite_path      = "./result/"              // measurement data result output path
+	LogWrite_path       = "./log"                  // log output path
+	SupervisorAddr      = "127.0.0.1:18800"        //supervisor ip address
+	FileInput           = `./selectedTxs_300K.csv` //the raw BlockTransaction data path
 )

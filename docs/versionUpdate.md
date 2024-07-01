@@ -1,5 +1,8 @@
 # Version Updates
 
+## 2024/07/01
+1. **Modified Dataset**：We have substituted the provided dataset ``./TestTx_1M.csv`` with ``./selectedTxs_300K.csv``. Transactions in the new dataset are curated from real-world historical Ethereum transactions. Algorithms reliant on historical transaction data are anticipated to demonstrate improved performance with this updated dataset.
+
 ## 2024/06/12
 1. **Fine-tune Lock**: The source codes of **Fine-tune Lock**(INFOCOM'24) has been added to the branch **Fine-tune Lock**. 
 
@@ -7,7 +10,7 @@
 1. **Bug fixed**: Fixed some bugs in the PBFT consensus, which could cause PBFT consensus nodes to discard early arriving messages in cases of unstable network latency.
 
 ## 2024/05/20
-1. **New Dataset**：Users can take experiments on a test dataset "./TestTx_1M.csv".
+1. **New Dataset**：Users can take experiments on a test dataset ``./TestTx_1M.csv``.
 
 ## 2024/03/01
 1. **FAQ Added**: We have added the **[*FAQ.md*](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/FAQ.md)**
