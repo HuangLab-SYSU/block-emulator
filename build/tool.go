@@ -33,13 +33,15 @@ func GenerateBatFile(nodenum, shardnum, modID int) {
 			ofile.WriteString(str)
 		}
 	}
-	str := fmt.Sprintf("start cmd /k go run main.go -c -N %d -S %d -m %d \n\n", nodenum, shardnum, modID)
 
-	ofile.WriteString(str)
 	for j := 0; j < shardnum; j++ {
 		str := fmt.Sprintf("start cmd /k go run main.go -n 0 -N %d -s %d -S %d -m %d \n\n", nodenum, j, shardnum, modID)
 		ofile.WriteString(str)
 	}
+
+	str := fmt.Sprintf("start cmd /k go run main.go -c -N %d -S %d -m %d \n\n", nodenum, shardnum, modID)
+
+	ofile.WriteString(str)
 }
 
 func GenerateShellFile(nodenum, shardnum, modID int) {
@@ -57,13 +59,15 @@ func GenerateShellFile(nodenum, shardnum, modID int) {
 			ofile.WriteString(str)
 		}
 	}
-	str := fmt.Sprintf("go run main.go -c -N %d -S %d -m %d &\n\n", nodenum, shardnum, modID)
 
-	ofile.WriteString(str)
 	for j := 0; j < shardnum; j++ {
 		str := fmt.Sprintf("go run main.go -n 0 -N %d -s %d -S %d -m %d &\n\n", nodenum, j, shardnum, modID)
 		ofile.WriteString(str)
 	}
+
+	str := fmt.Sprintf("go run main.go -c -N %d -S %d -m %d &\n\n", nodenum, shardnum, modID)
+
+	ofile.WriteString(str)
 }
 
 func GenerateVBSFile() {

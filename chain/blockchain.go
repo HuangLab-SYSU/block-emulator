@@ -235,7 +235,7 @@ func NewBlockChain(cc *params.ChainConfig, db ethdb.Database) (*BlockChain, erro
 	}
 	curHash, err := bc.Storage.GetNewestBlockHash()
 	if err != nil {
-		fmt.Println("Get newest block hash err")
+		fmt.Println("There is no existed blockchain in the database. ")
 		// if the Storage bolt database cannot find the newest blockhash,
 		// it means the blockchain should be built in height = 0
 		if err.Error() == "cannot find the newest block hash" {
