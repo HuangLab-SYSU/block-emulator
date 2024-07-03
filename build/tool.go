@@ -38,8 +38,7 @@ func GenerateShellFile(nodenum, shardnum, modID int) {
 		log.Panic(err)
 	}
 	defer ofile.Close()
-	str1 := fmt.Sprintf("#!/bin/bash \n\n")
-	ofile.WriteString(str1)
+	ofile.WriteString("#!/bin/bash \n\n")
 	for j := 0; j < shardnum; j++ {
 		for i := 1; i < nodenum; i++ {
 			str := fmt.Sprintf("go run main.go -n %d -N %d -s %d -S %d -m %d &\n\n", i, nodenum, j, shardnum, modID)
