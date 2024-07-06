@@ -2,18 +2,20 @@ package main
 
 import (
 	"blockEmulator/build"
+	"runtime"
 
 	"github.com/spf13/pflag"
 )
 
 var (
-	shardNum      int
-	nodeNum       int
-	shardID       int
-	nodeID        int
-	modID         int
-	isSuupervisor bool
-	isGen         bool
+	shardNum             int
+	nodeNum              int
+	shardID              int
+	nodeID               int
+	modID                int
+	isSuupervisor        bool
+	isGen                bool
+	isGenerateForExeFile bool
 )
 
 func main() {
@@ -24,11 +26,29 @@ func main() {
 	pflag.IntVarP(&modID, "modID", "m", 3, "choice Committee Method,for example, 0, [CLPA_Broker,CLPA,Broker,Relay]")
 	pflag.BoolVarP(&isSuupervisor, "supervisor", "c", false, "whether this node is a supervisor")
 	pflag.BoolVarP(&isGen, "gen", "g", false, "generation bat")
+	pflag.BoolVarP(&isGenerateForExeFile, "shellForExe", "f", false, "judge whether to generate a batch file for a pre-compiled executable file")
 	pflag.Parse()
 
 	if isGen {
-		build.GenerateBatFile(nodeNum, shardNum, modID)
-		build.GenerateShellFile(nodeNum, shardNum, modID)
+		if isGenerateForExeFile {
+			// Determine the current operating system.
+			// Generate the corresponding .bat file or .sh file based on the detected operating system.
+			os := runtime.GOOS
+			switch os {
+			case "windows":
+				build.Exebat_Windows_GenerateBatFile(nodeNum, shardNum, modID)
+			case "darwin":
+				build.Exebat_MacOS_GenerateShellFile(nodeNum, shardNum, modID)
+			case "linux":
+				build.Exebat_Linux_GenerateShellFile(nodeNum, shardNum, modID)
+			}
+		} else {
+			// Without determining the operating system.
+			// Generate a .bat file or .sh file for running `go run`.
+			build.GenerateBatFile(nodeNum, shardNum, modID)
+			build.GenerateShellFile(nodeNum, shardNum, modID)
+		}
+
 		return
 	}
 

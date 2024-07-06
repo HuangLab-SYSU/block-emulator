@@ -1,5 +1,23 @@
 # Version Updates
 
+## 2024/07/06
+1. **Executable Files**: We have added **precompiled executable files** for **blockEmulator**. With these executables, users can run the precompiled files *without having Golang installed or downloading the required libraries*. The **scripts** for compiling Golang code into executable files are located in the ``./zPrecompileScripts`` folder. 
+
+2. **Run Executable Files**: The executable files for the three operating systems are as follows:
+    - **Windows**: ``./blockEmulator_Windows_Precompile.exe``
+    - **Linux**: ``./blockEmulator_Linux_Precompile``
+    - **MacOS**: ``./blockEmulator_MacOS_Precompile``
+
+- Users can use these executables to generate a **batch script for the executable** (for example, on Windows):
+```./blockEmulator_Windows_Precompile.exe -S 2 -N 4 -m 0 -g --shellForExe```
+
+- Here, `--shellForExe` indicates generating a batch script for the **executable**.
+    
+- Then, the `WinExe_bat_shardNum=2_NodeNum=4_mod=CLPA_Broker.bat` file will generated, users can run this `.bat` file on the Windows OS. 
+
+3. **Compatibility**: This update will **not affect** existing code.
+
+
 ## 2024/07/01
 1. **Modified Dataset**：We have substituted the provided dataset ``./TestTx_1M.csv`` with ``./selectedTxs_300K.csv``. Transactions in the new dataset are curated from real-world historical Ethereum transactions. Algorithms reliant on historical transaction data are anticipated to demonstrate improved performance with this updated dataset.
 
@@ -7,7 +25,7 @@
 1. **Fine-tune Lock**: The source codes of **Fine-tune Lock**(INFOCOM'24) has been added to the branch **Fine-tune Lock**. 
 
 ## 2024/06/11 
-1. **Bug fixed**: Fixed some bugs in the PBFT consensus, which could cause PBFT consensus nodes to discard early arriving messages in cases of unstable network latency.
+1. **Bug Fixed**: Fixed some bugs in the PBFT consensus, which could cause PBFT consensus nodes to discard early arriving messages in cases of unstable network latency.
 
 ## 2024/05/20
 1. **New Dataset**：Users can take experiments on a test dataset ``./TestTx_1M.csv``.

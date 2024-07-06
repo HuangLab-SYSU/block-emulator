@@ -25,6 +25,9 @@ FileInput           = "../2000000to2999999_BlockTransaction.csv" // The path of 
 
 ## 二、使用说明
 
+### **新升级**
+   我们在 2024/07/06 的更新中支持了预编译的可执行文件。细节可见 2024/07/06 的 [Version Updates](../versionUpdate.md)。 
+
 ### 指令说明
 
 ```Plain

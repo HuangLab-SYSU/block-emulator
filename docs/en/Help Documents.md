@@ -21,6 +21,9 @@ open the configuration file [params/global_config.go](https://github.com/HuangLa
 
 # 2. Usages Explaination
 
+## **New Updates**
+   We added support for precompiled executable files in the update released on 2024/07/06. Details in [Version Updates](../versionUpdate.md). 
+
 ## 2.1 Command  Explaination
 ```
  1 -c, --client   whether this node is a client
