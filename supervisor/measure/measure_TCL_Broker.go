@@ -54,7 +54,7 @@ func (tml *TestModule_TCL_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg) {
 	}
 	for _, b2tx := range b.Broker2Txs {
 		if t, ok := tml.brokerTxMap[string(b2tx.RawTxHash)]; ok {
-			tml.totTxLatencyEpoch[epochid] += b.ProposeTime.Sub(t).Seconds()
+			tml.totTxLatencyEpoch[epochid] += b.CommitTime.Sub(t).Seconds()
 		}
 	}
 }
