@@ -68,7 +68,7 @@ func Ttestresult(ShardNums int) {
 	}
 	fmt.Println(len(accountBalance))
 	for sid := 0; sid < ShardNums; sid++ {
-		fp := "./record/ldb/s" + strconv.FormatUint(uint64(sid), 10) + "/n0"
+		fp := params.DatabaseWrite_path + "mptDB/ldb/s" + strconv.FormatUint(uint64(sid), 10) + "/n0"
 		db, err := rawdb.NewLevelDBDatabase(fp, 0, 1, "accountState", false)
 		if err != nil {
 			log.Panic(err)

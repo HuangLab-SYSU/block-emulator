@@ -1,5 +1,15 @@
 # Version Updates
 
+## 2024/07/10
+1. **User-defined experimental data output directory**: We have introduced a feature that allows users to customize the output directory for experimental data. Users can specify this directory via the command line using the `-d` or `--dataRootDir` options.
+
+    Here are 2 examples: 
+
+    ```
+    1) go run main.go -g -d TestDir
+    2) go run main.go -n 1 -N 4 -s 3 -S 4 -m 3 --dataRootDir TestDir 
+    ```
+
 ## 2024/07/06
 1. **Executable Files**: We have added **precompiled executable files** for **blockEmulator**. With these executables, users can run the precompiled files *without having Golang installed or downloading the required libraries*. The **scripts** for compiling Golang code into executable files are located in the ``./zPrecompileScripts`` folder. 
 

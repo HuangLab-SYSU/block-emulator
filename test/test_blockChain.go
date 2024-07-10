@@ -20,7 +20,7 @@ func TestBlockChain(ShardNums int) {
 		})
 	}
 	for sid := 0; sid < 1; sid++ {
-		fp := "./record/ldb/s0/N0"
+		fp := params.DatabaseWrite_path + "mptDB/ldb/s0/N0"
 		db, err := rawdb.NewLevelDBDatabase(fp, 0, 1, "accountState", false)
 		if err != nil {
 			log.Panic(err)

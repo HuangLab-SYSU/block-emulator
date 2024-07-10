@@ -85,7 +85,7 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 	p.ShardID = shardID
 	p.NodeID = nodeID
 	p.pbftChainConfig = pcc
-	fp := "./record/ldb/s" + strconv.FormatUint(shardID, 10) + "/n" + strconv.FormatUint(nodeID, 10)
+	fp := params.DatabaseWrite_path + "mptDB/ldb/s" + strconv.FormatUint(shardID, 10) + "/n" + strconv.FormatUint(nodeID, 10)
 	var err error
 	p.db, err = rawdb.NewLevelDBDatabase(fp, 0, 1, "accountState", false)
 	if err != nil {
