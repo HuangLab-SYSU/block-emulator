@@ -85,9 +85,10 @@ type InjectTxs struct {
 	ToShardID uint64
 }
 
+// data sent to the supervisor
 type BlockInfoMsg struct {
 	BlockBodyLength int
-	ExcutedTxs      []*core.Transaction // txs which are excuted completely
+	InterShardTxs   []*core.Transaction // txs which are excuted completely
 	Epoch           int
 
 	ProposeTime   time.Time // record the propose time of this block (txs)
@@ -95,14 +96,12 @@ type BlockInfoMsg struct {
 	SenderShardID uint64
 
 	// for transaction relay
-	Relay1TxNum uint64              // the number of cross shard txs
-	Relay1Txs   []*core.Transaction // cross transactions in chain first time
+	Relay1Txs []*core.Transaction // relay1 transactions in chain first time
+	Relay2Txs []*core.Transaction // relay2 transactions in chain second time
 
 	// for broker
-	Broker1TxNum uint64              // the number of broker 1
-	Broker1Txs   []*core.Transaction // cross transactions at first time by broker
-	Broker2TxNum uint64              // the number of broker 2
-	Broker2Txs   []*core.Transaction // cross transactions at second time by broker
+	Broker1Txs []*core.Transaction // cross transactions at first time by broker
+	Broker2Txs []*core.Transaction // cross transactions at second time by broker
 }
 
 type SeqIDinfo struct {

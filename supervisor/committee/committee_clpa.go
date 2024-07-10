@@ -220,7 +220,7 @@ func (ccm *CLPACommitteeModule) HandleBlockInfo(b *message.BlockInfoMsg) {
 		return
 	}
 	ccm.clpaLock.Lock()
-	for _, tx := range b.ExcutedTxs {
+	for _, tx := range b.InterShardTxs {
 		ccm.clpaGraph.AddEdge(partition.Vertex{Addr: tx.Sender}, partition.Vertex{Addr: tx.Recipient})
 	}
 	ccm.clpaLock.Unlock()

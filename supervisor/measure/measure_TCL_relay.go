@@ -28,7 +28,6 @@ func (tml *TestModule_TCL_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg) {
 	}
 
 	epochid := b.Epoch
-	txs := b.ExcutedTxs
 	mTime := b.CommitTime
 
 	// extend
@@ -38,7 +37,14 @@ func (tml *TestModule_TCL_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg) {
 		tml.epochID++
 	}
 
-	for _, tx := range txs {
+	for _, tx := range b.InterShardTxs {
+		if !tx.Time.IsZero() {
+			tml.totTxLatencyEpoch[epochid] += mTime.Sub(tx.Time).Seconds()
+			tml.txNum[epochid]++
+		}
+	}
+
+	for _, tx := range b.Relay2Txs {
 		if !tx.Time.IsZero() {
 			tml.totTxLatencyEpoch[epochid] += mTime.Sub(tx.Time).Seconds()
 			tml.txNum[epochid]++

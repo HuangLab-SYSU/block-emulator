@@ -65,20 +65,32 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 	if rphm.pbftNode.NodeID == rphm.pbftNode.view {
 		rphm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send relay txs at height = %d \n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID, block.Header.Number)
 		// generate relay pool and collect txs excuted
-		txExcuted := make([]*core.Transaction, 0)
 		rphm.pbftNode.CurChain.Txpool.RelayPool = make(map[uint64][]*core.Transaction)
+		interShardTxs := make([]*core.Transaction, 0)
 		relay1Txs := make([]*core.Transaction, 0)
+		relay2Txs := make([]*core.Transaction, 0)
 		for _, tx := range block.Body {
+			ssid := rphm.pbftNode.CurChain.Get_PartitionMap(tx.Sender)
 			rsid := rphm.pbftNode.CurChain.Get_PartitionMap(tx.Recipient)
+			if !tx.Relayed && ssid != rphm.pbftNode.ShardID {
+				log.Panic("incorrect tx")
+			}
+			if tx.Relayed && rsid != rphm.pbftNode.ShardID {
+				log.Panic("incorrect tx")
+			}
 			if rsid != rphm.pbftNode.ShardID {
-				ntx := tx
-				ntx.Relayed = true
-				rphm.pbftNode.CurChain.Txpool.AddRelayTx(ntx, rsid)
 				relay1Txs = append(relay1Txs, tx)
+				tx.Relayed = true
+				rphm.pbftNode.CurChain.Txpool.AddRelayTx(tx, rsid)
 			} else {
-				txExcuted = append(txExcuted, tx)
+				if tx.Relayed {
+					relay2Txs = append(relay2Txs, tx)
+				} else {
+					interShardTxs = append(interShardTxs, tx)
+				}
 			}
 		}
+
 		// send relay txs
 		for sid := uint64(0); sid < rphm.pbftNode.pbftChainConfig.ShardNums; sid++ {
 			if sid == rphm.pbftNode.ShardID {
@@ -98,17 +110,20 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 			rphm.pbftNode.pl.Plog.Printf("S%dN%d : sended relay txs to %d\n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID, sid)
 		}
 		rphm.pbftNode.CurChain.Txpool.ClearRelayPool()
+
 		// send txs excuted in this block to the listener
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			ExcutedTxs:      txExcuted,
+			InterShardTxs:   interShardTxs,
 			Epoch:           0,
-			Relay1Txs:       relay1Txs,
-			Relay1TxNum:     uint64(len(relay1Txs)),
-			SenderShardID:   rphm.pbftNode.ShardID,
-			ProposeTime:     r.ReqTime,
-			CommitTime:      time.Now(),
+
+			Relay1Txs: relay1Txs,
+			Relay2Txs: relay2Txs,
+
+			SenderShardID: rphm.pbftNode.ShardID,
+			ProposeTime:   r.ReqTime,
+			CommitTime:    time.Now(),
 		}
 		bByte, err := json.Marshal(bim)
 		if err != nil {
@@ -118,7 +133,21 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 		go networks.TcpDial(msg_send, rphm.pbftNode.ip_nodeTable[params.DeciderShard][0])
 		rphm.pbftNode.pl.Plog.Printf("S%dN%d : sended excuted txs\n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID)
 		rphm.pbftNode.CurChain.Txpool.GetLocked()
-		rphm.pbftNode.writeCSVline([]string{strconv.Itoa(len(rphm.pbftNode.CurChain.Txpool.TxQueue)), strconv.Itoa(len(txExcuted)), strconv.Itoa(int(bim.Relay1TxNum))})
+		metricName := []string{
+			"Block Height",
+			"TxPool Size",
+			"# of all Txs in this block",
+			"# of Relay1 Txs in this block",
+			"# of Relay2 Txs in this block",
+			"TimeStamp (unixMill)"}
+		metricVal := []string{
+			strconv.Itoa(int(block.Header.Number)),
+			strconv.Itoa(len(rphm.pbftNode.CurChain.Txpool.TxQueue)),
+			strconv.Itoa(len(block.Body)),
+			strconv.Itoa(len(relay1Txs)),
+			strconv.Itoa(len(relay2Txs)),
+			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+		rphm.pbftNode.writeCSVline(metricName, metricVal)
 		rphm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}
 	return true

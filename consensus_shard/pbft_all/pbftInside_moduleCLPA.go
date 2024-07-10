@@ -93,9 +93,10 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 	if cphm.pbftNode.NodeID == cphm.pbftNode.view {
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send relay txs at height = %d \n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID, block.Header.Number)
 		// generate relay pool and collect txs excuted
-		txExcuted := make([]*core.Transaction, 0)
 		cphm.pbftNode.CurChain.Txpool.RelayPool = make(map[uint64][]*core.Transaction)
+		interShardTxs := make([]*core.Transaction, 0)
 		relay1Txs := make([]*core.Transaction, 0)
+		relay2Txs := make([]*core.Transaction, 0)
 		for _, tx := range block.Body {
 			ssid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Sender)
 			rsid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Recipient)
@@ -105,14 +106,19 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 			if tx.Relayed && rsid != cphm.pbftNode.ShardID {
 				log.Panic("incorrect tx")
 			}
-			if !tx.Relayed && rsid != cphm.pbftNode.ShardID {
+			if rsid != cphm.pbftNode.ShardID {
 				relay1Txs = append(relay1Txs, tx)
 				tx.Relayed = true
 				cphm.pbftNode.CurChain.Txpool.AddRelayTx(tx, rsid)
 			} else {
-				txExcuted = append(txExcuted, tx)
+				if tx.Relayed {
+					relay2Txs = append(relay2Txs, tx)
+				} else {
+					interShardTxs = append(interShardTxs, tx)
+				}
 			}
 		}
+
 		// send relay txs
 		for sid := uint64(0); sid < cphm.pbftNode.pbftChainConfig.ShardNums; sid++ {
 			if sid == cphm.pbftNode.ShardID {
@@ -132,17 +138,20 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 			cphm.pbftNode.pl.Plog.Printf("S%dN%d : sended relay txs to %d\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID, sid)
 		}
 		cphm.pbftNode.CurChain.Txpool.ClearRelayPool()
+
 		// send txs excuted in this block to the listener
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			ExcutedTxs:      txExcuted,
-			Epoch:           int(cphm.cdm.AccountTransferRound),
-			Relay1Txs:       relay1Txs,
-			Relay1TxNum:     uint64(len(relay1Txs)),
-			SenderShardID:   cphm.pbftNode.ShardID,
-			ProposeTime:     r.ReqTime,
-			CommitTime:      time.Now(),
+			InterShardTxs:   interShardTxs,
+			Epoch:           0,
+
+			Relay1Txs: relay1Txs,
+			Relay2Txs: relay2Txs,
+
+			SenderShardID: cphm.pbftNode.ShardID,
+			ProposeTime:   r.ReqTime,
+			CommitTime:    time.Now(),
 		}
 		bByte, err := json.Marshal(bim)
 		if err != nil {
@@ -151,8 +160,23 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 		msg_send := message.MergeMessage(message.CBlockInfo, bByte)
 		go networks.TcpDial(msg_send, cphm.pbftNode.ip_nodeTable[params.DeciderShard][0])
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : sended excuted txs\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID)
+
 		cphm.pbftNode.CurChain.Txpool.GetLocked()
-		cphm.pbftNode.writeCSVline([]string{strconv.Itoa(len(cphm.pbftNode.CurChain.Txpool.TxQueue)), strconv.Itoa(len(txExcuted)), strconv.Itoa(int(bim.Relay1TxNum))})
+		metricName := []string{
+			"Block Height",
+			"TxPool Size",
+			"# of all Txs in this block",
+			"# of Relay1 Txs in this block",
+			"# of Relay2 Txs in this block",
+			"TimeStamp (unixMill)"}
+		metricVal := []string{
+			strconv.Itoa(int(block.Header.Number)),
+			strconv.Itoa(len(cphm.pbftNode.CurChain.Txpool.TxQueue)),
+			strconv.Itoa(len(block.Body)),
+			strconv.Itoa(len(relay1Txs)),
+			strconv.Itoa(len(relay2Txs)),
+			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+		cphm.pbftNode.writeCSVline(metricName, metricVal)
 		cphm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}
 	return true

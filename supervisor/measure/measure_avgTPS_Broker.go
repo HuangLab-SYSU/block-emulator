@@ -32,9 +32,11 @@ func (tat *TestModule_avgTPS_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg
 	}
 
 	epochid := b.Epoch
-	txNum := float64(len(b.ExcutedTxs))
+	txNum := float64(len(b.InterShardTxs))
 	earliestTime := b.ProposeTime
 	latestTime := b.CommitTime
+	b1TxNum := len(b.Broker1Txs)
+	b2TxNum := len(b.Broker2Txs)
 
 	// extend
 	for tat.epochID < epochid {
@@ -43,11 +45,13 @@ func (tat *TestModule_avgTPS_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg
 		tat.endTime = append(tat.endTime, time.Time{})
 		tat.epochID++
 	}
+
 	// modify the local epoch
-	tat.excutedTxNum[epochid] += txNum + (float64(b.Broker1TxNum)+float64(b.Broker2TxNum))/2
+	tat.excutedTxNum[epochid] += txNum + (float64(b1TxNum)+float64(b2TxNum))/2
 	if tat.startTime[epochid].IsZero() || tat.startTime[epochid].After(earliestTime) {
 		tat.startTime[epochid] = earliestTime
 	}
+
 	if tat.endTime[epochid].IsZero() || latestTime.After(tat.endTime[epochid]) {
 		tat.endTime[epochid] = latestTime
 	}

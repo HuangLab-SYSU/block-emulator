@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -36,45 +37,44 @@ func (p *PbftConsensusNode) getNeighborNodes() []string {
 	}
 	return receiverNodes
 }
-
-func (p *PbftConsensusNode) writeCSVline(str []string) {
-	dirpath := params.DataWrite_path + "pbft_" + strconv.Itoa(int(p.pbftChainConfig.ShardNums))
+func (p *PbftConsensusNode) writeCSVline(metricName []string, metricVal []string) {
+	// Construct directory path
+	dirpath := params.DataWrite_path + "pbft_shardNum=" + strconv.Itoa(int(p.pbftChainConfig.ShardNums))
 	err := os.MkdirAll(dirpath, os.ModePerm)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	targetPath := dirpath + "/Shard" + strconv.Itoa(int(p.ShardID)) + strconv.Itoa(int(p.pbftChainConfig.ShardNums)) + ".csv"
-	f, err := os.Open(targetPath)
-	if err != nil && os.IsNotExist(err) {
-		file, er := os.Create(targetPath)
-		if er != nil {
-			panic(er)
-		}
-		defer file.Close()
+	// Construct target file path
+	targetPath := fmt.Sprintf("%s/Shard%d%d.csv", dirpath, p.ShardID, p.pbftChainConfig.ShardNums)
 
-		w := csv.NewWriter(file)
-		title := []string{"txpool size", "tx", "ctx"}
-		w.Write(title)
-		w.Flush()
-		w.Write(str)
-		w.Flush()
-	} else {
-		file, err := os.OpenFile(targetPath, os.O_APPEND|os.O_RDWR, 0666)
+	// Open file, create if it does not exist
+	file, err := os.OpenFile(targetPath, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer file.Close()
 
-		if err != nil {
+	// Create CSV writer
+	writer := csv.NewWriter(file)
+
+	// Write header if the file is newly created
+	fileInfo, err := file.Stat()
+	if err != nil {
+		log.Panic(err)
+	}
+	if fileInfo.Size() == 0 {
+		if err := writer.Write(metricName); err != nil {
 			log.Panic(err)
-		}
-		defer file.Close()
-		writer := csv.NewWriter(file)
-		err = writer.Write(str)
-		if err != nil {
-			log.Panic()
 		}
 		writer.Flush()
 	}
 
-	f.Close()
+	// Write data
+	if err := writer.Write(metricVal); err != nil {
+		log.Panic(err)
+	}
+	writer.Flush()
 }
 
 // get the digest of request

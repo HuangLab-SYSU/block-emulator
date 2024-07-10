@@ -270,7 +270,7 @@ func (ccm *CLPACommitteeMod_Broker) HandleBlockInfo(b *message.BlockInfoMsg) {
 	ccm.createConfirm(txs)
 
 	ccm.clpaLock.Lock()
-	for _, tx := range b.ExcutedTxs {
+	for _, tx := range b.InterShardTxs {
 		if tx.HasBroker {
 			continue
 		}

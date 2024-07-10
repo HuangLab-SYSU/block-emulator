@@ -30,7 +30,7 @@ func (ttnc *TestTxNumCount_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg) {
 		ttnc.epochID++
 	}
 
-	ttnc.txNum[epochid] += float64(len(b.ExcutedTxs))
+	ttnc.txNum[epochid] += float64(len(b.InterShardTxs)) + float64(len(b.Relay1Txs)+len(b.Relay2Txs))/2
 }
 
 func (ttnc *TestTxNumCount_Relay) HandleExtraMessage([]byte) {}

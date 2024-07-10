@@ -31,6 +31,8 @@ func (tctr *TestCrossTxRate_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg)
 	if b.BlockBodyLength == 0 { // empty block
 		return
 	}
+	b1TxNum := len(b.Broker1Txs)
+	b2TxNum := len(b.Broker2Txs)
 	epochid := b.Epoch
 	// extend
 	for tctr.epochID < epochid {
@@ -39,10 +41,10 @@ func (tctr *TestCrossTxRate_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg)
 		tctr.epochID++
 	}
 
-	tctr.totCrossTxNum[epochid] += (float64(b.Broker1TxNum) + float64(b.Broker2TxNum)) / 2
-	tctr.totTxNum[epochid] += float64(len(b.ExcutedTxs)) + (float64(b.Broker1TxNum)+float64(b.Broker2TxNum))/2
-	tctr.b2num += int(b.Broker2TxNum)
-	tctr.b1num += int(b.Broker1TxNum)
+	tctr.totCrossTxNum[epochid] += (float64(b1TxNum) + float64(b2TxNum)) / 2
+	tctr.totTxNum[epochid] += float64(len(b.InterShardTxs)) + (float64(b1TxNum)+float64(b2TxNum))/2
+	tctr.b2num += int(b2TxNum)
+	tctr.b1num += int(b1TxNum)
 }
 
 func (tctr *TestCrossTxRate_Broker) HandleExtraMessage([]byte) {}

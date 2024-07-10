@@ -42,7 +42,7 @@ func (tml *TestModule_TCL_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg) {
 	}
 
 	// calculate txs
-	for _, tx := range b.ExcutedTxs {
+	for _, tx := range b.InterShardTxs {
 		if !tx.Time.IsZero() {
 			tml.totTxLatencyEpoch[epochid] += b.CommitTime.Sub(tx.Time).Seconds()
 			tml.txNum[epochid]++

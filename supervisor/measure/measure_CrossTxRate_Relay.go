@@ -7,7 +7,6 @@ type TestCrossTxRate_Relay struct {
 	epochID       int
 	totTxNum      []float64
 	totCrossTxNum []float64
-	relayTxRecord map[string]bool // record whether the relay1 has counted
 }
 
 func NewTestCrossTxRate_Relay() *TestCrossTxRate_Relay {
@@ -15,7 +14,6 @@ func NewTestCrossTxRate_Relay() *TestCrossTxRate_Relay {
 		epochID:       -1,
 		totTxNum:      make([]float64, 0),
 		totCrossTxNum: make([]float64, 0),
-		relayTxRecord: make(map[string]bool),
 	}
 }
 
@@ -27,7 +25,11 @@ func (tctr *TestCrossTxRate_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg) 
 	if b.BlockBodyLength == 0 { // empty block
 		return
 	}
+
 	epochid := b.Epoch
+	r1TxNum := len(b.Relay1Txs)
+	r2TxNum := len(b.Relay2Txs)
+
 	// extend
 	for tctr.epochID < epochid {
 		tctr.totTxNum = append(tctr.totTxNum, 0)
@@ -35,23 +37,8 @@ func (tctr *TestCrossTxRate_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg) 
 		tctr.epochID++
 	}
 
-	// add relay1 txs
-	// modify the relay map
-	for _, r1tx := range b.Relay1Txs {
-		tctr.relayTxRecord[string(r1tx.TxHash)] = true
-		tctr.totCrossTxNum[epochid] += 0.5
-		tctr.totTxNum[epochid] += 0.5
-	}
-	// add inner-shard transaction and relay2 transactions
-	for _, tx := range b.ExcutedTxs {
-		if _, ok := tctr.relayTxRecord[string(tx.TxHash)]; !ok {
-			// inner-shard transaction
-			tctr.totTxNum[epochid] += 1
-		} else {
-			tctr.totTxNum[epochid] += 0.5
-			tctr.totCrossTxNum[epochid] += 0.5
-		}
-	}
+	tctr.totCrossTxNum[epochid] += float64(r1TxNum+r2TxNum) / 2
+	tctr.totTxNum[epochid] += float64(r1TxNum+r2TxNum)/2 + float64(len(b.InterShardTxs))
 }
 
 func (tctr *TestCrossTxRate_Relay) HandleExtraMessage([]byte) {}

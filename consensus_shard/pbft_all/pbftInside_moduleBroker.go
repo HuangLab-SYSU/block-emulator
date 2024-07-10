@@ -103,15 +103,15 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			ExcutedTxs:      txExcuted,
-			Broker1TxNum:    uint64(len(broker1Txs)),
-			Broker1Txs:      broker1Txs,
-			Broker2TxNum:    uint64(len(broker2Txs)),
-			Broker2Txs:      broker2Txs,
-			Epoch:           0,
-			SenderShardID:   rbhm.pbftNode.ShardID,
-			ProposeTime:     r.ReqTime,
-			CommitTime:      time.Now(),
+			InterShardTxs:   txExcuted,
+
+			Broker1Txs: broker1Txs,
+			Broker2Txs: broker2Txs,
+
+			Epoch:         0,
+			SenderShardID: rbhm.pbftNode.ShardID,
+			ProposeTime:   r.ReqTime,
+			CommitTime:    time.Now(),
 		}
 		bByte, err := json.Marshal(bim)
 		if err != nil {
@@ -121,7 +121,21 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 		go networks.TcpDial(msg_send, rbhm.pbftNode.ip_nodeTable[params.DeciderShard][0])
 		rbhm.pbftNode.pl.Plog.Printf("S%dN%d : sended excuted txs\n", rbhm.pbftNode.ShardID, rbhm.pbftNode.NodeID)
 		rbhm.pbftNode.CurChain.Txpool.GetLocked()
-		rbhm.pbftNode.writeCSVline([]string{strconv.Itoa(len(rbhm.pbftNode.CurChain.Txpool.TxQueue)), strconv.Itoa(len(txExcuted)), strconv.Itoa(int(bim.Relay1TxNum))})
+		metricName := []string{
+			"Block Height",
+			"TxPool Size",
+			"# of all Txs in this block",
+			"# of Broker1 Txs in this block",
+			"# of Broker2 Txs in this block",
+			"TimeStamp (unixMill)"}
+		metricVal := []string{
+			strconv.Itoa(int(block.Header.Number)),
+			strconv.Itoa(len(rbhm.pbftNode.CurChain.Txpool.TxQueue)),
+			strconv.Itoa(len(block.Body)),
+			strconv.Itoa(len(broker1Txs)),
+			strconv.Itoa(len(broker2Txs)),
+			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+		rbhm.pbftNode.writeCSVline(metricName, metricVal)
 		rbhm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}
 	return true

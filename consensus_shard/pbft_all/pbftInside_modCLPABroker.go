@@ -154,10 +154,8 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			ExcutedTxs:      txExcuted,
-			Broker1TxNum:    uint64(len(broker1Txs)),
+			InterShardTxs:   txExcuted,
 			Broker1Txs:      broker1Txs,
-			Broker2TxNum:    uint64(len(broker2Txs)),
 			Broker2Txs:      broker2Txs,
 			Epoch:           int(cphm.cdm.AccountTransferRound),
 			SenderShardID:   cphm.pbftNode.ShardID,
@@ -172,7 +170,21 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 		networks.TcpDial(msg_send, cphm.pbftNode.ip_nodeTable[params.DeciderShard][0])
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : sended excuted txs\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID)
 		cphm.pbftNode.CurChain.Txpool.GetLocked()
-		cphm.pbftNode.writeCSVline([]string{strconv.Itoa(len(cphm.pbftNode.CurChain.Txpool.TxQueue)), strconv.Itoa(len(txExcuted)), strconv.Itoa(int(bim.Relay1TxNum))})
+		metricName := []string{
+			"Block Height",
+			"TxPool Size",
+			"# of all Txs in this block",
+			"# of Broker1 Txs in this block",
+			"# of Broker2 Txs in this block",
+			"TimeStamp (unixMill)"}
+		metricVal := []string{
+			strconv.Itoa(int(block.Header.Number)),
+			strconv.Itoa(len(cphm.pbftNode.CurChain.Txpool.TxQueue)),
+			strconv.Itoa(len(block.Body)),
+			strconv.Itoa(len(broker1Txs)),
+			strconv.Itoa(len(broker2Txs)),
+			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+		cphm.pbftNode.writeCSVline(metricName, metricVal)
 		cphm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}
 	return true

@@ -8,10 +8,9 @@ import (
 // to test average TPS in this system
 type TestModule_avgTPS_Relay struct {
 	epochID      int
-	excutedTxNum []float64       // record how many excuted txs in a epoch, maybe the cross shard tx will be calculated as a 0.5 tx
-	relayTx      map[string]bool // record whether a relayTx or not
-	startTime    []time.Time     // record when the epoch starts
-	endTime      []time.Time     // record when the epoch ends
+	excutedTxNum []float64   // record how many excuted txs in a epoch, maybe the cross shard tx will be calculated as a 0.5 tx
+	startTime    []time.Time // record when the epoch starts
+	endTime      []time.Time // record when the epoch ends
 }
 
 func NewTestModule_avgTPS_Relay() *TestModule_avgTPS_Relay {
@@ -20,7 +19,6 @@ func NewTestModule_avgTPS_Relay() *TestModule_avgTPS_Relay {
 		excutedTxNum: make([]float64, 0),
 		startTime:    make([]time.Time, 0),
 		endTime:      make([]time.Time, 0),
-		relayTx:      make(map[string]bool),
 	}
 }
 
@@ -37,6 +35,8 @@ func (tat *TestModule_avgTPS_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg)
 	epochid := b.Epoch
 	earliestTime := b.ProposeTime
 	latestTime := b.CommitTime
+	r1TxNum := len(b.Relay1Txs)
+	r2TxNum := len(b.Relay2Txs)
 
 	// extend
 	for tat.epochID < epochid {
@@ -45,18 +45,11 @@ func (tat *TestModule_avgTPS_Relay) UpdateMeasureRecord(b *message.BlockInfoMsg)
 		tat.endTime = append(tat.endTime, time.Time{})
 		tat.epochID++
 	}
-	// modify the local epoch
-	for _, tx := range b.Relay1Txs {
-		tat.relayTx[string(tx.TxHash)] = true
-	}
-	tat.excutedTxNum[epochid] += float64(b.Relay1TxNum) / 2
-	for _, tx := range b.ExcutedTxs {
-		if _, ok := tat.relayTx[string(tx.TxHash)]; ok {
-			tat.excutedTxNum[epochid] += 0.5
-		} else {
-			tat.excutedTxNum[epochid] += 1
-		}
-	}
+
+	// modify the local epoch data
+	tat.excutedTxNum[epochid] += float64(r1TxNum+r2TxNum) / 2
+	tat.excutedTxNum[epochid] += float64(len(b.InterShardTxs))
+
 	if tat.startTime[epochid].IsZero() || tat.startTime[epochid].After(earliestTime) {
 		tat.startTime[epochid] = earliestTime
 	}
