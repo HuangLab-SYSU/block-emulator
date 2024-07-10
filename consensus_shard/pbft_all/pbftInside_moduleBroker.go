@@ -123,6 +123,7 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 		rbhm.pbftNode.CurChain.Txpool.GetLocked()
 		metricName := []string{
 			"Block Height",
+			"EpochID of this block",
 			"TxPool Size",
 			"# of all Txs in this block",
 			"# of Broker1 Txs in this block",
@@ -130,6 +131,7 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 			"TimeStamp (unixMill)"}
 		metricVal := []string{
 			strconv.Itoa(int(block.Header.Number)),
+			strconv.Itoa(bim.Epoch),
 			strconv.Itoa(len(rbhm.pbftNode.CurChain.Txpool.TxQueue)),
 			strconv.Itoa(len(block.Body)),
 			strconv.Itoa(len(broker1Txs)),

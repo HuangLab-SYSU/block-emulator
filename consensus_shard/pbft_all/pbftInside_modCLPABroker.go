@@ -172,6 +172,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 		cphm.pbftNode.CurChain.Txpool.GetLocked()
 		metricName := []string{
 			"Block Height",
+			"EpochID of this block",
 			"TxPool Size",
 			"# of all Txs in this block",
 			"# of Broker1 Txs in this block",
@@ -179,6 +180,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 			"TimeStamp (unixMill)"}
 		metricVal := []string{
 			strconv.Itoa(int(block.Header.Number)),
+			strconv.Itoa(bim.Epoch),
 			strconv.Itoa(len(cphm.pbftNode.CurChain.Txpool.TxQueue)),
 			strconv.Itoa(len(block.Body)),
 			strconv.Itoa(len(broker1Txs)),
