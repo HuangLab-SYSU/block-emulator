@@ -88,7 +88,7 @@ type InjectTxs struct {
 // data sent to the supervisor
 type BlockInfoMsg struct {
 	BlockBodyLength int
-	InterShardTxs   []*core.Transaction // txs which are excuted completely
+	InnerShardTxs   []*core.Transaction // txs which are excuted completely
 	Epoch           int
 
 	ProposeTime   time.Time // record the propose time of this block (txs)

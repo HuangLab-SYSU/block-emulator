@@ -93,7 +93,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 	if cphm.pbftNode.NodeID == cphm.pbftNode.view {
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send broker confirm txs at height = %d \n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID, block.Header.Number)
 		// generate brokertxs and collect txs excuted
-		txExcuted := make([]*core.Transaction, 0)
+		innerShardTxs := make([]*core.Transaction, 0)
 		broker1Txs := make([]*core.Transaction, 0)
 		broker2Txs := make([]*core.Transaction, 0)
 
@@ -130,7 +130,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 			} else if isBroker1Tx {
 				broker1Txs = append(broker1Txs, tx)
 			} else {
-				txExcuted = append(txExcuted, tx)
+				innerShardTxs = append(innerShardTxs, tx)
 			}
 		}
 		// send seqID
@@ -154,7 +154,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			InterShardTxs:   txExcuted,
+			InnerShardTxs:   innerShardTxs,
 			Broker1Txs:      broker1Txs,
 			Broker2Txs:      broker2Txs,
 			Epoch:           int(cphm.cdm.AccountTransferRound),
@@ -177,7 +177,13 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 			"# of all Txs in this block",
 			"# of Broker1 Txs in this block",
 			"# of Broker2 Txs in this block",
-			"TimeStamp (unixMill)"}
+			"TimeStamp - Propose (unixMill)",
+			"TimeStamp - Commit (unixMill)",
+
+			"SUM of confirm latency (ms, All Txs)",
+			"SUM of confirm latency (ms, Broker1 Txs) (Duration: Broker1 proposed -> Broker1 Commit)",
+			"SUM of confirm latency (ms, Broker2 Txs) (Duration: Broker2 proposed -> Broker2 Commit)",
+		}
 		metricVal := []string{
 			strconv.Itoa(int(block.Header.Number)),
 			strconv.Itoa(bim.Epoch),
@@ -185,7 +191,13 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 			strconv.Itoa(len(block.Body)),
 			strconv.Itoa(len(broker1Txs)),
 			strconv.Itoa(len(broker2Txs)),
-			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+			strconv.FormatInt(bim.ProposeTime.UnixMilli(), 10),
+			strconv.FormatInt(bim.CommitTime.UnixMilli(), 10),
+
+			strconv.FormatInt(computeTCL(block.Body, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(broker1Txs, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(broker2Txs, bim.CommitTime), 10),
+		}
 		cphm.pbftNode.writeCSVline(metricName, metricVal)
 		cphm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}

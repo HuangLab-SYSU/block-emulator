@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/ethereum/go-ethereum/core/rawdb"
 )
@@ -21,7 +22,7 @@ func data2tx(data []string, nonce uint64) (*core.Transaction, bool) {
 		if !ok {
 			log.Panic("new int failed\n")
 		}
-		tx := core.NewTransaction(data[3][2:], data[4][2:], val, nonce)
+		tx := core.NewTransaction(data[3][2:], data[4][2:], val, nonce, time.Now())
 		return tx, true
 	}
 	return &core.Transaction{}, false

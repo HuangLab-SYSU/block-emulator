@@ -211,7 +211,7 @@ func (bcm *BrokerCommitteeMod) handleBrokerType1Mes(brokerType1Megs []*message.B
 	tx1s := make([]*core.Transaction, 0)
 	for _, brokerType1Meg := range brokerType1Megs {
 		ctx := brokerType1Meg.RawMeg.Tx
-		tx1 := core.NewTransaction(ctx.Sender, brokerType1Meg.Broker, ctx.Value, ctx.Nonce)
+		tx1 := core.NewTransaction(ctx.Sender, brokerType1Meg.Broker, ctx.Value, ctx.Nonce, time.Now())
 		tx1.OriginalSender = ctx.Sender
 		tx1.FinalRecipient = ctx.Recipient
 		tx1.RawTxHash = make([]byte, len(ctx.TxHash))
@@ -233,7 +233,7 @@ func (bcm *BrokerCommitteeMod) handleBrokerType2Mes(brokerType2Megs []*message.B
 	tx2s := make([]*core.Transaction, 0)
 	for _, mes := range brokerType2Megs {
 		ctx := mes.RawMeg.Tx
-		tx2 := core.NewTransaction(mes.Broker, ctx.Recipient, ctx.Value, ctx.Nonce)
+		tx2 := core.NewTransaction(mes.Broker, ctx.Recipient, ctx.Value, ctx.Nonce, time.Now())
 		tx2.OriginalSender = ctx.Sender
 		tx2.FinalRecipient = ctx.Recipient
 		tx2.RawTxHash = make([]byte, len(ctx.TxHash))

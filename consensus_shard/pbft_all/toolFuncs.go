@@ -1,6 +1,7 @@
 package pbft_all
 
 import (
+	"blockEmulator/core"
 	"blockEmulator/message"
 	"blockEmulator/params"
 	"blockEmulator/shard"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 // set 2d map, only for pbft maps, if the first parameter is true, then set the cntPrepareConfirm map,
@@ -37,6 +39,7 @@ func (p *PbftConsensusNode) getNeighborNodes() []string {
 	}
 	return receiverNodes
 }
+
 func (p *PbftConsensusNode) writeCSVline(metricName []string, metricVal []string) {
 	// Construct directory path
 	dirpath := params.DataWrite_path + "pbft_shardNum=" + strconv.Itoa(int(p.pbftChainConfig.ShardNums))
@@ -85,4 +88,13 @@ func getDigest(r *message.Request) []byte {
 	}
 	hash := sha256.Sum256(b)
 	return hash[:]
+}
+
+// calculate TCL
+func computeTCL(txs []*core.Transaction, commitTS time.Time) int64 {
+	ret := int64(0)
+	for _, tx := range txs {
+		ret += commitTS.Sub(tx.Time).Milliseconds()
+	}
+	return ret
 }

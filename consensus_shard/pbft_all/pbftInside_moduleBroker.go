@@ -65,7 +65,7 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 		// do normal operations for block
 		rbhm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send relay txs at height = %d \n", rbhm.pbftNode.ShardID, rbhm.pbftNode.NodeID, block.Header.Number)
 		// generate brokertxs and collect txs excuted
-		txExcuted := make([]*core.Transaction, 0)
+		innerShardTxs := make([]*core.Transaction, 0)
 		broker1Txs := make([]*core.Transaction, 0)
 		broker2Txs := make([]*core.Transaction, 0)
 
@@ -79,7 +79,7 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 			} else if isBroker1Tx {
 				broker1Txs = append(broker1Txs, tx)
 			} else {
-				txExcuted = append(txExcuted, tx)
+				innerShardTxs = append(innerShardTxs, tx)
 			}
 		}
 		// send seqID
@@ -103,7 +103,7 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			InterShardTxs:   txExcuted,
+			InnerShardTxs:   innerShardTxs,
 
 			Broker1Txs: broker1Txs,
 			Broker2Txs: broker2Txs,
@@ -128,7 +128,13 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 			"# of all Txs in this block",
 			"# of Broker1 Txs in this block",
 			"# of Broker2 Txs in this block",
-			"TimeStamp (unixMill)"}
+			"TimeStamp - Propose (unixMill)",
+			"TimeStamp - Commit (unixMill)",
+
+			"SUM of confirm latency (ms, All Txs)",
+			"SUM of confirm latency (ms, Broker1 Txs) (Duration: Broker1 proposed -> Broker1 Commit)",
+			"SUM of confirm latency (ms, Broker2 Txs) (Duration: Broker2 proposed -> Broker2 Commit)",
+		}
 		metricVal := []string{
 			strconv.Itoa(int(block.Header.Number)),
 			strconv.Itoa(bim.Epoch),
@@ -136,7 +142,13 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 			strconv.Itoa(len(block.Body)),
 			strconv.Itoa(len(broker1Txs)),
 			strconv.Itoa(len(broker2Txs)),
-			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+			strconv.FormatInt(bim.ProposeTime.UnixMilli(), 10),
+			strconv.FormatInt(bim.CommitTime.UnixMilli(), 10),
+
+			strconv.FormatInt(computeTCL(block.Body, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(broker1Txs, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(broker2Txs, bim.CommitTime), 10),
+		}
 		rbhm.pbftNode.writeCSVline(metricName, metricVal)
 		rbhm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}

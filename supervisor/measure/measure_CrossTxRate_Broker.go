@@ -2,7 +2,7 @@ package measure
 
 import (
 	"blockEmulator/message"
-	"fmt"
+	"strconv"
 )
 
 // to test cross-transaction rate
@@ -10,7 +10,10 @@ type TestCrossTxRate_Broker struct {
 	epochID       int
 	totTxNum      []float64
 	totCrossTxNum []float64
-	b2num, b1num  int
+
+	broker1TxNum []int // record how many broker1 txs in an epoch.
+	broker2TxNum []int // record how many broker2 txs in an epoch.
+	normalTxNum  []int // record how many normal txs in an epoch.
 }
 
 func NewTestCrossTxRate_Broker() *TestCrossTxRate_Broker {
@@ -18,8 +21,10 @@ func NewTestCrossTxRate_Broker() *TestCrossTxRate_Broker {
 		epochID:       -1,
 		totTxNum:      make([]float64, 0),
 		totCrossTxNum: make([]float64, 0),
-		b2num:         0,
-		b1num:         0,
+
+		broker1TxNum: make([]int, 0),
+		broker2TxNum: make([]int, 0),
+		normalTxNum:  make([]int, 0),
 	}
 }
 
@@ -38,21 +43,28 @@ func (tctr *TestCrossTxRate_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg)
 	for tctr.epochID < epochid {
 		tctr.totTxNum = append(tctr.totTxNum, 0)
 		tctr.totCrossTxNum = append(tctr.totCrossTxNum, 0)
+
+		tctr.broker1TxNum = append(tctr.broker1TxNum, 0)
+		tctr.broker2TxNum = append(tctr.broker2TxNum, 0)
+		tctr.normalTxNum = append(tctr.normalTxNum, 0)
+
 		tctr.epochID++
 	}
 
-	tctr.totCrossTxNum[epochid] += (float64(b1TxNum) + float64(b2TxNum)) / 2
-	tctr.totTxNum[epochid] += float64(len(b.InterShardTxs)) + (float64(b1TxNum)+float64(b2TxNum))/2
-	tctr.b2num += int(b2TxNum)
-	tctr.b1num += int(b1TxNum)
+	tctr.broker1TxNum[epochid] += b1TxNum
+	tctr.broker2TxNum[epochid] += b2TxNum
+	tctr.normalTxNum[epochid] += len(b.InnerShardTxs)
+
+	tctr.totCrossTxNum[epochid] += float64(b1TxNum+b2TxNum) / 2
+	tctr.totTxNum[epochid] += float64(len(b.InnerShardTxs)) + float64(b1TxNum+b2TxNum)/2
 }
 
 func (tctr *TestCrossTxRate_Broker) HandleExtraMessage([]byte) {}
 
 func (tctr *TestCrossTxRate_Broker) OutputRecord() (perEpochCTXratio []float64, totCTXratio float64) {
-	fmt.Println(tctr.b2num)
-	fmt.Println(tctr.b1num)
+	tctr.writeToCSV()
 
+	// calculate the simple result
 	perEpochCTXratio = make([]float64, 0)
 	allEpoch_totTxNum := 0.0
 	allEpoch_ctxNum := 0.0
@@ -65,4 +77,24 @@ func (tctr *TestCrossTxRate_Broker) OutputRecord() (perEpochCTXratio []float64, 
 	perEpochCTXratio = append(perEpochCTXratio, allEpoch_ctxNum)
 
 	return perEpochCTXratio, allEpoch_ctxNum / allEpoch_totTxNum
+}
+
+func (tctr *TestCrossTxRate_Broker) writeToCSV() {
+	fileName := tctr.OutputMetricName()
+	measureName := []string{"EpochID", "Total tx # in this epoch", "CTX # in this epoch", "Normal tx # in this epoch", "Broker1 tx # in this epoch", "Broker2 tx # in this epoch", "CTX ratio of this epoch"}
+	measureVals := make([][]string, 0)
+
+	for eid, totTxInE := range tctr.totTxNum {
+		csvLine := []string{
+			strconv.Itoa(eid),
+			strconv.FormatFloat(totTxInE, 'e', '8', 64),
+			strconv.FormatFloat(tctr.totCrossTxNum[eid], 'e', '8', 64),
+			strconv.Itoa(tctr.normalTxNum[eid]),
+			strconv.Itoa(tctr.broker1TxNum[eid]),
+			strconv.Itoa(tctr.broker2TxNum[eid]),
+			strconv.FormatFloat(tctr.totCrossTxNum[eid]/totTxInE, 'e', '8', 64),
+		}
+		measureVals = append(measureVals, csvLine)
+	}
+	WriteMetricsToCSV(fileName, measureName, measureVals)
 }

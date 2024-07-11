@@ -21,7 +21,7 @@ type Transaction struct {
 	Value     *big.Int
 	TxHash    []byte
 
-	Time time.Time // the time adding in pool
+	Time time.Time // TimeStamp the tx proposed.
 
 	// used in transaction relaying
 	Relayed bool
@@ -71,12 +71,13 @@ func DecodeTx(to_decode []byte) *Transaction {
 }
 
 // new a transaction
-func NewTransaction(sender, recipient string, value *big.Int, nonce uint64) *Transaction {
+func NewTransaction(sender, recipient string, value *big.Int, nonce uint64, proposeTime time.Time) *Transaction {
 	tx := &Transaction{
 		Sender:    sender,
 		Recipient: recipient,
 		Value:     value,
 		Nonce:     nonce,
+		Time:      proposeTime,
 	}
 
 	hash := sha256.Sum256(tx.Encode())

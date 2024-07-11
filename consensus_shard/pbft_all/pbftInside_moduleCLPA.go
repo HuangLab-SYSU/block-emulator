@@ -97,6 +97,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 		interShardTxs := make([]*core.Transaction, 0)
 		relay1Txs := make([]*core.Transaction, 0)
 		relay2Txs := make([]*core.Transaction, 0)
+
 		for _, tx := range block.Body {
 			ssid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Sender)
 			rsid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Recipient)
@@ -143,7 +144,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			InterShardTxs:   interShardTxs,
+			InnerShardTxs:   interShardTxs,
 			Epoch:           0,
 
 			Relay1Txs: relay1Txs,
@@ -162,6 +163,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : sended excuted txs\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID)
 
 		cphm.pbftNode.CurChain.Txpool.GetLocked()
+
 		metricName := []string{
 			"Block Height",
 			"EpochID of this block",
@@ -169,7 +171,13 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 			"# of all Txs in this block",
 			"# of Relay1 Txs in this block",
 			"# of Relay2 Txs in this block",
-			"TimeStamp (unixMill)"}
+			"TimeStamp - Propose (unixMill)",
+			"TimeStamp - Commit (unixMill)",
+
+			"SUM of confirm latency (ms, All Txs)",
+			"SUM of confirm latency (ms, Relay1 Txs) (Duration: Relay1 proposed -> Relay1 Commit)",
+			"SUM of confirm latency (ms, Relay2 Txs) (Duration: Relay1 proposed -> Relay2 Commit)",
+		}
 		metricVal := []string{
 			strconv.Itoa(int(block.Header.Number)),
 			strconv.Itoa(bim.Epoch),
@@ -177,7 +185,13 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 			strconv.Itoa(len(block.Body)),
 			strconv.Itoa(len(relay1Txs)),
 			strconv.Itoa(len(relay2Txs)),
-			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+			strconv.FormatInt(bim.ProposeTime.UnixMilli(), 10),
+			strconv.FormatInt(bim.CommitTime.UnixMilli(), 10),
+
+			strconv.FormatInt(computeTCL(block.Body, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(relay1Txs, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(relay2Txs, bim.CommitTime), 10),
+		}
 		cphm.pbftNode.writeCSVline(metricName, metricVal)
 		cphm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}

@@ -115,7 +115,7 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 		// add more message to measure more metrics
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
-			InterShardTxs:   interShardTxs,
+			InnerShardTxs:   interShardTxs,
 			Epoch:           0,
 
 			Relay1Txs: relay1Txs,
@@ -140,7 +140,13 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 			"# of all Txs in this block",
 			"# of Relay1 Txs in this block",
 			"# of Relay2 Txs in this block",
-			"TimeStamp (unixMill)"}
+			"TimeStamp - Propose (unixMill)",
+			"TimeStamp - Commit (unixMill)",
+
+			"SUM of confirm latency (ms, All Txs)",
+			"SUM of confirm latency (ms, Relay1 Txs) (Duration: Relay1 proposed -> Relay1 Commit)",
+			"SUM of confirm latency (ms, Relay2 Txs) (Duration: Relay1 proposed -> Relay2 Commit)",
+		}
 		metricVal := []string{
 			strconv.Itoa(int(block.Header.Number)),
 			strconv.Itoa(bim.Epoch),
@@ -148,7 +154,13 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 			strconv.Itoa(len(block.Body)),
 			strconv.Itoa(len(relay1Txs)),
 			strconv.Itoa(len(relay2Txs)),
-			strconv.FormatInt(time.Now().UnixMilli(), 10)}
+			strconv.FormatInt(bim.ProposeTime.UnixMilli(), 10),
+			strconv.FormatInt(bim.CommitTime.UnixMilli(), 10),
+
+			strconv.FormatInt(computeTCL(block.Body, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(relay1Txs, bim.CommitTime), 10),
+			strconv.FormatInt(computeTCL(relay2Txs, bim.CommitTime), 10),
+		}
 		rphm.pbftNode.writeCSVline(metricName, metricVal)
 		rphm.pbftNode.CurChain.Txpool.GetUnlocked()
 	}
