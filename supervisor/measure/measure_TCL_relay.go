@@ -138,7 +138,7 @@ func (tml *TestModule_TCL_Relay) writeToCSV() {
 	for eid, totTxInE := range tml.txNum {
 		csvLine := []string{
 			strconv.Itoa(eid),
-			strconv.FormatFloat(totTxInE, 'e', '8', 64),
+			strconv.FormatFloat(totTxInE, 'f', '8', 64),
 			strconv.Itoa(tml.normalTxNum[eid]),
 			strconv.Itoa(tml.relay1TxNum[eid]),
 			strconv.Itoa(tml.relay2TxNum[eid]),
@@ -146,7 +146,7 @@ func (tml *TestModule_TCL_Relay) writeToCSV() {
 			strconv.FormatInt(tml.relay2CommitLatency[eid], 10),
 			strconv.FormatInt(tml.normalTxCommitLatency[eid], 10),
 			strconv.FormatInt(tml.ctxCommitLatency[eid], 10),
-			strconv.FormatFloat(tml.totTxLatencyEpoch[eid], 'e', '8', 64),
+			strconv.FormatFloat(tml.totTxLatencyEpoch[eid], 'f', '8', 64),
 		}
 		measureVals = append(measureVals, csvLine)
 	}

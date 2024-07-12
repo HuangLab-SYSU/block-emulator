@@ -114,13 +114,13 @@ func (tat *TestModule_avgTPS_Broker) writeToCSV() {
 		timeGap := tat.endTime[eid].Sub(tat.startTime[eid]).Seconds()
 		csvLine := []string{
 			strconv.Itoa(eid),
-			strconv.FormatFloat(exTxNum, 'e', '8', 64),
+			strconv.FormatFloat(exTxNum, 'f', '8', 64),
 			strconv.Itoa(tat.normalTxNum[eid]),
 			strconv.Itoa(tat.broker1TxNum[eid]),
 			strconv.Itoa(tat.broker2TxNum[eid]),
 			strconv.FormatInt(tat.startTime[eid].UnixMilli(), 10),
 			strconv.FormatInt(tat.endTime[eid].UnixMilli(), 10),
-			strconv.FormatFloat(exTxNum/timeGap, 'e', '8', 64),
+			strconv.FormatFloat(exTxNum/timeGap, 'f', '8', 64),
 		}
 		measureVals = append(measureVals, csvLine)
 	}

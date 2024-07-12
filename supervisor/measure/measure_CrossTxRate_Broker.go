@@ -87,12 +87,12 @@ func (tctr *TestCrossTxRate_Broker) writeToCSV() {
 	for eid, totTxInE := range tctr.totTxNum {
 		csvLine := []string{
 			strconv.Itoa(eid),
-			strconv.FormatFloat(totTxInE, 'e', '8', 64),
-			strconv.FormatFloat(tctr.totCrossTxNum[eid], 'e', '8', 64),
+			strconv.FormatFloat(totTxInE, 'f', '8', 64),
+			strconv.FormatFloat(tctr.totCrossTxNum[eid], 'f', '8', 64),
 			strconv.Itoa(tctr.normalTxNum[eid]),
 			strconv.Itoa(tctr.broker1TxNum[eid]),
 			strconv.Itoa(tctr.broker2TxNum[eid]),
-			strconv.FormatFloat(tctr.totCrossTxNum[eid]/totTxInE, 'e', '8', 64),
+			strconv.FormatFloat(tctr.totCrossTxNum[eid]/totTxInE, 'f', '8', 64),
 		}
 		measureVals = append(measureVals, csvLine)
 	}

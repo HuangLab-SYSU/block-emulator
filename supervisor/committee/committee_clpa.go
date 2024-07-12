@@ -223,5 +223,8 @@ func (ccm *CLPACommitteeModule) HandleBlockInfo(b *message.BlockInfoMsg) {
 	for _, tx := range b.InnerShardTxs {
 		ccm.clpaGraph.AddEdge(partition.Vertex{Addr: tx.Sender}, partition.Vertex{Addr: tx.Recipient})
 	}
+	for _, r2tx := range b.Relay2Txs {
+		ccm.clpaGraph.AddEdge(partition.Vertex{Addr: r2tx.Sender}, partition.Vertex{Addr: r2tx.Recipient})
+	}
 	ccm.clpaLock.Unlock()
 }

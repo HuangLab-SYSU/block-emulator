@@ -145,7 +145,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 		bim := message.BlockInfoMsg{
 			BlockBodyLength: len(block.Body),
 			InnerShardTxs:   interShardTxs,
-			Epoch:           0,
+			Epoch:           int(cphm.cdm.AccountTransferRound),
 
 			Relay1Txs: relay1Txs,
 			Relay2Txs: relay2Txs,

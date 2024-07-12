@@ -2,6 +2,7 @@ package measure
 
 import (
 	"blockEmulator/message"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -89,6 +90,8 @@ func (tml *TestModule_TCL_Broker) UpdateMeasureRecord(b *message.BlockInfoMsg) {
 		if b1txProposeTime, ok := tml.brokerTxMap[string(b2tx.RawTxHash)]; ok {
 			tml.totTxLatencyEpoch[epochid] += b.CommitTime.Sub(b1txProposeTime).Seconds()
 			tml.ctxCommitLatency[epochid] += b.CommitTime.Sub(b1txProposeTime).Milliseconds()
+		} else {
+			fmt.Println("Missing a broker1 tx. ")
 		}
 		tml.broker2CommitLatency[epochid] += int64(b.CommitTime.Sub(b2tx.Time).Milliseconds())
 	}
@@ -130,7 +133,7 @@ func (tml *TestModule_TCL_Broker) writeToCSV() {
 	for eid, totTxInE := range tml.txNum {
 		csvLine := []string{
 			strconv.Itoa(eid),
-			strconv.FormatFloat(totTxInE, 'e', '8', 64),
+			strconv.FormatFloat(totTxInE, 'f', '8', 64),
 			strconv.Itoa(tml.normalTxNum[eid]),
 			strconv.Itoa(tml.broker1TxNum[eid]),
 			strconv.Itoa(tml.broker2TxNum[eid]),
@@ -138,7 +141,7 @@ func (tml *TestModule_TCL_Broker) writeToCSV() {
 			strconv.FormatInt(tml.broker2CommitLatency[eid], 10),
 			strconv.FormatInt(tml.normalTxCommitLatency[eid], 10),
 			strconv.FormatInt(tml.ctxCommitLatency[eid], 10),
-			strconv.FormatFloat(tml.totTxLatencyEpoch[eid], 'e', '8', 64),
+			strconv.FormatFloat(tml.totTxLatencyEpoch[eid], 'f', '8', 64),
 		}
 		measureVals = append(measureVals, csvLine)
 	}

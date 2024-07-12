@@ -76,7 +76,7 @@ func (ttnc *TestTxNumCount_Relay) writeToCSV() {
 	for eid, totTxInE := range ttnc.txNum {
 		csvLine := []string{
 			strconv.Itoa(eid),
-			strconv.FormatFloat(totTxInE, 'e', '8', 64),
+			strconv.FormatFloat(totTxInE, 'f', '8', 64),
 			strconv.Itoa(ttnc.normalTxNum[eid]),
 			strconv.Itoa(ttnc.relay1TxNum[eid]),
 			strconv.Itoa(ttnc.relay2TxNum[eid]),

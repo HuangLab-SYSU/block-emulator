@@ -15,7 +15,7 @@ func WriteMetricsToCSV(fileName string, colName []string, colVals [][]string) {
 	}
 
 	// Construct target file path
-	targetPath := dirpath + fileName
+	targetPath := dirpath + fileName + ".csv"
 
 	// Open file, create if it does not exist
 	file, err := os.OpenFile(targetPath, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
