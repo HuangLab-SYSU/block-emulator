@@ -1,5 +1,8 @@
 # Version Updates
 
+## 2024/07/12
+1. **More details on testing metrics**: We have added more detailed testing metrics for the blockchain operation process, allowing users to observe the blockchain system with more granular data. Metrics can be seen in `params.DataWrite_path` that is re-defined in `main.go`. 
+
 ## 2024/07/10
 1. **User-defined experimental data output directory**: We have introduced a feature that allows users to customize the output directory for experimental data. Users can specify this directory via the command line using the `-d` or `--dataRootDir` options.
 
