@@ -43,6 +43,7 @@ func BuildSupervisor(nnm, snm, mod uint64) {
 	} else {
 		measureMod = params.MeasureRelayMod
 	}
+	measureMod = append(measureMod, "Tx_Details")
 
 	lsn := new(supervisor.Supervisor)
 	lsn.NewSupervisor(params.SupervisorAddr, initConfig(123, nnm, 123, snm), params.CommitteeMethod[mod], measureMod...)

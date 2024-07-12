@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// to test cross-transaction rate
+// to test Tx number
 type TestTxNumCount_Broker struct {
 	epochID      int
 	txNum        []float64
