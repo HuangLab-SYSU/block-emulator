@@ -188,7 +188,7 @@ func (p *PbftConsensusNode) handleMessage(msg []byte) {
 
 	// handle the message from outside
 	default:
-		p.ohm.HandleMessageOutsidePBFT(msgType, content)
+		go p.ohm.HandleMessageOutsidePBFT(msgType, content)
 	}
 }
 
