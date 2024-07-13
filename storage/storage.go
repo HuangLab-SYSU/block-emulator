@@ -25,14 +25,10 @@ type Storage struct {
 
 // new a storage, build a bolt datase
 func NewStorage(cc *params.ChainConfig) *Storage {
-	_, errStat := os.Stat(params.DatabaseWrite_path + "chainDB")
-	if os.IsNotExist(errStat) {
-		errMkdir := os.Mkdir(params.DatabaseWrite_path+"chainDB", os.ModePerm)
-		if errMkdir != nil {
-			log.Panic(errMkdir)
-		}
-	} else if errStat != nil {
-		log.Panic(errStat)
+	dir := params.DatabaseWrite_path + "chainDB"
+	errMkdir := os.MkdirAll(dir, os.ModePerm)
+	if errMkdir != nil {
+		log.Panic(errMkdir)
 	}
 
 	s := &Storage{
