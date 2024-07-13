@@ -96,6 +96,7 @@ func (ttd *TestTxDetail) writeToCSV() {
 		"Relay2 Tx commit timestamp (not a relay tx -> nil)",
 		"Broker1 Tx commit timestamp (not a broker tx -> nil)",
 		"Broker2 Tx commit timestamp (not a broker tx -> nil)",
+		"Confirmed latency of this tx (ms)",
 	}
 	measureVals := make([][]string, 0)
 
@@ -112,6 +113,8 @@ func (ttd *TestTxDetail) writeToCSV() {
 
 			timestampToString(val.Broker1CommitTimestamp),
 			timestampToString(val.Broker2CommitTimestamp),
+
+			strconv.FormatInt(int64(val.TxCommitTimestamp.Sub(val.TxProposeTimestamp).Milliseconds()), 10),
 		}
 		measureVals = append(measureVals, csvLine)
 	}
