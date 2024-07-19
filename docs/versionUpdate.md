@@ -1,5 +1,10 @@
 # Version Updates
 
+## 2024/07/19
+1. **A Chinese version of the user manual**: We provide a Chinese version of the user manual, allowing users to quickly get started with **blockEmulator**.
+
+2. **3 Python code examples for plotting**. Users can view the plotting graphs of results by running the Python code located in the ```./figurePlot``` folder.
+
 ## 2024/07/12
 1. **More details on testing metrics**: We have added more detailed testing metrics for the blockchain operation process, allowing users to observe the blockchain system with more granular data. Metrics can be seen in `params.DataWrite_path` that is re-defined in `main.go`. 
 
