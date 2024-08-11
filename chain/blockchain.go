@@ -8,6 +8,7 @@ import (
 	"blockEmulator/params"
 	"blockEmulator/storage"
 	"blockEmulator/utils"
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -213,8 +214,15 @@ func (bc *BlockChain) AddBlock(b *core.Block) {
 		fmt.Println("the block height is not correct")
 		return
 	}
-	// if this block is mined by the node, the transactions is no need to be handled again
-	if b.Header.Miner != bc.ChainConfig.NodeID {
+
+	if !bytes.Equal(b.Header.ParentBlockHash, bc.CurrentBlock.Hash) {
+		fmt.Println("err parent block hash")
+		return
+	}
+
+	// if the treeRoot is existed in the node, the transactions is no need to be handled again
+	_, err := trie.New(trie.TrieID(common.BytesToHash(b.Header.StateRoot)), bc.triedb)
+	if err != nil {
 		rt := bc.GetUpdateStatusTrie(b.Body)
 		fmt.Println(bc.CurrentBlock.Header.Number+1, "the root = ", rt.Bytes())
 	}
