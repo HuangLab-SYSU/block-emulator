@@ -62,7 +62,7 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 	rphm.pbftNode.CurChain.PrintBlockChain()
 
 	// now try to relay txs to other shards (for main nodes)
-	if rphm.pbftNode.NodeID == rphm.pbftNode.view {
+	if rphm.pbftNode.NodeID == uint64(rphm.pbftNode.view.Load()) {
 		rphm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send relay txs at height = %d \n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID, block.Header.Number)
 		// generate relay pool and collect txs excuted
 		rphm.pbftNode.CurChain.Txpool.RelayPool = make(map[uint64][]*core.Transaction)

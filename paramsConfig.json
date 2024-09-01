@@ -1,5 +1,7 @@
 {
   "ConsensusMethod": 0,
+  
+  "PbftViewChangeTimeOut":20000,
 
   "ExpDataRootDir": "expTest",
 

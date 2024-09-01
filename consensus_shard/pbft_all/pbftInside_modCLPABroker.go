@@ -90,7 +90,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinCommit(cmsg *message
 	cphm.pbftNode.CurChain.PrintBlockChain()
 
 	// now try to relay txs to other shards (for main nodes)
-	if cphm.pbftNode.NodeID == cphm.pbftNode.view {
+	if cphm.pbftNode.NodeID == uint64(cphm.pbftNode.view.Load()) {
 		cphm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send broker confirm txs at height = %d \n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID, block.Header.Number)
 		// generate brokertxs and collect txs excuted
 		innerShardTxs := make([]*core.Transaction, 0)

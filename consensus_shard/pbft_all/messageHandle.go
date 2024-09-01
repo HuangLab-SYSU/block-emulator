@@ -3,6 +3,7 @@ package pbft_all
 import (
 	"blockEmulator/message"
 	"blockEmulator/networks"
+	"blockEmulator/params"
 	"blockEmulator/shard"
 	"encoding/json"
 	"fmt"
@@ -15,7 +16,9 @@ func (p *PbftConsensusNode) Propose() {
 	// wait other nodes to start TCPlistening, sleep 5 sec.
 	time.Sleep(time.Second * 5)
 	nextRoundBeginSignal := make(chan bool)
+
 	go func() {
+		// go into the next round
 		for {
 			time.Sleep(time.Duration(int64(p.pbftChainConfig.BlockInterval)) * time.Millisecond)
 			// send a signal to another GO-Routine. It will block until a GO-Routine try to fetch data from this channel.
@@ -26,14 +29,30 @@ func (p *PbftConsensusNode) Propose() {
 		}
 	}()
 
+	go func() {
+		// check whether to view change
+		for {
+			time.Sleep(time.Second)
+			if time.Since(p.lastCommitTime) > time.Duration(params.PbftViewChangeTimeOut*int(time.Millisecond)) {
+				p.lastCommitTime = time.Now()
+				go p.viewChangePropose()
+			}
+		}
+	}()
+
 	for {
 		select {
 		case <-nextRoundBeginSignal:
 			go func() {
 				// if this node is not leader, do not propose.
-				if p.view != p.NodeID {
+				if uint64(p.view.Load()) != p.NodeID {
 					return
 				}
+
+				if p.sequenceID == (p.NodeID*10)+10 {
+					return
+				}
+
 				p.sequenceLock.Lock()
 				p.pl.Plog.Printf("S%dN%d get sequenceLock locked, now trying to propose...\n", p.ShardID, p.NodeID)
 				// propose
@@ -81,9 +100,10 @@ func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 		log.Panic(err)
 	}
 
+	curView := p.view.Load()
 	p.pbftLock.Lock()
 	defer p.pbftLock.Unlock()
-	for p.pbftStage.Load() < 1 && ppmsg.SeqID == p.sequenceID {
+	for p.pbftStage.Load() < 1 && ppmsg.SeqID == p.sequenceID && p.view.Load() == curView {
 		p.conditionalVarpbftLock.Wait()
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
@@ -135,9 +155,10 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 		log.Panic(err)
 	}
 
+	curView := p.view.Load()
 	p.pbftLock.Lock()
 	defer p.pbftLock.Unlock()
-	for p.pbftStage.Load() < 2 && pmsg.SeqID == p.sequenceID {
+	for p.pbftStage.Load() < 2 && pmsg.SeqID == p.sequenceID && p.view.Load() == curView {
 		p.conditionalVarpbftLock.Wait()
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
@@ -190,9 +211,10 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 		log.Panic(err)
 	}
 
+	curView := p.view.Load()
 	p.pbftLock.Lock()
 	defer p.pbftLock.Unlock()
-	for p.pbftStage.Load() < 3 && cmsg.SeqID == p.sequenceID {
+	for p.pbftStage.Load() < 3 && cmsg.SeqID == p.sequenceID && p.view.Load() == curView {
 		p.conditionalVarpbftLock.Wait()
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
@@ -212,9 +234,9 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 			p.askForLock.Lock()
 			// request the block
 			sn := &shard.Node{
-				NodeID:  p.view,
+				NodeID:  uint64(p.view.Load()),
 				ShardID: p.ShardID,
-				IPaddr:  p.ip_nodeTable[p.ShardID][p.view],
+				IPaddr:  p.ip_nodeTable[p.ShardID][uint64(p.view.Load())],
 			}
 			orequest := message.RequestOldMessage{
 				SeqStartHeight: p.sequenceID + 1,
@@ -239,9 +261,10 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 		}
 
 		p.pbftStage.Store(1)
+		p.lastCommitTime = time.Now()
 
 		// if this node is a main node, then unlock the sequencelock
-		if p.NodeID == p.view {
+		if p.NodeID == uint64(p.view.Load()) {
 			p.sequenceLock.Unlock()
 			p.pl.Plog.Printf("S%dN%d get sequenceLock unlocked...\n", p.ShardID, p.NodeID)
 		}
@@ -253,7 +276,7 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 // block back to the message sender.
 // now this function can send both block and partition
 func (p *PbftConsensusNode) handleRequestOldSeq(content []byte) {
-	if p.view != p.NodeID {
+	if uint64(p.view.Load()) != p.NodeID {
 		return
 	}
 

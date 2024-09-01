@@ -61,7 +61,7 @@ func (rbhm *RawBrokerPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) bo
 	rbhm.pbftNode.CurChain.PrintBlockChain()
 
 	// now try to relay txs to other shards (for main nodes)
-	if rbhm.pbftNode.NodeID == rbhm.pbftNode.view {
+	if rbhm.pbftNode.NodeID == uint64(rbhm.pbftNode.view.Load()) {
 		// do normal operations for block
 		rbhm.pbftNode.pl.Plog.Printf("S%dN%d : main node is trying to send relay txs at height = %d \n", rbhm.pbftNode.ShardID, rbhm.pbftNode.NodeID, block.Header.Number)
 		// generate brokertxs and collect txs excuted

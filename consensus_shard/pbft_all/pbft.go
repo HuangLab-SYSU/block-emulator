@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -37,7 +38,12 @@ type PbftConsensusNode struct {
 	ip_nodeTable    map[uint64]map[uint64]string // denote the ip of the specific node
 	node_nums       uint64                       // the number of nodes in this pfbt, denoted by N
 	malicious_nums  uint64                       // f, 3f + 1 = N
-	view            uint64                       // denote the view of this pbft, the main node can be inferred from this variant
+
+	// view change
+	view           atomic.Int32 // denote the view of this pbft, the main node can be inferred from this variant
+	lastCommitTime time.Time    // the time since last commit.
+	viewChangeMap  map[ViewChangeData]map[uint64]bool
+	newViewMap     map[ViewChangeData]map[uint64]bool
 
 	// the control message and message checking utils in pbft
 	sequenceID        uint64                          // the message sequence id of the pbft
@@ -112,7 +118,12 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 	p.isReply = make(map[string]bool)
 	p.height2Digest = make(map[uint64]string)
 	p.malicious_nums = (p.node_nums - 1) / 3
-	p.view = 0
+
+	// init view & last commit time
+	p.view.Store(0)
+	p.lastCommitTime = time.Now().Add(time.Second * 5)
+	p.viewChangeMap = make(map[ViewChangeData]map[uint64]bool)
+	p.newViewMap = make(map[ViewChangeData]map[uint64]bool)
 
 	p.seqIDMap = make(map[uint64]uint64)
 
@@ -177,6 +188,11 @@ func (p *PbftConsensusNode) handleMessage(msg []byte) {
 	case message.CCommit:
 		// use "go" to start a go routine to handle this message, so that a pre-arrival message will not be aborted.
 		go p.handleCommit(content)
+
+	case message.ViewChangePropose:
+		p.handleViewChangeMsg(content)
+	case message.NewChange:
+		p.handleNewViewMsg(content)
 
 	case message.CRequestOldrequest:
 		p.handleRequestOldSeq(content)
