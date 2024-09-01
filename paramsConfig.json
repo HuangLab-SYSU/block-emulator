@@ -1,0 +1,16 @@
+{
+  "ConsensusMethod": 0,
+
+  "ExpDataRootDir": "expTest",
+
+  "Block_Interval": 5000,
+  "BlockSize": 2000,
+  "InjectSpeed": 2000,
+  "TotalDataSize": 160000,
+  "TxBatchSize": 16000,
+
+  "BrokerNum": 10,
+  
+  "DatasetFile": "./selectedTxs_300K.csv",
+  "ReconfigTimeGap": 50
+}

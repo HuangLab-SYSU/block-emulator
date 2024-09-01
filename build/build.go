@@ -4,22 +4,42 @@ import (
 	"blockEmulator/consensus_shard/pbft_all"
 	"blockEmulator/params"
 	"blockEmulator/supervisor"
-	"strconv"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
 	"time"
 )
 
 func initConfig(nid, nnm, sid, snm uint64) *params.ChainConfig {
-	params.ShardNum = int(snm)
-	for i := uint64(0); i < snm; i++ {
-		if _, ok := params.IPmap_nodeTable[i]; !ok {
-			params.IPmap_nodeTable[i] = make(map[uint64]string)
-		}
-		for j := uint64(0); j < nnm; j++ {
-			params.IPmap_nodeTable[i][j] = "127.0.0.1:" + strconv.Itoa(28800+int(i)*100+int(j))
+	// Read the contents of ipTable.json
+	file, err := os.ReadFile("./ipTable.json")
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+	}
+	// Create a map to store the IP addresses
+	var ipMap map[uint64]map[uint64]string
+	// Unmarshal the JSON data into the map
+	err = json.Unmarshal(file, &ipMap)
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+	}
+
+	params.IPmap_nodeTable = ipMap
+	params.SupervisorAddr = params.IPmap_nodeTable[params.SupervisorShard][0]
+
+	// check the correctness of params
+	if len(ipMap)-1 < int(snm) {
+		log.Panicf("Input ShardNumber = %d, but only %d shards in ipTable.json.\n", snm, len(ipMap)-1)
+	}
+	for shardID := 0; shardID < len(ipMap)-1; shardID++ {
+		if len(ipMap[uint64(shardID)]) < int(nnm) {
+			log.Panicf("Input NodeNumber = %d, but only %d nodes in Shard %d.\n", nnm, len(ipMap[uint64(shardID)]), shardID)
 		}
 	}
-	params.IPmap_nodeTable[params.DeciderShard] = make(map[uint64]string)
-	params.IPmap_nodeTable[params.DeciderShard][0] = params.SupervisorAddr
+
 	params.NodesInShard = int(nnm)
 	params.ShardNum = int(snm)
 
@@ -36,9 +56,10 @@ func initConfig(nid, nnm, sid, snm uint64) *params.ChainConfig {
 	return pcc
 }
 
-func BuildSupervisor(nnm, snm, mod uint64) {
+func BuildSupervisor(nnm, snm uint64) {
+	methodID := params.ConsensusMethod
 	var measureMod []string
-	if mod == 0 || mod == 2 {
+	if methodID == 0 || methodID == 2 {
 		measureMod = params.MeasureBrokerMod
 	} else {
 		measureMod = params.MeasureRelayMod
@@ -46,14 +67,21 @@ func BuildSupervisor(nnm, snm, mod uint64) {
 	measureMod = append(measureMod, "Tx_Details")
 
 	lsn := new(supervisor.Supervisor)
-	lsn.NewSupervisor(params.SupervisorAddr, initConfig(123, nnm, 123, snm), params.CommitteeMethod[mod], measureMod...)
+	lsn.NewSupervisor(params.SupervisorAddr, initConfig(123, nnm, 123, snm), params.CommitteeMethod[methodID], measureMod...)
 	time.Sleep(10000 * time.Millisecond)
 	go lsn.SupervisorTxHandling()
 	lsn.TcpListen()
 }
 
-func BuildNewPbftNode(nid, nnm, sid, snm, mod uint64) {
-	worker := pbft_all.NewPbftNode(sid, nid, initConfig(nid, nnm, sid, snm), params.CommitteeMethod[mod])
+func BuildNewPbftNode(nid, nnm, sid, snm uint64) {
+	methodID := params.ConsensusMethod
+	if sid >= snm {
+		log.Panicf("Wrong ShardID. This ShardID is %d, but only %d shards in the current config. ", sid, snm)
+	}
+	if nid >= nnm {
+		log.Panicf("Wrong NodeID. This NodeID is %d, but only %d nodes in the current config. ", nid, nnm)
+	}
+	worker := pbft_all.NewPbftNode(sid, nid, initConfig(nid, nnm, sid, snm), params.CommitteeMethod[methodID])
 	go worker.TcpListen()
 	worker.Propose()
 }

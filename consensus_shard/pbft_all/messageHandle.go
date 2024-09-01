@@ -56,7 +56,8 @@ func (p *PbftConsensusNode) Propose() {
 					log.Panic()
 				}
 				msg_send := message.MergeMessage(message.CPrePrepare, ppbyte)
-				go networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+				networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+				networks.TcpDial(msg_send, p.RunningNode.IPaddr)
 				p.pbftStage.Store(2)
 			}()
 
@@ -114,6 +115,7 @@ func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 		// broadcast
 		msg_send := message.MergeMessage(message.CPrepare, prepareByte)
 		networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+		networks.TcpDial(msg_send, p.RunningNode.IPaddr)
 		p.pl.Plog.Printf("S%dN%d : has broadcast the prepare message \n", p.ShardID, p.NodeID)
 
 		// Pbft stage add 1. It means that this round of pbft goes into the next stage, i.e., Prepare stage.
@@ -149,20 +151,12 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 		p.ihm.HandleinPrepare(pmsg)
 
 		p.set2DMap(true, string(pmsg.Digest), pmsg.SenderNode)
-		cnt := 0
-		for range p.cntPrepareConfirm[string(pmsg.Digest)] {
-			cnt++
-		}
-		// the main node will not send the prepare message
-		specifiedcnt := int(2 * p.malicious_nums)
-		if p.NodeID != p.view {
-			specifiedcnt -= 1
-		}
+		cnt := len(p.cntPrepareConfirm[string(pmsg.Digest)])
 
 		// if the node has received 2f messages (itself included), and it haven't committed, then it commit
 		p.lock.Lock()
 		defer p.lock.Unlock()
-		if cnt >= specifiedcnt && !p.isCommitBordcast[string(pmsg.Digest)] {
+		if uint64(cnt) >= 2*p.malicious_nums+1 && !p.isCommitBordcast[string(pmsg.Digest)] {
 			p.pl.Plog.Printf("S%dN%d : is going to commit\n", p.ShardID, p.NodeID)
 			// generate commit and broadcast
 			c := message.Commit{
@@ -176,6 +170,7 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 			}
 			msg_send := message.MergeMessage(message.CCommit, commitByte)
 			networks.Broadcast(p.RunningNode.IPaddr, p.getNeighborNodes(), msg_send)
+			networks.TcpDial(msg_send, p.RunningNode.IPaddr)
 			p.isCommitBordcast[string(pmsg.Digest)] = true
 			p.pl.Plog.Printf("S%dN%d : commit is broadcast\n", p.ShardID, p.NodeID)
 
@@ -208,9 +203,8 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	// the main node will not send the prepare message
-	required_cnt := int(2 * p.malicious_nums)
-	if cnt >= required_cnt && !p.isReply[string(cmsg.Digest)] {
+
+	if uint64(cnt) >= 2*p.malicious_nums+1 && !p.isReply[string(cmsg.Digest)] {
 		p.pl.Plog.Printf("S%dN%d : has received 2f + 1 commits ... \n", p.ShardID, p.NodeID)
 		// if this node is left behind, so it need to requst blocks
 		if _, ok := p.requestPool[string(cmsg.Digest)]; !ok {

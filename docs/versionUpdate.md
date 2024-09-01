@@ -1,5 +1,9 @@
 # Version Updates
 
+## 2024/09/01
+1. **An IP Table**: A file named ./ipTable.json is provided for IP configuration. Users may modify the IP addresses of the nodes as needed. Please note that the first-level key in this JSON file is "ShardID", and the second-level key is "NodeID".
+2. **Params Configuration File**: Users can define various parameters in the ./paramsConfig.json file, including ConsensusMethod, ExpDataRootDir, DatasetFile, and others.
+
 ## 2024/07/19
 1. **A Chinese version of the user manual**: We provide a Chinese version of the user manual, allowing users to quickly get started with **blockEmulator**.
 

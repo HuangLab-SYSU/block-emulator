@@ -17,7 +17,7 @@ type ChainConfig struct {
 }
 
 var (
-	DeciderShard     = uint64(0xffffffff)
+	SupervisorShard  = uint64(2147483647)
 	Init_Balance, _  = new(big.Int).SetString("100000000000000000000000000000000000000000000", 10)
 	IPmap_nodeTable  = make(map[uint64]map[uint64]string)
 	CommitteeMethod  = []string{"CLPA_Broker", "CLPA", "Broker", "Relay"}

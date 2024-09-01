@@ -32,7 +32,7 @@ func Ttestresult(ShardNums int) {
 	accountBalance := make(map[string]*big.Int)
 	acCorrect := make(map[string]bool)
 
-	txfile, err := os.Open(params.FileInput)
+	txfile, err := os.Open(params.DatasetFile)
 	if err != nil {
 		log.Panic(err)
 	}

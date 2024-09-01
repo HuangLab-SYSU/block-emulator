@@ -25,8 +25,8 @@ func TestPBFT(nid, nnm, sid, snm uint64) {
 			params.IPmap_nodeTable[i][j] = "127.0.0.1:" + strconv.Itoa(8800+int(i)*100+int(j))
 		}
 	}
-	params.IPmap_nodeTable[params.DeciderShard] = make(map[uint64]string)
-	params.IPmap_nodeTable[params.DeciderShard][0] = "127.0.0.1:18800"
+	params.IPmap_nodeTable[params.SupervisorShard] = make(map[uint64]string)
+	params.IPmap_nodeTable[params.SupervisorShard][0] = "127.0.0.1:18800"
 
 	pcc := &params.ChainConfig{
 		ChainID:        sid,

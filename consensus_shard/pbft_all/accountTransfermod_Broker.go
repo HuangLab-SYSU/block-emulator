@@ -151,7 +151,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) sendAccounts_and_Txs() {
 		log.Panic()
 	}
 	send_msg := message.MergeMessage(message.CInner2CrossTx, icByte)
-	networks.TcpDial(send_msg, cphm.pbftNode.ip_nodeTable[params.DeciderShard][0])
+	networks.TcpDial(send_msg, cphm.pbftNode.ip_nodeTable[params.SupervisorShard][0])
 }
 
 // fetch collect infos
