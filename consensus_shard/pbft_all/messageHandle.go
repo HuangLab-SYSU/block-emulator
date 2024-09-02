@@ -14,7 +14,8 @@ import (
 // this func is only invoked by main node
 func (p *PbftConsensusNode) Propose() {
 	// wait other nodes to start TCPlistening, sleep 5 sec.
-	time.Sleep(time.Second * 5)
+	time.Sleep(5 * time.Second)
+
 	nextRoundBeginSignal := make(chan bool)
 
 	go func() {
@@ -33,8 +34,8 @@ func (p *PbftConsensusNode) Propose() {
 		// check whether to view change
 		for {
 			time.Sleep(time.Second)
-			if time.Since(p.lastCommitTime) > time.Duration(params.PbftViewChangeTimeOut*int(time.Millisecond)) {
-				p.lastCommitTime = time.Now()
+			if time.Now().UnixMilli()-p.lastCommitTime.Load() > int64(params.PbftViewChangeTimeOut) {
+				p.lastCommitTime.Store(time.Now().UnixMilli())
 				go p.viewChangePropose()
 			}
 		}
@@ -104,6 +105,11 @@ func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
 
+	// if this message is out of date, return.
+	if ppmsg.SeqID != p.sequenceID || p.view.Load() != curView {
+		return
+	}
+
 	flag := false
 	if digest := getDigest(ppmsg.RequestMsg); string(digest) != string(ppmsg.Digest) {
 		p.pl.Plog.Printf("S%dN%d : the digest is not consistent, so refuse to prepare. \n", p.ShardID, p.NodeID)
@@ -158,6 +164,11 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 		p.conditionalVarpbftLock.Wait()
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
+
+	// if this message is out of date, return.
+	if pmsg.SeqID != p.sequenceID || p.view.Load() != curView {
+		return
+	}
 
 	if _, ok := p.requestPool[string(pmsg.Digest)]; !ok {
 		p.pl.Plog.Printf("S%dN%d : doesn't have the digest in the requst pool, refuse to commit\n", p.ShardID, p.NodeID)
@@ -215,6 +226,10 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
 
+	if cmsg.SeqID != p.sequenceID || p.view.Load() != curView {
+		return
+	}
+
 	p.pl.Plog.Printf("S%dN%d received the Commit from ...%d\n", p.ShardID, p.NodeID, cmsg.SenderNode.NodeID)
 	p.set2DMap(false, string(cmsg.Digest), cmsg.SenderNode)
 	cnt := len(p.cntCommitConfirm[string(cmsg.Digest)])
@@ -257,7 +272,7 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 		}
 
 		p.pbftStage.Store(1)
-		p.lastCommitTime = time.Now()
+		p.lastCommitTime.Store(time.Now().UnixMilli())
 
 		// if this node is a main node, then unlock the sequencelock
 		if p.NodeID == uint64(p.view.Load()) {

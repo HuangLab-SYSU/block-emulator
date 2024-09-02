@@ -52,7 +52,7 @@ func (d *Supervisor) NewSupervisor(ip string, pcc *params.ChainConfig, committee
 
 	d.sl = supervisor_log.NewSupervisorLog()
 
-	d.Ss = signal.NewStopSignal(2 * int(pcc.ShardNums))
+	d.Ss = signal.NewStopSignal(3 * int(pcc.ShardNums))
 
 	switch committeeMethod {
 	case "CLPA_Broker":
@@ -119,7 +119,6 @@ func (d *Supervisor) handleBlockInfos(content []byte) {
 // the Supervisor will do re-partition and send partitionMSG and txs to leaders.
 func (d *Supervisor) SupervisorTxHandling() {
 	d.comMod.MsgSendingControl()
-
 	// TxHandling is end
 	for !d.Ss.GapEnough() { // wait all txs to be handled
 		time.Sleep(time.Second)

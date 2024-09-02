@@ -5,6 +5,7 @@ import (
 	"blockEmulator/networks"
 	"encoding/json"
 	"log"
+	"time"
 )
 
 type ViewChangeData struct {
@@ -88,7 +89,7 @@ func (p *PbftConsensusNode) handleNewViewMsg(content []byte) {
 		p.view.Store(int32(vcData.NextView))
 		p.sequenceID = uint64(nvmsg.NewSeqID)
 		p.pbftStage.Store(1)
-
+		p.lastCommitTime.Store(time.Now().UnixMilli())
 		p.pl.Plog.Println("New view is updated.")
 	}
 }

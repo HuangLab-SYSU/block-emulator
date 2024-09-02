@@ -41,7 +41,7 @@ type PbftConsensusNode struct {
 
 	// view change
 	view           atomic.Int32 // denote the view of this pbft, the main node can be inferred from this variant
-	lastCommitTime time.Time    // the time since last commit.
+	lastCommitTime atomic.Int64 // the time since last commit.
 	viewChangeMap  map[ViewChangeData]map[uint64]bool
 	newViewMap     map[ViewChangeData]map[uint64]bool
 
@@ -121,7 +121,7 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 
 	// init view & last commit time
 	p.view.Store(0)
-	p.lastCommitTime = time.Now().Add(time.Second * 5)
+	p.lastCommitTime.Store(time.Now().Add(time.Second * 5).UnixMilli())
 	p.viewChangeMap = make(map[ViewChangeData]map[uint64]bool)
 	p.newViewMap = make(map[ViewChangeData]map[uint64]bool)
 
