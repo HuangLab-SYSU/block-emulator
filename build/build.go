@@ -75,12 +75,6 @@ func BuildSupervisor(nnm, snm uint64) {
 
 func BuildNewPbftNode(nid, nnm, sid, snm uint64) {
 	methodID := params.ConsensusMethod
-	if sid >= snm {
-		log.Panicf("Wrong ShardID. This ShardID is %d, but only %d shards in the current config. ", sid, snm)
-	}
-	if nid >= nnm {
-		log.Panicf("Wrong NodeID. This NodeID is %d, but only %d nodes in the current config. ", nid, nnm)
-	}
 	worker := pbft_all.NewPbftNode(sid, nid, initConfig(nid, nnm, sid, snm), params.CommitteeMethod[methodID])
 	go worker.TcpListen()
 	worker.Propose()

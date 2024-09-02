@@ -10,14 +10,14 @@ import (
 var (
 	// The following parameters can be set in main.go.
 	// default values:
-	NodesInShard = 4 // # of Nodes in a shard.
-	ShardNum     = 4 // # of shards.
+	NodesInShard = 4 // \# of Nodes in a shard.
+	ShardNum     = 4 // \# of shards.
 )
 
 var (
 	ConsensusMethod = 0 // ConsensusMethod an Integer, which indicates the choice ID of methods / consensuses. Value range: [0, 4), representing [CLPA_Broker, CLPA, Broker, Relay]"
 
-	PbftViewChangeTimeOut = 10000 // The view change threshold of pbft.
+	PbftViewChangeTimeOut = 10000 // The view change threshold of pbft. If the process of PBFT is too slow, the view change mechanism will be triggered.
 
 	Block_Interval      = 5000   // The time interval for generating a new block
 	MaxBlockSize_global = 2000   // The maximum number of transactions a block contains

@@ -49,10 +49,6 @@ func (p *PbftConsensusNode) Propose() {
 					return
 				}
 
-				if p.sequenceID == (p.NodeID*10)+10 {
-					return
-				}
-
 				p.sequenceLock.Lock()
 				p.pl.Plog.Printf("S%dN%d get sequenceLock locked, now trying to propose...\n", p.ShardID, p.NodeID)
 				// propose
