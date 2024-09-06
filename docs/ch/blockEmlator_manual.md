@@ -1,5 +1,9 @@
 # BlockEmulator 使用帮助
 
+## 在根目录下查看最新的 BlockEmulator 使用手册。
+
+下方的内容已经陈旧，最新的 BlockEmulator 使用手册在根目录下。见[使用手册](../../20240906-blockEmulator使用手册-开源版本-v2.pdf)
+
 ## 一、设置
 
 ### 下载数据集

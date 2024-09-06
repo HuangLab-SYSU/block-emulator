@@ -1,5 +1,9 @@
 This is the **Help Documents** for BlockEmulator
 
+# View the latest *BlockEmulator* user manual in the root directory.
+
+The Help Documents below are outdated; the latest BlockEmulator user manual can be found in the root directory. [See our user manual.](../../20240906-blockEmulator-UserManual-OpenSource.pdf)
+
 # 1. Settings
 ## 1.1 Download Dataset
 The dataset is from [Ethereum-On-chain data](https://xblock.pro/#/dataset/14)，which is published by [xblock.pro](https://xblock.pro/#/).
