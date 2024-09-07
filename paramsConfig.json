@@ -12,6 +12,7 @@
   "TxBatchSize": 16000,
 
   "BrokerNum": 10,
+  "RelayWithMerkleProof": 0,
   
   "DatasetFile": "./selectedTxs_300K.csv",
   "ReconfigTimeGap": 50
