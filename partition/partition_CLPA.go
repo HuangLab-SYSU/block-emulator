@@ -230,7 +230,7 @@ func (cs *CLPAState) getShard_score(v Vertex, uShard int) float64 {
 // CLPA 划分算法
 func (cs *CLPAState) CLPA_Partition() (map[string]uint64, int) {
 	cs.ComputeEdges2Shard()
-	fmt.Println(cs.CrossShardEdgeNum)
+	fmt.Println("Before running CLPA, cross-shard edge number:", cs.CrossShardEdgeNum)
 	res := make(map[string]uint64)
 	updateTreshold := make(map[string]int)
 	for iter := 0; iter < cs.MaxIterations; iter += 1 { // 第一层循环控制算法次数，constraint
@@ -269,7 +269,7 @@ func (cs *CLPAState) CLPA_Partition() (map[string]uint64, int) {
 	}
 
 	cs.ComputeEdges2Shard()
-	fmt.Println(cs.CrossShardEdgeNum)
+	fmt.Println("After running CLPA, cross-shard edge number:", cs.CrossShardEdgeNum)
 	return res, cs.CrossShardEdgeNum
 }
 

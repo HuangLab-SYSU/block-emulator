@@ -186,7 +186,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) accountTransfer_do(atm *message.Accoun
 	// add the account into the state trie
 	cphm.pbftNode.pl.Plog.Printf("%d addrs to add\n", len(atm.Addrs))
 	cphm.pbftNode.pl.Plog.Printf("%d accountstates to add\n", len(atm.AccountState))
-	cphm.pbftNode.CurChain.AddAccounts(atm.Addrs, atm.AccountState)
+	cphm.pbftNode.CurChain.AddAccounts(atm.Addrs, atm.AccountState, cphm.pbftNode.view.Load())
 
 	if uint64(len(cphm.cdm.ModifiedMap)) != atm.ATid {
 		cphm.cdm.ModifiedMap = append(cphm.cdm.ModifiedMap, atm.ModifiedMap)

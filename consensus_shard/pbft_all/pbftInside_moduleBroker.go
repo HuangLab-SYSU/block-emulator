@@ -22,7 +22,7 @@ type RawBrokerPbftExtraHandleMod struct {
 // propose request with different types
 func (rbhm *RawBrokerPbftExtraHandleMod) HandleinPropose() (bool, *message.Request) {
 	// new blocks
-	block := rbhm.pbftNode.CurChain.GenerateBlock()
+	block := rbhm.pbftNode.CurChain.GenerateBlock(int32(rbhm.pbftNode.NodeID))
 	r := &message.Request{
 		RequestType: message.BlockRequest,
 		ReqTime:     time.Now(),

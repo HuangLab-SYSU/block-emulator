@@ -23,7 +23,7 @@ type RawRelayPbftExtraHandleMod struct {
 // propose request with different types
 func (rphm *RawRelayPbftExtraHandleMod) HandleinPropose() (bool, *message.Request) {
 	// new blocks
-	block := rphm.pbftNode.CurChain.GenerateBlock()
+	block := rphm.pbftNode.CurChain.GenerateBlock(int32(rphm.pbftNode.NodeID))
 	r := &message.Request{
 		RequestType: message.BlockRequest,
 		ReqTime:     time.Now(),
@@ -92,24 +92,11 @@ func (rphm *RawRelayPbftExtraHandleMod) HandleinCommit(cmsg *message.Commit) boo
 		}
 
 		// send relay txs
-		for sid := uint64(0); sid < rphm.pbftNode.pbftChainConfig.ShardNums; sid++ {
-			if sid == rphm.pbftNode.ShardID {
-				continue
-			}
-			relay := message.Relay{
-				Txs:           rphm.pbftNode.CurChain.Txpool.RelayPool[sid],
-				SenderShardID: rphm.pbftNode.ShardID,
-				SenderSeq:     rphm.pbftNode.sequenceID,
-			}
-			rByte, err := json.Marshal(relay)
-			if err != nil {
-				log.Panic()
-			}
-			msg_send := message.MergeMessage(message.CRelay, rByte)
-			go networks.TcpDial(msg_send, rphm.pbftNode.ip_nodeTable[sid][0])
-			rphm.pbftNode.pl.Plog.Printf("S%dN%d : sended relay txs to %d\n", rphm.pbftNode.ShardID, rphm.pbftNode.NodeID, sid)
+		if params.RelayWithMerkleProof == 1 {
+			rphm.pbftNode.RelayWithProofSend(block)
+		} else {
+			rphm.pbftNode.RelayMsgSend()
 		}
-		rphm.pbftNode.CurChain.Txpool.ClearRelayPool()
 
 		// send txs excuted in this block to the listener
 		// add more message to measure more metrics

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/boltdb/bolt"
 )
@@ -24,7 +23,7 @@ type Storage struct {
 }
 
 // new a storage, build a bolt datase
-func NewStorage(cc *params.ChainConfig) *Storage {
+func NewStorage(dbFp string, cc *params.ChainConfig) *Storage {
 	dir := params.DatabaseWrite_path + "chainDB"
 	errMkdir := os.MkdirAll(dir, os.ModePerm)
 	if errMkdir != nil {
@@ -32,7 +31,7 @@ func NewStorage(cc *params.ChainConfig) *Storage {
 	}
 
 	s := &Storage{
-		dbFilePath:            params.DatabaseWrite_path + "chainDB/S" + strconv.FormatUint(cc.ShardID, 10) + "_N" + strconv.FormatUint(cc.NodeID, 10),
+		dbFilePath:            dbFp,
 		blockBucket:           "block",
 		blockHeaderBucket:     "blockHeader",
 		newestBlockHashBucket: "newestBlockHash",

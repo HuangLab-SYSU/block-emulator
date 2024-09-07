@@ -207,7 +207,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) accountTransfer_do(atm *mess
 	}
 	cphm.pbftNode.pl.Plog.Printf("%d key-vals are updated\n", cnt)
 	// add the account into the state trie
-	cphm.pbftNode.CurChain.AddAccounts(atm.Addrs, atm.AccountState)
+	cphm.pbftNode.CurChain.AddAccounts(atm.Addrs, atm.AccountState, cphm.pbftNode.view.Load())
 
 	if uint64(len(cphm.cdm.ModifiedMap)) != atm.ATid {
 		cphm.cdm.ModifiedMap = append(cphm.cdm.ModifiedMap, atm.ModifiedMap)

@@ -1,6 +1,7 @@
 package pbft_all
 
 import (
+	"blockEmulator/chain"
 	"blockEmulator/consensus_shard/pbft_all/dataSupport"
 	"blockEmulator/message"
 	"encoding/json"
@@ -18,6 +19,8 @@ func (crom *CLPARelayOutsideModule) HandleMessageOutsidePBFT(msgType message.Mes
 	switch msgType {
 	case message.CRelay:
 		crom.handleRelay(content)
+	case message.CRelayWithProof:
+		crom.handleRelayWithProof(content)
 	case message.CInject:
 		crom.handleInjectTx(content)
 
@@ -44,6 +47,33 @@ func (crom *CLPARelayOutsideModule) handleRelay(content []byte) {
 	crom.pbftNode.CurChain.Txpool.AddTxs2Pool(relay.Txs)
 	crom.pbftNode.seqMapLock.Lock()
 	crom.pbftNode.seqIDMap[relay.SenderShardID] = relay.SenderSeq
+	crom.pbftNode.seqMapLock.Unlock()
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled relay txs msg\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+}
+
+func (crom *CLPARelayOutsideModule) handleRelayWithProof(content []byte) {
+	rwp := new(message.RelayWithProof)
+	err := json.Unmarshal(content, rwp)
+	if err != nil {
+		log.Panic(err)
+	}
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : has received relay txs & proofs from shard %d, the senderSeq is %d\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, rwp.SenderShardID, rwp.SenderSeq)
+	// validate the proofs of txs
+	isAllCorrect := true
+	for i, tx := range rwp.Txs {
+		if ok, _ := chain.TxProofVerify(tx.TxHash, &rwp.TxProofs[i]); !ok {
+			isAllCorrect = false
+			break
+		}
+	}
+	if isAllCorrect {
+		crom.pbftNode.CurChain.Txpool.AddTxs2Pool(rwp.Txs)
+	} else {
+		crom.pbftNode.pl.Plog.Println("Err: wrong proof!")
+	}
+
+	crom.pbftNode.seqMapLock.Lock()
+	crom.pbftNode.seqIDMap[rwp.SenderShardID] = rwp.SenderSeq
 	crom.pbftNode.seqMapLock.Unlock()
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled relay txs msg\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }

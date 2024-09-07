@@ -4,21 +4,23 @@ import (
 	"blockEmulator/core"
 	"blockEmulator/params"
 	"blockEmulator/storage"
+	"fmt"
 
 	"github.com/boltdb/bolt"
 )
 
-func initStorage(ShardID, NodeID uint64) *storage.Storage {
+func initStorage(dbfp string, ShardID, NodeID uint64) *storage.Storage {
 	pcc := &params.ChainConfig{
 		ChainID: ShardID,
 		NodeID:  NodeID,
 		ShardID: ShardID,
 	}
-	return storage.NewStorage(pcc)
+	return storage.NewStorage(dbfp, pcc)
 }
 
 func QueryBlocks(ShardID, NodeID uint64) []*core.Block {
-	db := initStorage(ShardID, NodeID).DataBase
+	dbfp := params.DatabaseWrite_path + fmt.Sprintf("chainDB/S%d_N%d", ShardID, NodeID)
+	db := initStorage(dbfp, ShardID, NodeID).DataBase
 	defer db.Close()
 	blocks := make([]*core.Block, 0)
 	err1 := db.View(func(tx *bolt.Tx) error {
@@ -33,13 +35,14 @@ func QueryBlocks(ShardID, NodeID uint64) []*core.Block {
 		return nil
 	})
 	if err1 != nil {
-		err1.Error()
+		fmt.Println(err1.Error())
 	}
 	return blocks
 }
 
 func QueryBlock(ShardID, NodeID, Number uint64) *core.Block {
-	db := initStorage(ShardID, NodeID).DataBase
+	dbfp := params.DatabaseWrite_path + fmt.Sprintf("chainDB/S%d_N%d", ShardID, NodeID)
+	db := initStorage(dbfp, ShardID, NodeID).DataBase
 	defer db.Close()
 	block := new(core.Block)
 	err1 := db.View(func(tx *bolt.Tx) error {
@@ -56,13 +59,14 @@ func QueryBlock(ShardID, NodeID, Number uint64) *core.Block {
 		return nil
 	})
 	if err1 != nil {
-		err1.Error()
+		fmt.Println(err1.Error())
 	}
 	return block
 }
 
 func QueryNewestBlock(ShardID, NodeID uint64) *core.Block {
-	storage := initStorage(ShardID, NodeID)
+	dbfp := params.DatabaseWrite_path + fmt.Sprintf("chainDB/S%d_N%d", ShardID, NodeID)
+	storage := initStorage(dbfp, ShardID, NodeID)
 	defer storage.DataBase.Close()
 	hash, _ := storage.GetNewestBlockHash()
 	block, _ := storage.GetBlock(hash)
@@ -70,7 +74,8 @@ func QueryNewestBlock(ShardID, NodeID uint64) *core.Block {
 }
 
 func QueryBlockTxs(ShardID, NodeID, Number uint64) []*core.Transaction {
-	db := initStorage(ShardID, NodeID).DataBase
+	dbfp := params.DatabaseWrite_path + fmt.Sprintf("chainDB/S%d_N%d", ShardID, NodeID)
+	db := initStorage(dbfp, ShardID, NodeID).DataBase
 	defer db.Close()
 	block := new(core.Block)
 	err1 := db.View(func(tx *bolt.Tx) error {
@@ -87,7 +92,7 @@ func QueryBlockTxs(ShardID, NodeID, Number uint64) []*core.Transaction {
 		return nil
 	})
 	if err1 != nil {
-		err1.Error()
+		fmt.Println(err1.Error())
 	}
 	return block.Body
 }

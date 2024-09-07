@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/bits-and-blooms/bitset"
 )
 
 // The definition of blockheader
@@ -17,9 +19,10 @@ type BlockHeader struct {
 	ParentBlockHash []byte
 	StateRoot       []byte
 	TxRoot          []byte
+	Bloom           bitset.BitSet
 	Number          uint64
 	Time            time.Time
-	Miner           uint64
+	Miner           int32
 }
 
 // Encode blockHeader for storing further

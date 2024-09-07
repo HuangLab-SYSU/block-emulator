@@ -1,8 +1,10 @@
 package pbft_all
 
 import (
+	"blockEmulator/chain"
 	"blockEmulator/core"
 	"blockEmulator/message"
+	"blockEmulator/networks"
 	"blockEmulator/params"
 	"blockEmulator/shard"
 	"crypto/sha256"
@@ -97,4 +99,64 @@ func computeTCL(txs []*core.Transaction, commitTS time.Time) int64 {
 		ret += commitTS.Sub(tx.Time).Milliseconds()
 	}
 	return ret
+}
+
+// help to send Relay message to other shards.
+func (p *PbftConsensusNode) RelayMsgSend() {
+	if params.RelayWithMerkleProof != 0 {
+		log.Panicf("Parameter Error: RelayWithMerkleProof should be 0, but RelayWithMerkleProof=%d", params.RelayWithMerkleProof)
+	}
+
+	for sid := uint64(0); sid < p.pbftChainConfig.ShardNums; sid++ {
+		if sid == p.ShardID {
+			continue
+		}
+		relay := message.Relay{
+			Txs:           p.CurChain.Txpool.RelayPool[sid],
+			SenderShardID: p.ShardID,
+			SenderSeq:     p.sequenceID,
+		}
+		rByte, err := json.Marshal(relay)
+		if err != nil {
+			log.Panic()
+		}
+		msg_send := message.MergeMessage(message.CRelay, rByte)
+		go networks.TcpDial(msg_send, p.ip_nodeTable[sid][0])
+		p.pl.Plog.Printf("S%dN%d : sended relay txs to %d\n", p.ShardID, p.NodeID, sid)
+	}
+	p.CurChain.Txpool.ClearRelayPool()
+}
+
+// help to send RelayWithProof message to other shards.
+func (p *PbftConsensusNode) RelayWithProofSend(block *core.Block) {
+	if params.RelayWithMerkleProof != 1 {
+		log.Panicf("Parameter Error: RelayWithMerkleProof should be 1, but RelayWithMerkleProof=%d", params.RelayWithMerkleProof)
+	}
+	for sid := uint64(0); sid < p.pbftChainConfig.ShardNums; sid++ {
+		if sid == p.ShardID {
+			continue
+		}
+
+		txHashes := make([][]byte, len(p.CurChain.Txpool.RelayPool[sid]))
+		for i, tx := range p.CurChain.Txpool.RelayPool[sid] {
+			txHashes[i] = tx.TxHash[:]
+		}
+		txProofs := chain.TxProofBatchGenerateOnBlock(txHashes, block)
+
+		rwp := message.RelayWithProof{
+			Txs:           p.CurChain.Txpool.RelayPool[sid],
+			TxProofs:      txProofs,
+			SenderShardID: p.ShardID,
+			SenderSeq:     p.sequenceID,
+		}
+		rByte, err := json.Marshal(rwp)
+		if err != nil {
+			log.Panic()
+		}
+		msg_send := message.MergeMessage(message.CRelayWithProof, rByte)
+
+		go networks.TcpDial(msg_send, p.ip_nodeTable[sid][0])
+		p.pl.Plog.Printf("S%dN%d : sended relay txs & proofs to %d\n", p.ShardID, p.NodeID, sid)
+	}
+	p.CurChain.Txpool.ClearRelayPool()
 }

@@ -19,8 +19,9 @@ const (
 	CSendOldrequest    MessageType = "sendOldrequest"
 	CStop              MessageType = "stop"
 
-	CRelay  MessageType = "relay"
-	CInject MessageType = "inject"
+	CRelay          MessageType = "relay"
+	CRelayWithProof MessageType = "CRelay&Proof"
+	CInject         MessageType = "inject"
 
 	CBlockInfo MessageType = "BlockInfo"
 	CSeqIDinfo MessageType = "SequenceID"

@@ -24,7 +24,9 @@ var (
 	InjectSpeed         = 2000   // The speed of transaction injection
 	TotalDataSize       = 160000 // The total number of txs to be injected
 	TxBatchSize         = 16000  // The supervisor read a batch of txs then send them. The size of a batch is 'TxBatchSize'
-	BrokerNum           = 10     // The # of Broker accounts used in Broker / CLPA_Broker.
+
+	BrokerNum            = 10 // The # of Broker accounts used in Broker / CLPA_Broker.
+	RelayWithMerkleProof = 0  // When using a consensus about "Relay", nodes will send Tx Relay with proof if "RelayWithMerkleProof" = 1
 
 	ExpDataRootDir     = "expTest"                     // The root dir where the experimental data should locate.
 	DataWrite_path     = ExpDataRootDir + "/result/"   // Measurement data result output path
@@ -50,10 +52,11 @@ type globalConfig struct {
 	InjectSpeed        int `json:"InjectSpeed"`
 	TotalDataSize      int `json:"TotalDataSize"`
 
-	TxBatchSize     int    `json:"TxBatchSize"`
-	BrokerNum       int    `json:"BrokerNum"`
-	DatasetFile     string `json:"DatasetFile"`
-	ReconfigTimeGap int    `json:"ReconfigTimeGap"`
+	TxBatchSize          int    `json:"TxBatchSize"`
+	BrokerNum            int    `json:"BrokerNum"`
+	RelayWithMerkleProof int    `json:"RelayWithMerkleProof"`
+	DatasetFile          string `json:"DatasetFile"`
+	ReconfigTimeGap      int    `json:"ReconfigTimeGap"`
 }
 
 func ReadConfigFile() {
@@ -89,6 +92,7 @@ func ReadConfigFile() {
 	TxBatchSize = config.TxBatchSize
 
 	BrokerNum = config.BrokerNum
+	RelayWithMerkleProof = config.RelayWithMerkleProof
 	DatasetFile = config.DatasetFile
 
 	ReconfigTimeGap = config.ReconfigTimeGap

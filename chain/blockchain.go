@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bits-and-blooms/bitset"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -39,9 +40,18 @@ func GetTxTreeRoot(txs []*core.Transaction) []byte {
 	triedb := trie.NewDatabase(rawdb.NewMemoryDatabase())
 	transactionTree := trie.NewEmpty(triedb)
 	for _, tx := range txs {
-		transactionTree.Update(tx.TxHash, tx.Encode())
+		transactionTree.Update(tx.TxHash, []byte{0})
 	}
 	return transactionTree.Hash().Bytes()
+}
+
+// Get bloom filter
+func GetBloomFilter(txs []*core.Transaction) *bitset.BitSet {
+	bs := bitset.New(2048)
+	for _, tx := range txs {
+		bs.Set(utils.ModBytes(tx.TxHash, 2048))
+	}
+	return bs
 }
 
 // Write Partition Map
@@ -131,11 +141,6 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 			st.Update([]byte(tx.Recipient), r_state.Encode())
 			cnt++
 		}
-
-		// if senderIn && !recipientIn {
-		// 	// change this part to the pbft stage
-		// 	fmt.Printf("this transaciton is cross-shard txs, will be sent to relaypool later\n")
-		// }
 	}
 	// commit the memory trie to the database in the disk
 	if cnt == 0 {
@@ -155,7 +160,7 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 }
 
 // generate (mine) a block, this function return a block
-func (bc *BlockChain) GenerateBlock() *core.Block {
+func (bc *BlockChain) GenerateBlock(miner int32) *core.Block {
 	// pack the transactions from the txpool
 	txs := bc.Txpool.PackTxs(bc.ChainConfig.BlockSize)
 	bh := &core.BlockHeader{
@@ -168,8 +173,10 @@ func (bc *BlockChain) GenerateBlock() *core.Block {
 
 	bh.StateRoot = rt.Bytes()
 	bh.TxRoot = GetTxTreeRoot(txs)
+	bh.Bloom = *GetBloomFilter(txs)
+	bh.Miner = 0
 	b := core.NewBlock(bh, txs)
-	b.Header.Miner = 0
+
 	b.Hash = b.Header.Hash()
 	return b
 }
@@ -189,6 +196,7 @@ func (bc *BlockChain) NewGenisisBlock() *core.Block {
 	statusTrie := trie.NewEmpty(triedb)
 	bh.StateRoot = statusTrie.Hash().Bytes()
 	bh.TxRoot = GetTxTreeRoot(body)
+	bh.Bloom = *GetBloomFilter(body)
 	b := core.NewBlock(bh, body)
 	b.Hash = b.Header.Hash()
 	return b
@@ -234,11 +242,12 @@ func (bc *BlockChain) AddBlock(b *core.Block) {
 // the ChainConfig is pre-defined to identify the blockchain; the db is the status trie database in disk
 func NewBlockChain(cc *params.ChainConfig, db ethdb.Database) (*BlockChain, error) {
 	fmt.Println("Generating a new blockchain", db)
+	chainDBfp := params.DatabaseWrite_path + fmt.Sprintf("chainDB/S%d_N%d", cc.ShardID, cc.NodeID)
 	bc := &BlockChain{
 		db:           db,
 		ChainConfig:  cc,
 		Txpool:       core.NewTxPool(),
-		Storage:      storage.NewStorage(cc),
+		Storage:      storage.NewStorage(chainDBfp, cc),
 		PartitionMap: make(map[string]uint64),
 	}
 	curHash, err := bc.Storage.GetNewestBlockHash()
@@ -291,7 +300,7 @@ func (bc *BlockChain) IsValidBlock(b *core.Block) error {
 }
 
 // add accounts
-func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
+func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState, miner int32) {
 	fmt.Printf("The len of accounts is %d, now adding the accounts\n", len(ac))
 
 	bh := &core.BlockHeader{
@@ -300,7 +309,7 @@ func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
 		Time:            time.Time{},
 	}
 	// handle transactions to build root
-	rt := common.BytesToHash(bc.CurrentBlock.Header.StateRoot)
+	rt := bc.CurrentBlock.Header.StateRoot
 	if len(ac) != 0 {
 		st, err := trie.New(trie.TrieID(common.BytesToHash(bc.CurrentBlock.Header.StateRoot)), bc.triedb)
 		if err != nil {
@@ -322,18 +331,19 @@ func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState) {
 		if err != nil {
 			log.Panic(err)
 		}
-		err = bc.triedb.Commit(rt, false)
+		err = bc.triedb.Commit(rrt, false)
 		if err != nil {
 			log.Panic(err)
 		}
-		rt = rrt
+		rt = rrt.Bytes()
 	}
 
 	emptyTxs := make([]*core.Transaction, 0)
-	bh.StateRoot = rt.Bytes()
+	bh.StateRoot = rt
 	bh.TxRoot = GetTxTreeRoot(emptyTxs)
+	bh.Bloom = *GetBloomFilter(emptyTxs)
+	bh.Miner = 0
 	b := core.NewBlock(bh, emptyTxs)
-	b.Header.Miner = 0
 	b.Hash = b.Header.Hash()
 
 	bc.CurrentBlock = b
@@ -369,6 +379,7 @@ func (bc *BlockChain) FetchAccounts(addrs []string) []*core.AccountState {
 func (bc *BlockChain) CloseBlockChain() {
 	bc.Storage.DataBase.Close()
 	bc.triedb.CommitPreimages()
+	bc.db.Close()
 }
 
 // print the details of a blockchain

@@ -35,7 +35,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod_forBroker) HandleinPropose() (bool, *me
 	}
 
 	// ELSE: propose a block
-	block := cphm.pbftNode.CurChain.GenerateBlock()
+	block := cphm.pbftNode.CurChain.GenerateBlock(int32(cphm.pbftNode.NodeID))
 	r := &message.Request{
 		RequestType: message.BlockRequest,
 		ReqTime:     time.Now(),
