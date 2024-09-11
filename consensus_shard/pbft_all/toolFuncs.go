@@ -160,3 +160,23 @@ func (p *PbftConsensusNode) RelayWithProofSend(block *core.Block) {
 	}
 	p.CurChain.Txpool.ClearRelayPool()
 }
+
+// delete the txs in blocks. This list should be locked before calling this func.
+func DeleteElementsInList(list []*core.Transaction, elements []*core.Transaction) []*core.Transaction {
+	elementHashMap := make(map[string]bool)
+	for _, element := range elements {
+		elementHashMap[string(element.TxHash)] = true
+	}
+
+	removedCnt := 0
+	for left, right := 0, 0; right < len(list); right++ {
+		// if this tx should be deleted.
+		if _, ok := elementHashMap[string(list[right].TxHash)]; ok {
+			removedCnt++
+		} else {
+			list[left] = list[right]
+			left++
+		}
+	}
+	return list[:-removedCnt]
+}
