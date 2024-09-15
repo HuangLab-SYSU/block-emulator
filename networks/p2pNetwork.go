@@ -1,52 +1,90 @@
 package networks
 
 import (
+	"blockEmulator/params"
 	"bytes"
 	"io"
 	"log"
 	"net"
 	"sync"
+	"time"
+
+	"math/rand"
+
+	"golang.org/x/time/rate"
 )
 
 var connMaplock sync.Mutex
 var connectionPool = make(map[string]net.Conn, 0)
 
+// network params.
+var burstSize = 10 * 1024 * 1024 // 10MB
+var randomDelayGenerator *rand.Rand
+var rateLimiterDownload *rate.Limiter
+
+// Define the latency, jitter and bandwidth here.
+// Init tools.
+func InitNetworkTools() {
+	// avoid wrong params.
+	if params.Delay < 0 {
+		params.Delay = 0
+	}
+	if params.JitterRange < 0 {
+		params.JitterRange = 0
+	}
+	if params.Bandwidth < 0 {
+		params.Bandwidth = 0x7fffffff
+	}
+
+	// generate the random seed.
+	randomDelayGenerator = rand.New(rand.NewSource(time.Now().UnixMicro()))
+	// Limit the download rate
+	rateLimiterDownload = rate.NewLimiter(rate.Limit(params.Bandwidth), burstSize)
+}
+
 func TcpDial(context []byte, addr string) {
-	connMaplock.Lock()
-	defer connMaplock.Unlock()
+	go func() {
+		// simulate the delay
+		thisDelay := params.Delay
+		if params.JitterRange != 0 {
+			thisDelay = randomDelayGenerator.Intn(params.JitterRange) - params.JitterRange/2 + params.Delay
+		}
+		time.Sleep(time.Millisecond * time.Duration(thisDelay))
 
-	var err error
-	var conn net.Conn // Define conn here
-	if c, ok := connectionPool[addr]; ok {
-		if tcpConn, tcpOk := c.(*net.TCPConn); tcpOk {
-			if err := tcpConn.SetKeepAlive(true); err != nil {
-				delete(connectionPool, addr) // Remove if not alive
-				conn, err = net.Dial("tcp", addr)
-				if err != nil {
-					log.Println("Reconnect error", err)
-					return
+		connMaplock.Lock()
+		defer connMaplock.Unlock()
+
+		var err error
+		var conn net.Conn // Define conn here
+
+		// if this connection is not built, build it.
+		if c, ok := connectionPool[addr]; ok {
+			if tcpConn, tcpOk := c.(*net.TCPConn); tcpOk {
+				if err := tcpConn.SetKeepAlive(true); err != nil {
+					delete(connectionPool, addr) // Remove if not alive
+					conn, err = net.Dial("tcp", addr)
+					if err != nil {
+						log.Println("Reconnect error", err)
+						return
+					}
+					connectionPool[addr] = conn
+					go ReadFromConn(addr) // Start reading from new connection
+				} else {
+					conn = c // Use the existing connection
 				}
-				connectionPool[addr] = conn
-				go ReadFromConn(addr) // Start reading from new connection
-			} else {
-				conn = c // Use the existing connection
 			}
+		} else {
+			conn, err = net.Dial("tcp", addr)
+			if err != nil {
+				log.Println("Connect error", err)
+				return
+			}
+			connectionPool[addr] = conn
+			go ReadFromConn(addr) // Start reading from new connection
 		}
-	} else {
-		conn, err = net.Dial("tcp", addr)
-		if err != nil {
-			log.Println("Connect error", err)
-			return
-		}
-		connectionPool[addr] = conn
-		go ReadFromConn(addr) // Start reading from new connection
-	}
 
-	_, err = conn.Write(append(context, '\n'))
-	if err != nil {
-		log.Println("Write error", err)
-		return
-	}
+		writeToConn(append(context, '\n'), conn)
+	}()
 }
 
 // Broadcast sends a message to multiple receivers, excluding the sender.
@@ -74,11 +112,14 @@ func CloseAllConnInPool() {
 func ReadFromConn(addr string) {
 	conn := connectionPool[addr]
 
+	// new a conn reader
+	connReader := NewConnReader(conn, rateLimiterDownload)
+
 	buffer := make([]byte, 1024)
 	var messageBuffer bytes.Buffer
 
 	for {
-		n, err := conn.Read(buffer)
+		n, err := connReader.Read(buffer)
 		if err != nil {
 			if err != io.EOF {
 				log.Println("Read error for address", addr, ":", err)

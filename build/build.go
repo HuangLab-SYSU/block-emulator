@@ -2,6 +2,7 @@ package build
 
 import (
 	"blockEmulator/consensus_shard/pbft_all"
+	"blockEmulator/networks"
 	"blockEmulator/params"
 	"blockEmulator/supervisor"
 	"encoding/json"
@@ -42,6 +43,9 @@ func initConfig(nid, nnm, sid, snm uint64) *params.ChainConfig {
 
 	params.NodesInShard = int(nnm)
 	params.ShardNum = int(snm)
+
+	// init the network layer
+	networks.InitNetworkTools()
 
 	pcc := &params.ChainConfig{
 		ChainID:        sid,

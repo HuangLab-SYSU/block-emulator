@@ -14,6 +14,7 @@ var (
 	ShardNum     = 4 // \# of shards.
 )
 
+// consensus layer & output file path
 var (
 	ConsensusMethod = 0 // ConsensusMethod an Integer, which indicates the choice ID of methods / consensuses. Value range: [0, 4), representing [CLPA_Broker, CLPA, Broker, Relay]"
 
@@ -39,6 +40,13 @@ var (
 	ReconfigTimeGap = 50 // The time gap between epochs. This variable is only used in CLPA / CLPA_Broker now.
 )
 
+// network layer
+var (
+	Delay       int // The delay of network (ms) when sending. 0 if delay < 0
+	JitterRange int // The jitter range of delay (ms). Jitter follows a uniform distribution. 0 if JitterRange < 0.
+	Bandwidth   int // The bandwidth limit (Bytes). +inf if bandwidth < 0
+)
+
 // read from file
 type globalConfig struct {
 	ConsensusMethod int `json:"ConsensusMethod"`
@@ -57,6 +65,10 @@ type globalConfig struct {
 	RelayWithMerkleProof int    `json:"RelayWithMerkleProof"`
 	DatasetFile          string `json:"DatasetFile"`
 	ReconfigTimeGap      int    `json:"ReconfigTimeGap"`
+
+	Delay       int `json:"Delay"`
+	JitterRange int `json:"JitterRange"`
+	Bandwidth   int `json:"Bandwidth"`
 }
 
 func ReadConfigFile() {
@@ -75,10 +87,12 @@ func ReadConfigFile() {
 	fmt.Printf("Config: %+v\n", config)
 
 	// set configurations to params
+	// consensus params
 	ConsensusMethod = config.ConsensusMethod
 
 	PbftViewChangeTimeOut = config.PbftViewChangeTimeOut
 
+	// data file params
 	ExpDataRootDir = config.ExpDataRootDir
 	DataWrite_path = ExpDataRootDir + "/result/"
 	LogWrite_path = ExpDataRootDir + "/log"
@@ -96,4 +110,9 @@ func ReadConfigFile() {
 	DatasetFile = config.DatasetFile
 
 	ReconfigTimeGap = config.ReconfigTimeGap
+
+	// network params
+	Delay = config.Delay
+	JitterRange = config.JitterRange
+	Bandwidth = config.Bandwidth
 }

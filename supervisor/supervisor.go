@@ -131,6 +131,9 @@ func (d *Supervisor) SupervisorTxHandling() {
 			networks.TcpDial(stopmsg, d.Ip_nodeTable[sid][nid])
 		}
 	}
+	// make sure all stop messages are sent.
+	time.Sleep(time.Duration(params.Delay+params.JitterRange+3) * time.Millisecond)
+
 	d.sl.Slog.Println("Supervisor: now Closing")
 	d.listenStop = true
 	d.CloseSupervisor()
