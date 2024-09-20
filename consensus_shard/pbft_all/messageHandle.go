@@ -100,13 +100,13 @@ func (p *PbftConsensusNode) handlePrePrepare(content []byte) {
 	curView := p.view.Load()
 	p.pbftLock.Lock()
 	defer p.pbftLock.Unlock()
-	for p.pbftStage.Load() < 1 && ppmsg.SeqID == p.sequenceID && p.view.Load() == curView {
+	for p.pbftStage.Load() < 1 && ppmsg.SeqID >= p.sequenceID && p.view.Load() == curView {
 		p.conditionalVarpbftLock.Wait()
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
 
 	// if this message is out of date, return.
-	if ppmsg.SeqID != p.sequenceID || p.view.Load() != curView {
+	if ppmsg.SeqID < p.sequenceID || p.view.Load() != curView {
 		return
 	}
 
@@ -160,13 +160,13 @@ func (p *PbftConsensusNode) handlePrepare(content []byte) {
 	curView := p.view.Load()
 	p.pbftLock.Lock()
 	defer p.pbftLock.Unlock()
-	for p.pbftStage.Load() < 2 && pmsg.SeqID == p.sequenceID && p.view.Load() == curView {
+	for p.pbftStage.Load() < 2 && pmsg.SeqID >= p.sequenceID && p.view.Load() == curView {
 		p.conditionalVarpbftLock.Wait()
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
 
 	// if this message is out of date, return.
-	if pmsg.SeqID != p.sequenceID || p.view.Load() != curView {
+	if pmsg.SeqID < p.sequenceID || p.view.Load() != curView {
 		return
 	}
 
@@ -221,12 +221,12 @@ func (p *PbftConsensusNode) handleCommit(content []byte) {
 	curView := p.view.Load()
 	p.pbftLock.Lock()
 	defer p.pbftLock.Unlock()
-	for p.pbftStage.Load() < 3 && cmsg.SeqID == p.sequenceID && p.view.Load() == curView {
+	for p.pbftStage.Load() < 3 && cmsg.SeqID >= p.sequenceID && p.view.Load() == curView {
 		p.conditionalVarpbftLock.Wait()
 	}
 	defer p.conditionalVarpbftLock.Broadcast()
 
-	if cmsg.SeqID != p.sequenceID || p.view.Load() != curView {
+	if cmsg.SeqID < p.sequenceID || p.view.Load() != curView {
 		return
 	}
 

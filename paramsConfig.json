@@ -17,7 +17,7 @@
   "DatasetFile": "./selectedTxs_300K.csv",
   "ReconfigTimeGap": 50,
 
-  "Delay": 2000,
-  "JitterRange": 1000,
+  "Delay": -1,
+  "JitterRange": -1,
   "Bandwidth":1000000
 }
