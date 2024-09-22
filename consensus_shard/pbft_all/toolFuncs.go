@@ -42,6 +42,15 @@ func (p *PbftConsensusNode) getNeighborNodes() []string {
 	return receiverNodes
 }
 
+// get node ips of shard id=shardID
+func (p *PbftConsensusNode) getNodeIpsWithinShard(shardID uint64) []string {
+	receiverNodes := make([]string, 0)
+	for _, ip := range p.ip_nodeTable[shardID] {
+		receiverNodes = append(receiverNodes, ip)
+	}
+	return receiverNodes
+}
+
 func (p *PbftConsensusNode) writeCSVline(metricName []string, metricVal []string) {
 	// Construct directory path
 	dirpath := params.DataWrite_path + "pbft_shardNum=" + strconv.Itoa(int(p.pbftChainConfig.ShardNums))
