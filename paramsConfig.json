@@ -19,5 +19,5 @@
 
   "Delay": -1,
   "JitterRange": -1,
-  "Bandwidth":1000000
+  "Bandwidth":10000000
 }

@@ -18,9 +18,9 @@ var connMaplock sync.Mutex
 var connectionPool = make(map[string]net.Conn, 0)
 
 // network params.
-var burstSize = 10 * 1024 * 1024 // 10MB
 var randomDelayGenerator *rand.Rand
 var rateLimiterDownload *rate.Limiter
+var rateLimiterUpload *rate.Limiter
 
 // Define the latency, jitter and bandwidth here.
 // Init tools.
@@ -39,7 +39,9 @@ func InitNetworkTools() {
 	// generate the random seed.
 	randomDelayGenerator = rand.New(rand.NewSource(time.Now().UnixMicro()))
 	// Limit the download rate
-	rateLimiterDownload = rate.NewLimiter(rate.Limit(params.Bandwidth), burstSize)
+	rateLimiterDownload = rate.NewLimiter(rate.Limit(params.Bandwidth), params.Bandwidth)
+	// Limit the upload rate
+	rateLimiterUpload = rate.NewLimiter(rate.Limit(params.Bandwidth), params.Bandwidth)
 }
 
 func TcpDial(context []byte, addr string) {
@@ -83,7 +85,7 @@ func TcpDial(context []byte, addr string) {
 			go ReadFromConn(addr) // Start reading from new connection
 		}
 
-		writeToConn(append(context, '\n'), conn)
+		writeToConn(append(context, '\n'), conn, rateLimiterUpload)
 	}()
 }
 

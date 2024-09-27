@@ -1,7 +1,6 @@
 package networks
 
 import (
-	"blockEmulator/params"
 	"context"
 	"io"
 	"log"
@@ -20,16 +19,21 @@ type rateLimitedWriter struct {
 func (w *rateLimitedWriter) Write(p []byte) (int, error) {
 	// Calculate the number of bytes to write and wait for the limiter to grant enough tokens
 	n := len(p)
-	if err := w.limiter.WaitN(context.TODO(), n); err != nil {
-		return 0, err
+	for n > 0 {
+		writeByteNum := w.limiter.Burst()
+		if writeByteNum > n {
+			writeByteNum = n
+		}
+		if err := w.limiter.WaitN(context.TODO(), writeByteNum); err != nil {
+			return 0, err
+		}
+		n -= writeByteNum
 	}
 	// Actually write the data
 	return w.writer.Write(p)
 }
 
-func writeToConn(connMsg []byte, conn net.Conn) {
-	// bandwidth limit
-	limiter := rate.NewLimiter(rate.Limit(params.Bandwidth), burstSize) // Limit
+func writeToConn(connMsg []byte, conn net.Conn, limiter *rate.Limiter) {
 	// Wrap the connection with rateLimitedWriter
 	rateLimitedConn := &rateLimitedWriter{writer: conn, limiter: limiter}
 

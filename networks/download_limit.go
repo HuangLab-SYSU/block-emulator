@@ -18,9 +18,17 @@ type rateLimitedReader struct {
 func (r *rateLimitedReader) Read(p []byte) (int, error) {
 	// Calculate the number of bytes to read and wait for the limiter to grant enough tokens
 	n := len(p)
-	if err := r.limiter.WaitN(context.TODO(), n); err != nil {
-		return 0, err
+	for n > 0 {
+		writeByteNum := r.limiter.Burst()
+		if writeByteNum > n {
+			writeByteNum = n
+		}
+		if err := r.limiter.WaitN(context.TODO(), n); err != nil {
+			return 0, err
+		}
+		n -= writeByteNum
 	}
+
 	// Actually read the data
 	return r.reader.Read(p)
 }
