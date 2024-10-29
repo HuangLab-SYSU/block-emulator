@@ -6,7 +6,11 @@
   "ExpDataRootDir": "expTest",
 
   "Block_Interval": 5000,
+
   "BlockSize": 2000,
+  "BlocksizeInBytes": 200000,
+  "UseBlocksizeInBytes": 0,
+
   "InjectSpeed": 2000,
   "TotalDataSize": 160000,
   "TxBatchSize": 16000,

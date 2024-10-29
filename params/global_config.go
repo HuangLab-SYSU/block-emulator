@@ -20,11 +20,15 @@ var (
 
 	PbftViewChangeTimeOut = 10000 // The view change threshold of pbft. If the process of PBFT is too slow, the view change mechanism will be triggered.
 
-	Block_Interval      = 5000   // The time interval for generating a new block
-	MaxBlockSize_global = 2000   // The maximum number of transactions a block contains
-	InjectSpeed         = 2000   // The speed of transaction injection
-	TotalDataSize       = 160000 // The total number of txs to be injected
-	TxBatchSize         = 16000  // The supervisor read a batch of txs then send them. The size of a batch is 'TxBatchSize'
+	Block_Interval = 5000 // The time interval for generating a new block
+
+	MaxBlockSize_global = 2000  // The maximum number of transactions a block contains
+	BlocksizeInBytes    = 20000 // The maximum size (in bytes) of block body
+	UseBlocksizeInBytes = 0     // Use blocksizeInBytes as the blocksize measurement if '1'.
+
+	InjectSpeed   = 2000   // The speed of transaction injection
+	TotalDataSize = 160000 // The total number of txs to be injected
+	TxBatchSize   = 16000  // The supervisor read a batch of txs then send them. The size of a batch is 'TxBatchSize'
 
 	BrokerNum            = 10 // The # of Broker accounts used in Broker / CLPA_Broker.
 	RelayWithMerkleProof = 0  // When using a consensus about "Relay", nodes will send Tx Relay with proof if "RelayWithMerkleProof" = 1
@@ -55,10 +59,14 @@ type globalConfig struct {
 
 	ExpDataRootDir string `json:"ExpDataRootDir"`
 
-	BlockInterval      int `json:"Block_Interval"`
-	MaxBlockSizeGlobal int `json:"BlockSize"`
-	InjectSpeed        int `json:"InjectSpeed"`
-	TotalDataSize      int `json:"TotalDataSize"`
+	BlockInterval int `json:"Block_Interval"`
+
+	BlocksizeInBytes    int `json:"BlocksizeInBytes"`
+	MaxBlockSizeGlobal  int `json:"BlockSize"`
+	UseBlocksizeInBytes int `json:"UseBlocksizeInBytes"`
+
+	InjectSpeed   int `json:"InjectSpeed"`
+	TotalDataSize int `json:"TotalDataSize"`
 
 	TxBatchSize          int    `json:"TxBatchSize"`
 	BrokerNum            int    `json:"BrokerNum"`
@@ -99,7 +107,10 @@ func ReadConfigFile() {
 	DatabaseWrite_path = ExpDataRootDir + "/database/"
 
 	Block_Interval = config.BlockInterval
+
 	MaxBlockSize_global = config.MaxBlockSizeGlobal
+	BlocksizeInBytes = config.BlocksizeInBytes
+	UseBlocksizeInBytes = config.UseBlocksizeInBytes
 
 	InjectSpeed = config.InjectSpeed
 	TotalDataSize = config.TotalDataSize

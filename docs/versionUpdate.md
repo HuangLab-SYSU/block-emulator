@@ -1,5 +1,14 @@
 # Version Updates
 
+## 2024/10/29
+1. **Debug**: We found that the shardNum in `main.go` cannot affect the `params.ShardNum`. This bug originated from the updates made on 2024/09/01 and led to incorrect CLPA results. **The bug has now been fixed.**
+2. **Debug**: When setting the shardNum as 1 and using the CLPA consensus, the supervisor node will enter a dead loop. **Now the CLPA parition algorithm will not be triggered when `shardNum` is 1.**
+3. **A new method to control blocksize**: Now users can use datasize (in bytes) to control the size of a block, instead of the number of transactions. In `paramsConfig.json`, users can set `UseBlocksizeInBytes` as `1` to enable this method and specify `BlocksizeInBytes` to limit the size of block. 
+
+(Acknowledgement: https://github.com/HuangLab-SYSU/block-emulator/issues/40, https://github.com/HuangLab-SYSU/block-emulator/issues/42)
+
+
+
 ## 2024/09/01
 1. **An IP Table**: A file named ./ipTable.json is provided for IP configuration. Users may modify the IP addresses of the nodes as needed. Please note that the first-level key in this JSON file is "ShardID", and the second-level key is "NodeID".
 2. **Params Configuration File**: Users can define various parameters in the ./paramsConfig.json file, including ConsensusMethod, ExpDataRootDir, DatasetFile, and others.

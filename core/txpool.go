@@ -6,6 +6,7 @@ import (
 	"blockEmulator/utils"
 	"sync"
 	"time"
+	"unsafe"
 )
 
 type TxPool struct {
@@ -59,6 +60,26 @@ func (txpool *TxPool) PackTxs(max_txs uint64) []*Transaction {
 	if uint64(len(txpool.TxQueue)) < txNum {
 		txNum = uint64(len(txpool.TxQueue))
 	}
+	txs_Packed := txpool.TxQueue[:txNum]
+	txpool.TxQueue = txpool.TxQueue[txNum:]
+	return txs_Packed
+}
+
+// Pack transaction for a proposal (use 'BlocksizeInBytes' to control)
+func (txpool *TxPool) PackTxsWithBytes(max_bytes int) []*Transaction {
+	txpool.lock.Lock()
+	defer txpool.lock.Unlock()
+
+	txNum := len(txpool.TxQueue)
+	currentSize := 0
+	for tx_idx, tx := range txpool.TxQueue {
+		currentSize += int(unsafe.Sizeof(*tx))
+		if currentSize > max_bytes {
+			txNum = tx_idx
+			break
+		}
+	}
+
 	txs_Packed := txpool.TxQueue[:txNum]
 	txpool.TxQueue = txpool.TxQueue[txNum:]
 	return txs_Packed

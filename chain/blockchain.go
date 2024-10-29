@@ -161,8 +161,14 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 
 // generate (mine) a block, this function return a block
 func (bc *BlockChain) GenerateBlock(miner int32) *core.Block {
+	var txs []*core.Transaction
 	// pack the transactions from the txpool
-	txs := bc.Txpool.PackTxs(bc.ChainConfig.BlockSize)
+	if params.UseBlocksizeInBytes == 1 {
+		txs = bc.Txpool.PackTxsWithBytes(params.BlocksizeInBytes)
+	} else {
+		txs = bc.Txpool.PackTxs(bc.ChainConfig.BlockSize)
+	}
+
 	bh := &core.BlockHeader{
 		ParentBlockHash: bc.CurrentBlock.Hash,
 		Number:          bc.CurrentBlock.Header.Number + 1,
