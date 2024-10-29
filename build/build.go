@@ -5,29 +5,13 @@ import (
 	"blockEmulator/networks"
 	"blockEmulator/params"
 	"blockEmulator/supervisor"
-	"encoding/json"
-	"fmt"
 	"log"
-	"os"
 	"time"
 )
 
 func initConfig(nid, nnm, sid, snm uint64) *params.ChainConfig {
 	// Read the contents of ipTable.json
-	file, err := os.ReadFile("./ipTable.json")
-	if err != nil {
-		// handle error
-		fmt.Println(err)
-	}
-	// Create a map to store the IP addresses
-	var ipMap map[uint64]map[uint64]string
-	// Unmarshal the JSON data into the map
-	err = json.Unmarshal(file, &ipMap)
-	if err != nil {
-		// handle error
-		fmt.Println(err)
-	}
-
+	ipMap := readIpTable("./ipTable.json")
 	params.IPmap_nodeTable = ipMap
 	params.SupervisorAddr = params.IPmap_nodeTable[params.SupervisorShard][0]
 

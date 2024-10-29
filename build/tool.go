@@ -2,129 +2,112 @@ package build
 
 import (
 	"fmt"
-	"log"
-	"os"
+	"runtime"
+	"strings"
 )
 
-func GenerateBatFile(nodenum, shardnum int) {
-	fileName := fmt.Sprintf("bat_complie_run_shardNum=%v_NodeNum=%v.bat", shardnum, nodenum)
-	ofile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
-	if err != nil {
-		log.Panic(err)
+func GenerateBatchByIpTable(nodenum, shardnum int) error {
+	// read IP table file first
+	ipMap := readIpTable("./ipTable.json")
+
+	// determine the formats of commands and fileNames, according to operating system
+	var fileNameFormat, commandFormat string
+	os := runtime.GOOS
+	switch os {
+	case "windows":
+		fileNameFormat = "complie_run_IpAddr=%s.bat"
+		commandFormat = "start cmd /k go run main.go"
+	default:
+		fileNameFormat = "complie_run_IpAddr=%s.sh"
+		commandFormat = "go run main.go"
 	}
-	defer ofile.Close()
-	for i := 1; i < nodenum; i++ {
-		for j := 0; j < shardnum; j++ {
-			str := fmt.Sprintf("start cmd /k go run main.go -n %d -N %d -s %d -S %d \n\n", i, nodenum, j, shardnum)
-			ofile.WriteString(str)
+
+	// generate file for each ip
+	for i := 0; i < shardnum; i++ {
+		// if this shard is not existed, return
+		if _, shard_exist := ipMap[uint64(i)]; !shard_exist {
+			return fmt.Errorf("the shard (shardID = %d) is not existed in the IP Table file", i)
+		}
+		// if this shard is existed.
+		for j := 0; j < nodenum; j++ {
+			if nodeIp, node_exist := ipMap[uint64(i)][uint64(j)]; node_exist {
+				// attach this command to this file
+				ipAddr := strings.Split(nodeIp, ":")[0]
+				batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
+				command := fmt.Sprintf(commandFormat+" -n %d -N %d -s %d -S %d\n", j, nodenum, i, shardnum)
+				if err := attachLineToFile(batFilePath, command); nil != err {
+					return err
+				}
+			} else {
+				return fmt.Errorf("the node (shardID = %d, nodeID = %d) is not existed in the IP Table file", i, j)
+			}
 		}
 	}
 
-	for j := 0; j < shardnum; j++ {
-		str := fmt.Sprintf("start cmd /k go run main.go -n 0 -N %d -s %d -S %d \n\n", nodenum, j, shardnum)
-		ofile.WriteString(str)
+	// generate command for supervisor
+	if supervisorShard, shard_exist := ipMap[2147483647]; shard_exist {
+		if nodeIp, node_exist := supervisorShard[0]; node_exist {
+			ipAddr := strings.Split(nodeIp, ":")[0]
+			batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
+			supervisor_command := fmt.Sprintf(commandFormat+" -c -N %d -S %d\n", nodenum, shardnum)
+			if err := attachLineToFile(batFilePath, supervisor_command); nil != err {
+				return err
+			}
+			return nil
+		}
 	}
-
-	str := fmt.Sprintf("start cmd /k go run main.go -c -N %d -S %d \n\n", nodenum, shardnum)
-
-	ofile.WriteString(str)
+	return fmt.Errorf("the supervisor (shardID = 2147483647, nodeID = 0) is not existed in the IP Table file")
 }
 
-func GenerateShellFile(nodenum, shardnum int) {
-	fileName := fmt.Sprintf("shell_complie_run_shardNum=%v_NodeNum=%v.sh", shardnum, nodenum)
-	ofile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
-	if err != nil {
-		log.Panic(err)
+func GenerateExeBatchByIpTable(nodenum, shardnum int) error {
+	// read IP table file first
+	ipMap := readIpTable("./ipTable.json")
+
+	// determine the formats of commands and fileNames, according to operating system
+	var fileNameFormat, commandFormat string
+	os := runtime.GOOS
+	switch os {
+	case "windows":
+		fileNameFormat = os + "_exe_run_IpAddr=%s.bat"
+		commandFormat = "start cmd /k blockEmulator_Windows_Precompile.exe"
+	default:
+		fileNameFormat = os + "_exe_run_IpAddr=%s.sh"
+		commandFormat = "./blockEmulator_" + os + "_Precompile"
 	}
-	defer ofile.Close()
-	ofile.WriteString("#!/bin/bash \n\n")
-	for j := 0; j < shardnum; j++ {
-		for i := 1; i < nodenum; i++ {
-			str := fmt.Sprintf("go run main.go -n %d -N %d -s %d -S %d &\n\n", i, nodenum, j, shardnum)
-			ofile.WriteString(str)
+
+	// generate file for each ip
+	for i := 0; i < shardnum; i++ {
+		// if this shard is not existed, return
+		if _, shard_exist := ipMap[uint64(i)]; !shard_exist {
+			return fmt.Errorf("the shard (shardID = %d) is not existed in the IP Table file", i)
+		}
+		// if this shard is existed.
+		for j := 0; j < nodenum; j++ {
+			if nodeIp, node_exist := ipMap[uint64(i)][uint64(j)]; node_exist {
+				// attach this command to this file
+				ipAddr := strings.Split(nodeIp, ":")[0]
+				batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
+				command := fmt.Sprintf(commandFormat+" -n %d -N %d -s %d -S %d\n", j, nodenum, i, shardnum)
+				if err := attachLineToFile(batFilePath, command); nil != err {
+					return err
+				}
+			} else {
+				return fmt.Errorf("the node (shardID = %d, nodeID = %d) is not existed in the IP Table file", i, j)
+			}
 		}
 	}
 
-	for j := 0; j < shardnum; j++ {
-		str := fmt.Sprintf("go run main.go -n 0 -N %d -s %d -S %d &\n\n", nodenum, j, shardnum)
-		ofile.WriteString(str)
-	}
-
-	str := fmt.Sprintf("go run main.go -c -N %d -S %d &\n\n", nodenum, shardnum)
-
-	ofile.WriteString(str)
-}
-
-func Exebat_Windows_GenerateBatFile(nodenum, shardnum int) {
-	fileName := fmt.Sprintf("WinExe_bat_shardNum=%v_NodeNum=%v.bat", shardnum, nodenum)
-	ofile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer ofile.Close()
-	for i := 1; i < nodenum; i++ {
-		for j := 0; j < shardnum; j++ {
-			str := fmt.Sprintf("start cmd /k blockEmulator_Windows_Precompile.exe -n %d -N %d -s %d -S %d \n\n", i, nodenum, j, shardnum)
-			ofile.WriteString(str)
+	// generate command for supervisor
+	if supervisorShard, shard_exist := ipMap[2147483647]; shard_exist {
+		if nodeIp, node_exist := supervisorShard[0]; node_exist {
+			ipAddr := strings.Split(nodeIp, ":")[0]
+			batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
+			supervisor_command := fmt.Sprintf(commandFormat+" -c -N %d -S %d\n", nodenum, shardnum)
+			if err := attachLineToFile(batFilePath, supervisor_command); nil != err {
+				return err
+			}
+			return nil
 		}
 	}
-
-	for j := 0; j < shardnum; j++ {
-		str := fmt.Sprintf("start cmd /k blockEmulator_Windows_Precompile.exe -n 0 -N %d -s %d -S %d \n\n", nodenum, j, shardnum)
-		ofile.WriteString(str)
-	}
-
-	str := fmt.Sprintf("start cmd /k blockEmulator_Windows_Precompile.exe -c -N %d -S %d \n\n", nodenum, shardnum)
-
-	ofile.WriteString(str)
-}
-
-func Exebat_Linux_GenerateShellFile(nodenum, shardnum int) {
-	fileName := fmt.Sprintf("Linux_shell_shardNum=%v_NodeNum=%v.sh", shardnum, nodenum)
-	ofile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer ofile.Close()
-	ofile.WriteString("#!/bin/bash \n\n")
-	for j := 0; j < shardnum; j++ {
-		for i := 1; i < nodenum; i++ {
-			str := fmt.Sprintf("./blockEmulator_Linux_Precompile -n %d -N %d -s %d -S %d &\n\n", i, nodenum, j, shardnum)
-			ofile.WriteString(str)
-		}
-	}
-
-	for j := 0; j < shardnum; j++ {
-		str := fmt.Sprintf("./blockEmulator_Linux_Precompile -n 0 -N %d -s %d -S %d &\n\n", nodenum, j, shardnum)
-		ofile.WriteString(str)
-	}
-
-	str := fmt.Sprintf("./blockEmulator_Linux_Precompile -c -N %d -S %d &\n\n", nodenum, shardnum)
-
-	ofile.WriteString(str)
-}
-
-func Exebat_MacOS_GenerateShellFile(nodenum, shardnum int) {
-	fileName := fmt.Sprintf("MacOS_shell_shardNum=%v_NodeNum=%v.sh", shardnum, nodenum)
-	ofile, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0777)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer ofile.Close()
-	ofile.WriteString("#!/bin/bash \n\n")
-	for j := 0; j < shardnum; j++ {
-		for i := 1; i < nodenum; i++ {
-			str := fmt.Sprintf("./blockEmulator_MacOS_Precompile -n %d -N %d -s %d -S %d &\n\n", i, nodenum, j, shardnum)
-			ofile.WriteString(str)
-		}
-	}
-
-	for j := 0; j < shardnum; j++ {
-		str := fmt.Sprintf("./blockEmulator_MacOS_Precompile -n 0 -N %d -s %d -S %d &\n\n", nodenum, j, shardnum)
-		ofile.WriteString(str)
-	}
-
-	str := fmt.Sprintf("./blockEmulator_MacOS_Precompile -c -N %d -S %d &\n\n", nodenum, shardnum)
-
-	ofile.WriteString(str)
+	return fmt.Errorf("the supervisor (shardID = 2147483647, nodeID = 0) is not existed in the IP Table file")
 }

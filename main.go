@@ -3,8 +3,8 @@ package main
 import (
 	"blockEmulator/build"
 	"blockEmulator/params"
+	"fmt"
 	"log"
-	"runtime"
 
 	"github.com/spf13/pflag"
 )
@@ -41,26 +41,21 @@ func main() {
 
 	pflag.Parse()
 
+	params.ShardNum = shardNum
+	params.NodesInShard = nodeNum
+
 	if isGen {
 		if isGenerateForExeFile {
-			// Determine the current operating system.
 			// Generate the corresponding .bat file or .sh file based on the detected operating system.
-			os := runtime.GOOS
-			switch os {
-			case "windows":
-				build.Exebat_Windows_GenerateBatFile(nodeNum, shardNum)
-			case "darwin":
-				build.Exebat_MacOS_GenerateShellFile(nodeNum, shardNum)
-			case "linux":
-				build.Exebat_Linux_GenerateShellFile(nodeNum, shardNum)
+			if err := build.GenerateExeBatchByIpTable(nodeNum, shardNum); err != nil {
+				fmt.Println(err.Error())
 			}
 		} else {
-			// Without determining the operating system.
 			// Generate a .bat file or .sh file for running `go run`.
-			build.GenerateBatFile(nodeNum, shardNum)
-			build.GenerateShellFile(nodeNum, shardNum)
+			if err := build.GenerateBatchByIpTable(nodeNum, shardNum); err != nil {
+				fmt.Println(err.Error())
+			}
 		}
-
 		return
 	}
 
