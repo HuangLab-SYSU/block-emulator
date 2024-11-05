@@ -7,10 +7,11 @@
 
 ## 代码定位
 代码的图示解释是这样的：
+代码的处理逻辑：
+![代码的处理逻辑](./clpa_handle_logic.jpeg)
 
-[代码的处理逻辑](./clpa_handle_logic.jpeg)
-
-[代码 Bug 的位置](./clpa_bug_shardNum1.jpeg)
+Bug 出现的位置：
+![代码 Bug 的位置](./clpa_bug_shardNum1.jpeg)
 
 
 CLPA 类方法的代码执行逻辑是这样的：Supervisor 执行 CLPA 算法，然后将结果分发给 Worker 分片。然后Worker 分片根据 CLPA 算法的结果更新本地数据、进行账户迁移。这一系列操作完成后，Worker 分片会将自己本地的 Epoch 自增 1。然后，在下一次出块时，Worker 分片会将区块信息发送给 Supervisor，其中包含了自己当前的 Epoch。而 Supervisor 的 `CLPACommitteeModule` 收到了 worker 发送的 `BlockInfoMsg，发现` Worker 分片已经进入了新的 Epoch，所以 Supervisor 也更新本地的 `ccm.curEpoch`。此时，`ccm.curEpoch== clpaCnt`，Supervisor 跳出循环，继续执行。
