@@ -1,5 +1,8 @@
 # Version Updates
 
+## 2024/11/05
+1. **A new document**: We have committed an issue log document on GitHub. [Issue Log](./issueLogRoot.md). 
+
 ## 2024/10/29
 1. **Debug**: We found that the shardNum in `main.go` cannot affect the `params.ShardNum`. This bug originated from the updates made on 2024/09/01 and led to incorrect CLPA results. **The bug has now been fixed.**
 2. **Debug**: When setting the shardNum as 1 and using the CLPA consensus, the supervisor node will enter a dead loop. **Now the CLPA parition algorithm will not be triggered when `shardNum` is 1.**

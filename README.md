@@ -2,12 +2,18 @@
 This is the official handbook of **BlockEmulator** (version 1.0).
 We also provide a **[Chinese-version handbook](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme_ChnVersion.md)**.
 
-# FAQ (Frequently Asked Questions)
-See **[FAQ](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/FAQ.md)**. 
+# Issue Log
+View the issue logs here:
+**[Issue logs](./docs/issueLogRoot.md)**
 
 # Version Updates
 View the updates of **BlockEmulator** here: 
-**[ Version Updates ](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/versionUpdate.md)**
+**[ Version Updates ](./docs/versionUpdate.md)**
+
+
+# FAQ (Frequently Asked Questions)
+See **[FAQ](./docs/FAQ.md)**. 
+
 
 # Introduction 
 
