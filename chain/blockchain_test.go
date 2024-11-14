@@ -42,6 +42,10 @@ func TestBlockChain(t *testing.T) {
 	CurChain.AddAccounts(accounts, as, 0)
 	CurChain.PrintBlockChain()
 
+	// add the same account.
+	CurChain.AddAccounts([]string{accounts[0]}, []*core.AccountState{as[0]}, 0)
+	CurChain.PrintBlockChain()
+
 	astates := CurChain.FetchAccounts(accounts)
 	for idx, state := range astates {
 		fmt.Println(accounts[idx], state.Balance)
@@ -54,4 +58,5 @@ func TestBlockChain(t *testing.T) {
 		fmt.Printf("Failed to delete directory: %v\n", err)
 		return
 	}
+	fmt.Printf("Done")
 }

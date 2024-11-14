@@ -332,16 +332,21 @@ func (bc *BlockChain) AddAccounts(ac []string, as []*core.AccountState, miner in
 				st.Update([]byte(addr), new_state.Encode())
 			}
 		}
+
 		rrt, ns := st.Commit(false)
-		err = bc.triedb.Update(trie.NewWithNodeSet(ns))
-		if err != nil {
-			log.Panic(err)
+
+		// if `ns` is nil, the `err = bc.triedb.Update(trie.NewWithNodeSet(ns))` will report an error.
+		if ns != nil {
+			err = bc.triedb.Update(trie.NewWithNodeSet(ns))
+			if err != nil {
+				log.Panic(err)
+			}
+			err = bc.triedb.Commit(rrt, false)
+			if err != nil {
+				log.Panic(err)
+			}
+			rt = rrt.Bytes()
 		}
-		err = bc.triedb.Commit(rrt, false)
-		if err != nil {
-			log.Panic(err)
-		}
-		rt = rrt.Bytes()
 	}
 
 	emptyTxs := make([]*core.Transaction, 0)
