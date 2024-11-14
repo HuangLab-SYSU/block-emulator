@@ -1,5 +1,9 @@
 # Version Updates
 
+## 2024/11/14
+1. **Move the pre-compiled executables in GitHub release**: We have moved the pre-compiled executables to the [GitHub release](https://github.com/HuangLab-SYSU/block-emulator/releases).
+2. **Debug**: We have fixed a bug in the `AddAccounts` function in the `./chain/blockchain.go` file. The function previously threw a null pointer exception if no new tree nodes were added to the MPT after it was accessed and updated. To resolve this, we added a check to verify whether the newNodeSet is nil. **If you are interested in the cause of this bug, you can refer to the following: [AddAccount nil pointer](./IssueLogs/addaccount_nil_pointer_dir/addaccount_nil_pointer.md)**
+
 ## 2024/11/05
 1. **A new document**: We have committed an issue log document on GitHub. [Issue Log](./issueLogRoot.md). 
 
