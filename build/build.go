@@ -56,9 +56,9 @@ func BuildSupervisor(nnm, snm uint64) {
 
 	lsn := new(supervisor.Supervisor)
 	lsn.NewSupervisor(params.SupervisorAddr, initConfig(123, nnm, 123, snm), params.CommitteeMethod[methodID], measureMod...)
-	time.Sleep(10000 * time.Millisecond)
-	go lsn.SupervisorTxHandling()
-	lsn.TcpListen()
+	go lsn.TcpListen()
+	time.Sleep(5000 * time.Millisecond)
+	lsn.SupervisorTxHandling()
 }
 
 func BuildNewPbftNode(nid, nnm, sid, snm uint64) {

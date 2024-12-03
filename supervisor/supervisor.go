@@ -189,37 +189,6 @@ func (d *Supervisor) TcpListen() {
 	}
 }
 
-// tcp listen for Supervisor
-func (d *Supervisor) OldTcpListen() {
-	ipaddr, err := net.ResolveTCPAddr("tcp", d.IPaddr)
-	if err != nil {
-		log.Panic(err)
-	}
-	ln, err := net.ListenTCP("tcp", ipaddr)
-	d.tcpLn = ln
-	if err != nil {
-		log.Panic(err)
-	}
-	d.sl.Slog.Printf("Supervisor begins listening：%s\n", d.IPaddr)
-
-	for {
-		conn, err := d.tcpLn.Accept()
-		if err != nil {
-			if d.listenStop {
-				return
-			}
-			log.Panic(err)
-		}
-		b, err := io.ReadAll(conn)
-		if err != nil {
-			log.Panic(err)
-		}
-		d.handleMessage(b)
-		conn.(*net.TCPConn).SetLinger(0)
-		defer conn.Close()
-	}
-}
-
 // close Supervisor, and record the data in .csv file
 func (d *Supervisor) CloseSupervisor() {
 	d.sl.Slog.Println("Closing...")

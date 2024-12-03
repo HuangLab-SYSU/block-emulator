@@ -34,7 +34,7 @@ func GenerateBatchByIpTable(nodenum, shardnum int) error {
 				// attach this command to this file
 				ipAddr := strings.Split(nodeIp, ":")[0]
 				batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
-				command := fmt.Sprintf(commandFormat+" -n %d -N %d -s %d -S %d\n", j, nodenum, i, shardnum)
+				command := fmt.Sprintf(commandFormat+" -n %d -N %d -s %d -S %d & \n", j, nodenum, i, shardnum)
 				if err := attachLineToFile(batFilePath, command); nil != err {
 					return err
 				}
@@ -49,7 +49,7 @@ func GenerateBatchByIpTable(nodenum, shardnum int) error {
 		if nodeIp, node_exist := supervisorShard[0]; node_exist {
 			ipAddr := strings.Split(nodeIp, ":")[0]
 			batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
-			supervisor_command := fmt.Sprintf(commandFormat+" -c -N %d -S %d\n", nodenum, shardnum)
+			supervisor_command := fmt.Sprintf(commandFormat+" -c -N %d -S %d & \n", nodenum, shardnum)
 			if err := attachLineToFile(batFilePath, supervisor_command); nil != err {
 				return err
 			}
@@ -87,7 +87,7 @@ func GenerateExeBatchByIpTable(nodenum, shardnum int) error {
 				// attach this command to this file
 				ipAddr := strings.Split(nodeIp, ":")[0]
 				batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
-				command := fmt.Sprintf(commandFormat+" -n %d -N %d -s %d -S %d\n", j, nodenum, i, shardnum)
+				command := fmt.Sprintf(commandFormat+" -n %d -N %d -s %d -S %d & \n", j, nodenum, i, shardnum)
 				if err := attachLineToFile(batFilePath, command); nil != err {
 					return err
 				}
@@ -102,7 +102,7 @@ func GenerateExeBatchByIpTable(nodenum, shardnum int) error {
 		if nodeIp, node_exist := supervisorShard[0]; node_exist {
 			ipAddr := strings.Split(nodeIp, ":")[0]
 			batFilePath := fmt.Sprintf(fileNameFormat, strings.ReplaceAll(ipAddr, ".", "_"))
-			supervisor_command := fmt.Sprintf(commandFormat+" -c -N %d -S %d\n", nodenum, shardnum)
+			supervisor_command := fmt.Sprintf(commandFormat+" -c -N %d -S %d & \n", nodenum, shardnum)
 			if err := attachLineToFile(batFilePath, supervisor_command); nil != err {
 				return err
 			}

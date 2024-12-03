@@ -147,13 +147,16 @@ func (bc *BlockChain) GetUpdateStatusTrie(txs []*core.Transaction) common.Hash {
 		return common.BytesToHash(bc.CurrentBlock.Header.StateRoot)
 	}
 	rt, ns := st.Commit(false)
-	err = bc.triedb.Update(trie.NewWithNodeSet(ns))
-	if err != nil {
-		log.Panic()
-	}
-	err = bc.triedb.Commit(rt, false)
-	if err != nil {
-		log.Panic(err)
+	// if `ns` is nil, the `err = bc.triedb.Update(trie.NewWithNodeSet(ns))` will report an error.
+	if ns != nil {
+		err = bc.triedb.Update(trie.NewWithNodeSet(ns))
+		if err != nil {
+			log.Panic()
+		}
+		err = bc.triedb.Commit(rt, false)
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 	fmt.Println("modified account number is ", cnt)
 	return rt

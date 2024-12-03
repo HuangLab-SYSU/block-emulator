@@ -70,7 +70,6 @@ func TcpDial(context []byte, addr string) {
 						return
 					}
 					connectionPool[addr] = conn
-					go ReadFromConn(addr) // Start reading from new connection
 				} else {
 					conn = c // Use the existing connection
 				}
@@ -82,7 +81,6 @@ func TcpDial(context []byte, addr string) {
 				return
 			}
 			connectionPool[addr] = conn
-			go ReadFromConn(addr) // Start reading from new connection
 		}
 
 		writeToConn(append(context, '\n'), conn, rateLimiterUpload)
