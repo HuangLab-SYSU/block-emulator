@@ -1,50 +1,87 @@
-// storage is a key-value database and its interfaces indeed
-// the information of block will be saved in storage
-
 package storage
 
 import (
 	"blockEmulator/core"
+	"blockEmulator/new_trie"
 	"blockEmulator/params"
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/boltdb/bolt"
 )
 
+const (
+	dbFile                = "blockchain_db"
+	blocksBucket          = "blocks"
+	blockHeaderBucket     = "blockHeaders"
+	newestBlockHashBucket = "newBlockHash"
+	stateTreeBucket       = "stateTree"
+)
+
 type Storage struct {
-	dbFilePath            string // path to the database
-	blockBucket           string // bucket in bolt database
-	blockHeaderBucket     string // bucket in bolt database
-	newestBlockHashBucket string // bucket in bolt database
-	DataBase              *bolt.DB
+	dbFile                string
+	blocksBucket          string
+	blockHeaderBucket     string
+	newestBlockHashBucket string
+	stateTreeBucket       string
+	DB                    *bolt.DB
+	BlockBucketSize       int
+	StateTreeBucketSize   int
 }
 
-// new a storage, build a bolt datase
-func NewStorage(dbFp string, cc *params.ChainConfig) *Storage {
-	dir := params.DatabaseWrite_path + "chainDB"
-	errMkdir := os.MkdirAll(dir, os.ModePerm)
-	if errMkdir != nil {
-		log.Panic(errMkdir)
-	}
+func (s *Storage) ClearStorage() {
 
-	s := &Storage{
-		dbFilePath:            dbFp,
-		blockBucket:           "block",
-		blockHeaderBucket:     "blockHeader",
-		newestBlockHashBucket: "newestBlockHash",
-	}
+	s.DB.Update(func(tx *bolt.Tx) error {
+		err := tx.DeleteBucket([]byte(s.blocksBucket))
+		if err != nil {
+			log.Panic("Delete blocksBucket failed")
+		}
 
-	db, err := bolt.Open(s.dbFilePath, 0600, nil)
+		err = tx.DeleteBucket([]byte(s.blockHeaderBucket))
+		if err != nil {
+			log.Panic("Delete blockHeaderBucket failed")
+		}
+
+		err = tx.DeleteBucket([]byte(s.stateTreeBucket))
+		if err != nil {
+			log.Panic("Delete stateTreeBucket failed")
+		}
+
+		err = tx.DeleteBucket([]byte(s.newestBlockHashBucket))
+		if err != nil {
+			log.Panic("Delete newestBlockHashBucket failed")
+		}
+
+		return nil
+	})
+
+	err := s.DB.Close()
 	if err != nil {
-		log.Panic(err)
+		log.Panic("清空DB_storage失败")
 	}
 
-	// create buckets
+	fmt.Printf("==============清空成功===============\n")
+
+}
+
+func NewStorage(chainConfig *params.ChainConfig) *Storage {
+	s := &Storage{
+		// dbFile: chainConfig.ShardID + "_" + chainConfig.NodeID + "_" + dbFile,
+		dbFile:                params.NodeTable[params.Config.ShardID][params.Config.NodeID][10:] + "_" + dbFile,
+		blocksBucket:          blocksBucket,
+		blockHeaderBucket:     blockHeaderBucket,
+		newestBlockHashBucket: newestBlockHashBucket,
+		stateTreeBucket:       stateTreeBucket,
+	}
+
+	db, err := bolt.Open(s.dbFile, 0600, nil)
+	if err != nil {
+		log.Panic("==============error===============")
+	}
+
 	db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(s.blockBucket))
+		_, err := tx.CreateBucketIfNotExists([]byte(s.blocksBucket))
 		if err != nil {
 			log.Panic("create blocksBucket failed")
 		}
@@ -54,6 +91,12 @@ func NewStorage(dbFp string, cc *params.ChainConfig) *Storage {
 			log.Panic("create blockHeaderBucket failed")
 		}
 
+		_, err = tx.CreateBucketIfNotExists([]byte(s.stateTreeBucket))
+		// fmt.Println(
+		if err != nil {
+			log.Panic("create stateTreeBucket failed")
+		}
+
 		_, err = tx.CreateBucketIfNotExists([]byte(s.newestBlockHashBucket))
 		if err != nil {
 			log.Panic("create newestBlockHashBucket failed")
@@ -61,101 +104,210 @@ func NewStorage(dbFp string, cc *params.ChainConfig) *Storage {
 
 		return nil
 	})
-	s.DataBase = db
+
+	s.DB = db
+
 	return s
 }
 
-// update the newest block in the database
-func (s *Storage) UpdateNewestBlock(newestbhash []byte) {
-	err := s.DataBase.Update(func(tx *bolt.Tx) error {
-		nbhBucket := tx.Bucket([]byte(s.newestBlockHashBucket))
-		// the bucket has the only key "OnlyNewestBlock"
-		err := nbhBucket.Put([]byte("OnlyNewestBlock"), newestbhash)
+func (s *Storage) AddBlock(block *core.Block) {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		blockBucket := tx.Bucket([]byte(s.blocksBucket))
+		err := blockBucket.Put(block.Hash, block.Encode())
 		if err != nil {
 			log.Panic()
 		}
 		return nil
 	})
 	if err != nil {
-		log.Panic()
+		log.Panic(err)
 	}
-	fmt.Println("The newest block is updated")
+	s.AddBlockHeader(block.Hash, block.Header)
+
+	s.UpdateNewestBlockHash(block.Hash)
+
 }
 
-// add a blockheader into the database
-func (s *Storage) AddBlockHeader(blockhash []byte, bh *core.BlockHeader) {
-	err := s.DataBase.Update(func(tx *bolt.Tx) error {
-		bhbucket := tx.Bucket([]byte(s.blockHeaderBucket))
-		err := bhbucket.Put(blockhash, bh.Encode())
+func (s *Storage) GetBlock(blockHash []byte) (*core.Block, error) {
+	var block *core.Block
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blocksBucket))
+
+		blockData := b.Get(blockHash[:])
+
+		if blockData == nil {
+			return errors.New("block is not found")
+		}
+
+		block = core.DecodeBlock(blockData)
+
+		return nil
+	})
+	if err != nil {
+		return block, err
+	}
+
+	return block, nil
+}
+
+func (s *Storage) AddBlockHeader(blockHash []byte, header *core.BlockHeader) {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		blockHeaderBucket := tx.Bucket([]byte(s.blockHeaderBucket))
+		err := blockHeaderBucket.Put(blockHash, header.Encode())
 		if err != nil {
 			log.Panic()
 		}
 		return nil
 	})
 	if err != nil {
-		log.Panic()
+		log.Panic(err)
 	}
 }
 
-// add a block into the database
-func (s *Storage) AddBlock(b *core.Block) {
-	err := s.DataBase.Update(func(tx *bolt.Tx) error {
-		bbucket := tx.Bucket([]byte(s.blockBucket))
-		err := bbucket.Put(b.Hash, b.Encode())
+func (s *Storage) GetBlockHeader(blockHash []byte) (*core.BlockHeader, error) {
+	var blockHeader *core.BlockHeader
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		bh := tx.Bucket([]byte(blockHeaderBucket))
+
+		blockHeaderData := bh.Get(blockHash[:])
+
+		if blockHeaderData == nil {
+			return errors.New("blockHeader is not found")
+		}
+
+		blockHeader = core.DecodeBlockHeader(blockHeaderData)
+
+		return nil
+	})
+	if err != nil {
+		return blockHeader, err
+	}
+
+	return blockHeader, nil
+}
+
+func (s *Storage) UpdateStateTree(statusTree *new_trie.N_Trie) {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		stateTreeBucket := tx.Bucket([]byte(stateTreeBucket))
+		err := stateTreeBucket.Put([]byte(s.stateTreeBucket), statusTree.Encode())
 		if err != nil {
 			log.Panic()
 		}
 		return nil
 	})
 	if err != nil {
-		log.Panic()
+		log.Panic(err)
 	}
-	s.AddBlockHeader(b.Hash, b.Header)
-	s.UpdateNewestBlock(b.Hash)
-	fmt.Println("Block is added")
 }
 
-// read a blockheader from the database
-func (s *Storage) GetBlockHeader(bhash []byte) (*core.BlockHeader, error) {
-	var res *core.BlockHeader
-	err := s.DataBase.View(func(tx *bolt.Tx) error {
-		bhbucket := tx.Bucket([]byte(s.blockHeaderBucket))
-		bh_encoded := bhbucket.Get(bhash)
-		if bh_encoded == nil {
-			return errors.New("the block is not existed")
+func (s *Storage) GetStatusTree() (*new_trie.N_Trie, error) {
+	var stateTree *new_trie.N_Trie
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		st := tx.Bucket([]byte(stateTreeBucket))
+
+		stateTreeData := st.Get([]byte(s.stateTreeBucket))
+		if stateTreeData == nil {
+			return errors.New("stateTree is not found")
 		}
-		res = core.DecodeBH(bh_encoded)
+		stateTree = new_trie.DecodeStateTree(stateTreeData)
+
 		return nil
 	})
-	return res, err
+	if err != nil {
+		return stateTree, err
+	}
+
+	return stateTree, nil
 }
 
-// read a block from the database
-func (s *Storage) GetBlock(bhash []byte) (*core.Block, error) {
-	var res *core.Block
-	err := s.DataBase.View(func(tx *bolt.Tx) error {
-		bbucket := tx.Bucket([]byte(s.blockBucket))
-		b_encoded := bbucket.Get(bhash)
-		if b_encoded == nil {
-			return errors.New("the block is not existed")
+func (s *Storage) UpdateNewestBlockHash(blockHash []byte) {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		newestBlockHashBucket := tx.Bucket([]byte(newestBlockHashBucket))
+		err := newestBlockHashBucket.Put([]byte(s.newestBlockHashBucket), blockHash)
+		if err != nil {
+			log.Panic()
 		}
-		res = core.DecodeB(b_encoded)
 		return nil
 	})
-	return res, err
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
-// read the Newest block hash
 func (s *Storage) GetNewestBlockHash() ([]byte, error) {
-	var nhb []byte
-	err := s.DataBase.View(func(tx *bolt.Tx) error {
-		bhbucket := tx.Bucket([]byte(s.newestBlockHashBucket))
-		// the bucket has the only key "OnlyNewestBlock"
-		nhb = bhbucket.Get([]byte("OnlyNewestBlock"))
-		if nhb == nil {
-			return errors.New("cannot find the newest block hash")
+	var newestBlockHash []byte
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		nh := tx.Bucket([]byte(newestBlockHashBucket))
+
+		newestBlockHash = nh.Get([]byte(newestBlockHashBucket))
+
+		if newestBlockHash == nil {
+			return errors.New("newestBlockHash is not found")
 		}
+
 		return nil
 	})
-	return nhb, err
+	if err != nil {
+		return newestBlockHash, err
+	}
+
+	return newestBlockHash, nil
+}
+
+func (s *Storage) PrintBucket() {
+
+	err := s.DB.View(func(tx *bolt.Tx) error {
+		fmt.Println("============blocksBucket=============")
+
+		b := tx.Bucket([]byte(blocksBucket))
+		st := b.Stats()
+
+		// fmt.Println("Page size utilization")
+		// fmt.Printf("\tBytes allocated for physical branch pages: %d\n", st.BranchAlloc)
+		// var percentage int
+		// if st.BranchAlloc != 0 {
+		// 	percentage = int(float32(st.BranchInuse) * 100.0 / float32(st.BranchAlloc))
+		// }
+		// fmt.Printf("\tBytes actually used for branch data: %d (%d%%)\n", st.BranchInuse, percentage)
+		// fmt.Printf("\tBytes allocated for physical leaf pages: %d\n", st.LeafAlloc)
+		// percentage = 0
+		// if st.LeafAlloc != 0 {
+		// 	percentage = int(float32(st.LeafInuse) * 100.0 / float32(st.LeafAlloc))
+		// }
+		// fmt.Printf("\tBytes actually used for leaf data: %d (%d%%)\n", st.LeafInuse, percentage)
+
+		s.BlockBucketSize = st.BranchInuse + st.LeafInuse
+
+		fmt.Printf("===========stateTreeBucket=========\n")
+
+		b = tx.Bucket([]byte(stateTreeBucket))
+		st = b.Stats()
+
+		// fmt.Println("Page size utilization")
+		// fmt.Printf("\tBytes allocated for physical branch pages: %d\n", st.BranchAlloc)
+		// if st.BranchAlloc != 0 {
+		// 	percentage = int(float32(st.BranchInuse) * 100.0 / float32(st.BranchAlloc))
+		// }
+		// fmt.Printf("\tBytes actually used for branch data: %d (%d%%)\n", st.BranchInuse, percentage)
+		// fmt.Printf("\tBytes allocated for physical leaf pages: %d\n", st.LeafAlloc)
+		// percentage = 0
+		// if st.LeafAlloc != 0 {
+		// 	percentage = int(float32(st.LeafInuse) * 100.0 / float32(st.LeafAlloc))
+		// }
+		// fmt.Printf("\tBytes actually used for leaf data: %d (%d%%)\n", st.LeafInuse, percentage)
+
+		s.StateTreeBucketSize = st.BranchInuse + st.LeafInuse
+
+		fmt.Printf("===========================================\n")
+
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+		return
+	}
 }

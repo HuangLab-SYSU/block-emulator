@@ -1,50 +1,55 @@
-// Definition of transaction
-
 package core
 
 import (
 	"blockEmulator/utils"
 	"bytes"
 	"crypto/sha256"
-	"encoding/gob"
 	"fmt"
 	"log"
 	"math/big"
-	"time"
+
+	"encoding/gob"
+	"encoding/hex"
 )
 
 type Transaction struct {
-	Sender    utils.Address
-	Recipient utils.Address
-	Nonce     uint64
-	Signature []byte // not implemented now.
-	Value     *big.Int
+	Sender    []byte   `json:"sender"`
+	Recipient []byte   `json:"recipient"`
+	Value     *big.Int `json:"value"`
 	TxHash    []byte
-
-	Time time.Time // TimeStamp the tx proposed.
-
-	// used in transaction relaying
-	Relayed bool
-	// used in broker, if the tx is not a broker1 or broker2 tx, these values should be empty.
-	HasBroker      bool
-	SenderIsBroker bool
-	OriginalSender utils.Address
-	FinalRecipient utils.Address
-	RawTxHash      []byte
+	Id        int
+	RequestTime int64
 }
 
-func (tx *Transaction) PrintTx() string {
+func (tx *Transaction) PrintTx() {
 	vals := []interface{}{
-		tx.Sender[:],
-		tx.Recipient[:],
+		hex.EncodeToString(tx.Sender),
+		utils.Addr2Shard(hex.EncodeToString(tx.Sender)),
+		hex.EncodeToString(tx.Recipient),
+		utils.Addr2Shard(hex.EncodeToString(tx.Recipient)),
 		tx.Value,
-		string(tx.TxHash[:]),
+		hex.EncodeToString(tx.TxHash),
 	}
-	res := fmt.Sprintf("%v\n", vals)
-	return res
+	fmt.Printf("%v\n", vals)
 }
 
-// Encode transaction for storing
+func NewTransaction(sender, to []byte, value *big.Int) *Transaction {
+	tx := &Transaction{
+		Sender:    sender,
+		Recipient: to,
+		Value:     value,
+	}
+
+	tx.TxHash = tx.Hash()
+
+	return tx
+}
+
+func (tx *Transaction) Hash() []byte {
+	hash := sha256.Sum256(tx.Encode())
+	return hash[:]
+}
+
 func (tx *Transaction) Encode() []byte {
 	var buff bytes.Buffer
 
@@ -57,7 +62,6 @@ func (tx *Transaction) Encode() []byte {
 	return buff.Bytes()
 }
 
-// Decode transaction
 func DecodeTx(to_decode []byte) *Transaction {
 	var tx Transaction
 
@@ -68,25 +72,4 @@ func DecodeTx(to_decode []byte) *Transaction {
 	}
 
 	return &tx
-}
-
-// new a transaction
-func NewTransaction(sender, recipient string, value *big.Int, nonce uint64, proposeTime time.Time) *Transaction {
-	tx := &Transaction{
-		Sender:    sender,
-		Recipient: recipient,
-		Value:     value,
-		Nonce:     nonce,
-		Time:      proposeTime,
-	}
-
-	hash := sha256.Sum256(tx.Encode())
-	tx.TxHash = hash[:]
-	tx.Relayed = false
-	tx.FinalRecipient = ""
-	tx.OriginalSender = ""
-	tx.RawTxHash = nil
-	tx.HasBroker = false
-	tx.SenderIsBroker = false
-	return tx
 }

@@ -1,46 +1,47 @@
-// Definition of block
-
 package core
 
 import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"time"
-
-	"github.com/bits-and-blooms/bitset"
 )
 
-// The definition of blockheader
+// var (
+// 	EmptyRootHash = common.HexToHash("56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421")
+// )
+
+// Header represents a block header in the Ethereum blockchain.
 type BlockHeader struct {
-	ParentBlockHash []byte
-	StateRoot       []byte
-	TxRoot          []byte
-	Bloom           bitset.BitSet
-	Number          uint64
-	Time            time.Time
-	Miner           int32
+	ParentHash []byte `json:"parentHash"       gencodec:"required"`
+	StateRoot  []byte `json:"stateRoot"        gencodec:"required"`
+	TxHash     []byte `json:"transactionsRoot" gencodec:"required"`
+	Number     int    `json:"number"           gencodec:"required"`
+	Time       uint64 `json:"timestamp"        gencodec:"required"`
 }
 
-// Encode blockHeader for storing further
 func (bh *BlockHeader) Encode() []byte {
 	var buff bytes.Buffer
+
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(bh)
 	if err != nil {
 		log.Panic(err)
 	}
+
 	return buff.Bytes()
 }
 
-// Decode blockHeader
-func DecodeBH(b []byte) *BlockHeader {
+func (bh *BlockHeader) Hash() []byte {
+	hash := sha256.Sum256(bh.Encode())
+	return hash[:]
+}
+
+func DecodeBlockHeader(to_decode []byte) *BlockHeader {
 	var blockHeader BlockHeader
 
-	decoder := gob.NewDecoder(bytes.NewReader(b))
+	decoder := gob.NewDecoder(bytes.NewReader(to_decode))
 	err := decoder.Decode(&blockHeader)
 	if err != nil {
 		log.Panic(err)
@@ -49,61 +50,71 @@ func DecodeBH(b []byte) *BlockHeader {
 	return &blockHeader
 }
 
-// Hash the blockHeader
-func (bh *BlockHeader) Hash() []byte {
-	hash := sha256.Sum256(bh.Encode())
-	return hash[:]
-}
-
-func (bh *BlockHeader) PrintBlockHeader() string {
+func (bh *BlockHeader) PrintBlockHeader() {
 	vals := []interface{}{
-		hex.EncodeToString(bh.ParentBlockHash),
-		hex.EncodeToString(bh.StateRoot),
-		hex.EncodeToString(bh.TxRoot),
+		(bh.ParentHash),
+		(bh.StateRoot),
+		(bh.TxHash),
 		bh.Number,
 		bh.Time,
 	}
-	res := fmt.Sprintf("%v\n", vals)
-	return res
+	fmt.Printf("%v\n", vals)
 }
 
-// The definition of block
+type Body struct {
+	Transactions []*Transaction
+}
+
+// 区块结构
 type Block struct {
-	Header *BlockHeader
-	Body   []*Transaction
-	Hash   []byte
+	Header       *BlockHeader
+	Transactions []*Transaction
+	Hash         []byte
 }
 
-func NewBlock(bh *BlockHeader, bb []*Transaction) *Block {
-	return &Block{Header: bh, Body: bb}
-}
-
-func (b *Block) PrintBlock() string {
-	vals := []interface{}{
-		b.Header.Number,
-		b.Hash,
+// core/types/block.go
+func NewBlock(blockHeader *BlockHeader, txs []*Transaction) *Block {
+	b := &Block{
+		Header:       blockHeader,
+		Transactions: txs,
 	}
-	res := fmt.Sprintf("%v\n", vals)
-	fmt.Println(res)
-	return res
+
+	return b
 }
 
-// Encode Block for storing
+func (b *Block) PrintBlock() {
+	fmt.Printf("blockHeader: \n")
+	b.Header.PrintBlockHeader()
+	fmt.Printf("transactions: \n")
+	// for _, tx := range b.Transactions {
+	// 	tx.PrintTx()
+	// }
+	fmt.Println(len(b.Transactions))
+	fmt.Printf("blockHash: \n")
+	fmt.Printf("%v\n", (b.Hash))
+}
+
+// special
+func (b *Block) GetHash() []byte {
+	return b.Header.Hash()
+}
+
 func (b *Block) Encode() []byte {
 	var buff bytes.Buffer
+
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(b)
 	if err != nil {
 		log.Panic(err)
 	}
+
 	return buff.Bytes()
 }
 
-// Decode Block
-func DecodeB(b []byte) *Block {
+func DecodeBlock(to_decode []byte) *Block {
 	var block Block
 
-	decoder := gob.NewDecoder(bytes.NewReader(b))
+	decoder := gob.NewDecoder(bytes.NewReader(to_decode))
 	err := decoder.Decode(&block)
 	if err != nil {
 		log.Panic(err)
@@ -111,3 +122,49 @@ func DecodeB(b []byte) *Block {
 
 	return &block
 }
+
+// // CopyHeader creates a deep copy of a block header to prevent side effects from
+// // modifying a header variable.
+// func CopyHeader(h *BlockHeader) *BlockHeader {
+// 	cpy := *h
+// 	if cpy.Number = new(big.Int); h.Number != nil {
+// 		cpy.Number.Set(h.Number)
+// 	}
+// 	return &cpy
+// }
+
+// Hash returns the keccak256 hash of b's header.
+// The hash is computed on the first call and cached thereafter.
+// func (b *Block) GetHash() common.Hash {
+// 	if hash := b.Hash.Load(); hash != nil {
+// 		return hash.(common.Hash)
+// 	}
+// 	v := b.Header.Hash()
+// 	b.Hash.Store(v)
+// 	return v
+// }
+
+// func (b *Block) Number() *big.Int { return new(big.Int).Set(b.Header.Number) }
+
+// func (b *Block) NumberU64() uint64 { return b.Header.Number.Uint64() }
+
+// // Uint64 returns the integer value of a block nonce.
+// func (n BlockNonce) Uint64() uint64 {
+// 	return binary.BigEndian.Uint64(n[:])
+// }
+// func (b *Block) GetHeader() *BlockHeader { return CopyHeader(b.Header) }
+// func (b *Block) Root() common.Hash       { return b.Header.Root }
+
+// // Body returns the non-header content of the block.
+// func (b *Block) Body() *Body { return &Body{b.Transactions} }
+
+// // WithBody returns a new block with the given transaction and uncle contents.
+// func (b *Block) WithBody(transactions []*Transaction) *Block {
+// 	block := &Block{
+// 		Header:       CopyHeader(b.Header),
+// 		Transactions: make([]*Transaction, len(transactions)),
+// 	}
+// 	copy(block.Transactions, transactions)
+
+// 	return block
+// }
