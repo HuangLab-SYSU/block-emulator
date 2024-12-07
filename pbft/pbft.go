@@ -154,7 +154,15 @@ func NewPBFT() *Pbft {
 	return p
 }
 
+func createDir(dirPath string) error {
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		return os.Mkdir(dirPath, 0755) // 创建文件夹，权限为 0755
+	}
+	return nil // 文件夹已存在或无错误
+}
+
 func NewLog(shardID string) {
+	createDir("./log")
 	csvFile, err := os.Create("./log/" + shardID + "_block.csv")
 	if err != nil {
 		log.Panic(err)
