@@ -5,7 +5,7 @@
 - 我们使用的数据集是来自 **[xblock 收集的以太坊历史交易](https://xblock.pro/xblock-eth.html)**。
 
 ## 下载完数据集后，我该如何运行 blockEmulator？
-具体步骤可参见 **[blockEmulator 使用帮助](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/blockEmlator_manual.md)**。
+具体步骤可参见 **[blockEmulator 用户手册](https://github.com/HuangLab-SYSU/block-emulator/blob/main/20240906-blockEmulator%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C-%E5%BC%80%E6%BA%90%E7%89%88%E6%9C%AC-v2.pdf)**。
 
 如果想要更快捷地测试是否 blockEmulator 能正常运行，可以在上述使用帮助的 **三、使用实例** 中选择自动启动（即 批处理方式启动）。
 
