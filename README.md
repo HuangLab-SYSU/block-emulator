@@ -39,7 +39,7 @@ To provide an official handbook for BlockEmulator, we have written a technical p
 ```
 @article{huang2023blockemulator,
    title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols},
-   author={Huang, Huawei and Ye, Guang and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Li, Taotao and Yang, Qinglin and Zheng, Zibin},
+   author={Huang, Huawei and Ye, Guang and Yang, Qinglin and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Zheng, Jian and Li, Taotao and  Zheng, Zibin},
    journal={arXiv preprint arXiv:2311.03612},
    year={2023}
    }
