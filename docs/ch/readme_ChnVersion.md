@@ -35,7 +35,7 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
 ```
 @article{huang2023blockemulator,
    title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols},
-   author={Huang, Huawei and Ye, Guang and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Li, Taotao and Yang, Qinglin and Zheng, Zibin},
+   author={Huang, Huawei and Ye, Guang and Yang, Qinglin and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Zheng, Jian and Li, Taotao and Zheng, Zibin},
    journal={arXiv preprint arXiv:2311.03612},
    year={2023}
    }
@@ -174,13 +174,13 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Huawei.PNG" width=200>
 
-中山大学副教授，博士生导师，IEEE 高级会员，中国计算机学会 (CCF) 高级会员，CCF 区块链专委会执行委员、CCF 分布式与并行计算专委会执行委员。2016年取得日本会津大学“计算机科学与工程”博士学位；曾先后担任日本学术振兴会特别研究员、香港理工大学访问学者、日本京都大学特任助理教授。研究方向包括区块链底层机制、分布式系统与协议、Web3 与元宇宙底层关键技术。研究成果发表在 CCF-A 类推荐期刊 IEEE Journal on Selected Areas in Communications（JSAC），IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) 与 IEEE Transactions on Computers (TC)等，以及 CCF 推荐 A / B 类国际学术会议 INFOCOM、ICDCS、SRDS、IWQoS等。论文谷歌引用 4700+，H-index 30。出版区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
+中山大学副教授，博士生导师，IEEE 高级会员，中国计算机学会 (CCF) 高级会员，CCF 区块链专委会执行委员、CCF 分布式与并行计算专委会执行委员。2016年取得日本会津大学“计算机科学与工程”博士学位；曾先后担任日本学术振兴会特别研究员、香港理工大学访问学者、日本京都大学特任助理教授。研究方向包括区块链系统与协议、分布式系统与协议、Web3 基础设施。研究成果发表在 CCF-A 类推荐期刊 IEEE Journal on Selected Areas in Communications（JSAC），IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) 与 IEEE Transactions on Computers (TC)等，以及 CCF 推荐 A / B 类国际学术会议 INFOCOM、ICDCS、SRDS、IWQoS等。论文谷歌引用 6600+，H-index 35。出版区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
 
 # 郑子彬
 
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zibin.PNG" width=200>
 
-中山大学计算机学院教授，软件工程学院副院长、国家优秀青年科学基金获得者、IEEE Fellow、ACM 杰出科学家、国家数字家庭工程技术研究主心副主任、区块链与智能金融研究中心主任。出版 Springer 英文学术专著 2 部、发表论文 200 余篇，论文谷歌学术引用超过 33000 次。获得教育部自然科学二等奖、吴文俊人工智能自然科学二等奖、青年珠江学者、 ACM 中国新星提名奖、国际软件工程大会（ICSE）ACM SIGSOFT Distinguished Paper Award、国际 Web 服务大会（ICWS）最佳学生论文奖等奖项；担任数十个国际学术会议的程序委员会主席。
+中山大学计算机学院教授，软件工程学院副院长、国家优秀青年科学基金获得者、IEEE Fellow、ACM 杰出科学家、国家数字家庭工程技术研究主心副主任、区块链与智能金融研究中心主任。出版 Springer 英文学术专著 2 部、发表论文 200 余篇，论文谷歌学术引用超过 40000 次。获得教育部自然科学二等奖、吴文俊人工智能自然科学二等奖、青年珠江学者、 ACM 中国新星提名奖、国际软件工程大会（ICSE）ACM SIGSOFT Distinguished Paper Award、国际 Web 服务大会（ICWS）最佳学生论文奖等奖项；担任数十个国际学术会议的程序委员会主席。
 
 # 林建入
 
