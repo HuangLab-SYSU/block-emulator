@@ -47,7 +47,7 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
 
 - 如下几篇 HuangLab 产出的区块链论文使用了 BlockEmulator 作为实验平台。欢迎感兴趣的同行了解：
 
-  - - BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)】【[公众号介绍文章](https://mp.weixin.qq.com/s/5MelID6kVMQeM1LAET-37w)】
+  - BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)】【[公众号介绍文章](https://mp.weixin.qq.com/s/5MelID6kVMQeM1LAET-37w)】
   - Broker2Earn: Towards Maximizing Broker Revenue and System Liquidity for Sharded Blockchains **(INFOCOM 2024)** 【[PDF]( https://www.researchgate.net/publication/379213048_Broker2Earn_Towards_Maximizing_Broker_Revenue_and_System_Liquidity_for_Sharded_Blockchains)】【[公众号介绍文章](https://mp.weixin.qq.com/s/WxuNjGmqil5GmYYSFJ0qVw)】
   - Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】【[公众号介绍文章](https://mp.weixin.qq.com/s/WxuNjGmqil5GmYYSFJ0qVw)】
   - Justitia: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】【[公众号介绍文章](https://mp.weixin.qq.com/s/rU3zytC2xurI1S7VH1msZw)】
