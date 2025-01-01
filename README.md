@@ -1,6 +1,7 @@
 # BlockEmulator Handbook
 This is the official handbook of **BlockEmulator** (version 1.0).
 We also provide a **[Chinese-version handbook](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme_ChnVersion.md)**.
+On Dec. 31, 2024, we uploaded a detailed 139-page Chinese-version User Manual, named "2024Dec31-(139页)使用指南-黄华威.pdf". Please feel free to download it from the main folder.
 
 # Issue Log
 View the issue logs here:
@@ -51,19 +52,24 @@ To provide an official handbook for BlockEmulator, we have written a technical p
 The following papers from HuangLab's publications have adopted **BlockEmulator** as an experimental tool.
 
 1. **BrokerChain**: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding (published at INFOCOM 2022) [PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)
+
+2. Broker2Earn: Towards Maximizing Broker Revenue and System Liquidity for Sharded Blockchains **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379213048_Broker2Earn_Towards_Maximizing_Broker_Revenue_and_System_Liquidity_for_Sharded_Blockchains)】
+3. Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】
+4. Justitia: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】
+5. Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】
    
-2. Achieving Scalability and Load Balance across Blockchain Shards for State Sharding (published at SRDS 2022) [PDF](https://ieeexplore.ieee.org/document/9996899)
+6. Achieving Scalability and Load Balance across Blockchain Shards for State Sharding (published at SRDS 2022) [PDF](https://ieeexplore.ieee.org/document/9996899)
    
-3. **tMPT**: Reconfiguration across Blockchain Shards via Trimmed Merkle Patricia Trie (published at IWQoS 2023) [PDF](https://www.researchgate.net/publication/370633426_tMPT_Reconfiguration_across_Blockchain_Shards_via_Trimmed_Merkle_Patricia_Trie)
+7. **tMPT**: Reconfiguration across Blockchain Shards via Trimmed Merkle Patricia Trie (published at IWQoS 2023) [PDF](https://www.researchgate.net/publication/370633426_tMPT_Reconfiguration_across_Blockchain_Shards_via_Trimmed_Merkle_Patricia_Trie)
    
-4. **MVCom**: Scheduling Most Valuable Committees for the Large-Scale Sharded Blockchain (published at ICDCS 2021) [PDF](https://ieeexplore.ieee.org/document/9546408)
+8. **MVCom**: Scheduling Most Valuable Committees for the Large-Scale Sharded Blockchain (published at ICDCS 2021) [PDF](https://ieeexplore.ieee.org/document/9546408)
 
 
 ## 4. Highlights of BlockEmulator
 
 1. **Lightweight**. BlockEmulator is a lightweight testbed platform for blockchain experiments.
 2. **Fast Configuration**. BlockEmulator enables users to set up their environments quickly and supports remote deployment on the Cloud.
-3. **Customization**. BlockEmulator is implemented using goland language, which supports users' customization and modification.
+3. **Customization**. BlockEmulator is implemented using the GoLand language, which supports users' customization and modification.
 4. **Easy to Conduct Experiments**. BlockEmulator supports the replay of historical transactions of mainstream blockchains (such as Ethereum). It can automatically yield experimental log files. Using those log files, researchers can interpret plenty of metrics such as system throughput, confirmation latency of transactions, the queueing of the transaction pool, etc. This function is very useful for researchers and students to facilitate their experimental data collection and plotting of experimental charts.
 
 ## 5. Getting Started to Use BlockEmulator
@@ -83,7 +89,7 @@ Quickly get started with BlockEmulator through the following document. Please re
 
 ## Huawei Huang
 
-Huawei Huang is an associate professor at Sun Yat-sen University. He is an IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. His research interests include blockchain, Web3, metaverse, and distributed computing/protocols. He has more than 100 papers published in top journals or conferences such as IEEE/ACM ToN, JSAC, TPDS, TDSC, TMC, INFOCOM, ICDCS, SRDS, IWQoS, etc. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), etc. He has published two blockchain books titled "From Blockchain to Web3 & Metaverse" and "Blockchain Scalability", both published by Springer in 2023.
+Huawei Huang is an associate professor at Sun Yat-sen University. He is an IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. His research interests include blockchain, Web3, metaverse, and distributed computing/protocols. He has more than 150 papers published in top journals or conferences such as IEEE/ACM ToN, JSAC, TPDS, TDSC, TMC, INFOCOM, ICDCS, SRDS, IWQoS, etc. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), etc. He has published two blockchain books titled "From Blockchain to Web3 & Metaverse" and "Blockchain Scalability", both published by Springer in 2023.
 
 ## Zibin Zheng
 
