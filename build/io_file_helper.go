@@ -3,6 +3,7 @@ package build
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -24,7 +25,16 @@ func readIpTable(ipTablePath string) map[uint64]map[uint64]string {
 	return ipMap
 }
 
+// make sure the file is uptodate
+var fileUpToDataSet = make(map[string]struct{})
+
 func attachLineToFile(filePath string, line string) error {
+	if _, exist := fileUpToDataSet[filePath]; !exist {
+		if delErr := os.Remove(filePath); delErr != nil {
+			log.Panic(delErr)
+		}
+		fileUpToDataSet[filePath] = struct{}{}
+	}
 	// 以追加模式打开文件，如果文件不存在则创建
 	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
