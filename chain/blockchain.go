@@ -183,7 +183,7 @@ func (bc *BlockChain) GenerateBlock(miner int32) *core.Block {
 	bh.StateRoot = rt.Bytes()
 	bh.TxRoot = GetTxTreeRoot(txs)
 	bh.Bloom = *GetBloomFilter(txs)
-	bh.Miner = 0
+	bh.Miner = miner
 	b := core.NewBlock(bh, txs)
 
 	b.Hash = b.Header.Hash()

@@ -3,6 +3,7 @@ package chain
 import (
 	"blockEmulator/core"
 	"blockEmulator/params"
+	"bytes"
 	"fmt"
 	"log"
 	"math/big"
@@ -17,7 +18,7 @@ func TestMerkleProof(t *testing.T) {
 	txProof, txHash := buildBlockChain()
 	clearBlockchainData()
 	// fmt.Printf("%v", txProof)
-	if ok, err := TxProofVerify(txHash, &txProof); !ok {
+	if ok, err := TxProofVerify(txHash, &txProof); !ok && err != nil {
 		log.Panic("Fail to verify ", err.Error())
 	}
 }
@@ -52,14 +53,23 @@ func buildBlockChain() (TxProofResult, []byte) {
 		}
 		// add txs
 		for j := 0; j < 1000; j++ {
-			CurChain.Txpool.AddTx2Pool(core.NewTransaction("00000000001", "00000000002", big.NewInt(1000), uint64(i*1234+j+213), time.Now()))
+			txToAdd := core.NewTransaction("00000000001", "00000000002", big.NewInt(1000), uint64(i*1234+j+213), time.Now())
+			if bytes.Equal(txToAdd.TxHash, TxForProof.TxHash) {
+				log.Panic(fmt.Errorf("conflict hash"))
+			}
+			CurChain.Txpool.AddTx2Pool(txToAdd)
 		}
-		b := CurChain.GenerateBlock(int32(i))
+		b := CurChain.GenerateBlock(int32(0))
 		CurChain.AddBlock(b)
+		CurChain.PrintBlockChain()
 	}
 
 	// get proof of this Tx
 	txProofResult := CurChain.TxProofGenerate(TxForProof.TxHash)
+	if !txProofResult.Found {
+		log.Panic("cannot block found")
+	}
+	fmt.Printf("txProofResult: %v\n", txProofResult.BlockHeight)
 
 	// close blockchain
 	CurChain.CloseBlockChain()

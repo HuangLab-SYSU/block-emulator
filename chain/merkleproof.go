@@ -68,10 +68,21 @@ func TxProofGenerateOnTheBlock(txHash []byte, block *core.Block) TxProofResult {
 
 	// now try to find whether this tx is in this block
 	// check the correctness of this tx Trie
+	txExist := false
 	triedb := trie.NewDatabase(rawdb.NewMemoryDatabase())
 	transactionTree := trie.NewEmpty(triedb)
 	for _, tx := range block.Body {
+		if bytes.Equal(txHash, tx.TxHash) {
+			txExist = true
+		}
 		transactionTree.Update(tx.TxHash, []byte{0})
+	}
+	if !txExist {
+		return TxProofResult{
+			Found:  false,
+			TxHash: txHash,
+			Error:  fmt.Errorf("this tx cannot be found in this block (height=%d)", block.Header.Number).Error(),
+		}
 	}
 	if !bytes.Equal(transactionTree.Hash().Bytes(), block.Header.TxRoot) {
 		return TxProofResult{
@@ -177,7 +188,7 @@ func TxProofVerify(txHash []byte, proof *TxProofResult) (bool, error) {
 	for i := 0; i < listLen; i++ {
 		recoveredProof.Put(proof.KeyList[i], proof.ValueList[i])
 	}
-	if _, err := trie.VerifyProof(common.BytesToHash(proof.TxRoot), []byte(proof.TxHash), recoveredProof); err != nil {
+	if ret, err := trie.VerifyProof(common.BytesToHash(proof.TxRoot), []byte(proof.TxHash), recoveredProof); ret == nil || err != nil {
 		return false, errors.New("wrong proof")
 	}
 
