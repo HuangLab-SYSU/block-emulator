@@ -148,13 +148,15 @@ func (cphm *CLPAPbftInsideExtraHandleMod) getCollectOver() bool {
 func (cphm *CLPAPbftInsideExtraHandleMod) proposePartition() (bool, *message.Request) {
 	cphm.pbftNode.pl.Plog.Printf("S%dN%d : begin partition proposing\n", cphm.pbftNode.ShardID, cphm.pbftNode.NodeID)
 	// add all data in pool into the set
+	// 将收集到的账户状态和交易添加到本地状态中
 	for _, at := range cphm.cdm.AccountStateTx {
 		for i, addr := range at.Addrs {
 			cphm.cdm.ReceivedNewAccountState[addr] = at.AccountState[i]
 		}
 		cphm.cdm.ReceivedNewTx = append(cphm.cdm.ReceivedNewTx, at.Txs...)
 	}
-	// propose, send all txs to other nodes in shard
+	// propose, send all txs to other nodes in
+	// 检查交易的合法性
 	cphm.pbftNode.pl.Plog.Println("The number of ReceivedNewTx: ", len(cphm.cdm.ReceivedNewTx))
 	for _, tx := range cphm.cdm.ReceivedNewTx {
 		if !tx.Relayed && cphm.cdm.ModifiedMap[cphm.cdm.AccountTransferRound][tx.Sender] != cphm.pbftNode.ShardID {
@@ -164,9 +166,11 @@ func (cphm *CLPAPbftInsideExtraHandleMod) proposePartition() (bool, *message.Req
 			log.Panic("error tx")
 		}
 	}
+	// 将交易添加到交易池中
 	cphm.pbftNode.CurChain.Txpool.AddTxs2Pool(cphm.cdm.ReceivedNewTx)
 	cphm.pbftNode.pl.Plog.Println("The size of txpool: ", len(cphm.pbftNode.CurChain.Txpool.TxQueue))
 
+	// 创建AccountTransferMsg消息
 	atmaddr := make([]string, 0)
 	atmAs := make([]*core.AccountState, 0)
 	for key, val := range cphm.cdm.ReceivedNewAccountState {
@@ -180,6 +184,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) proposePartition() (bool, *message.Req
 		ATid:         uint64(len(cphm.cdm.ModifiedMap)),
 	}
 	atmbyte := atm.Encode()
+	// 创建PartitionReq请求
 	r := &message.Request{
 		RequestType: message.PartitionReq,
 		Msg: message.RawMessage{
@@ -193,6 +198,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) proposePartition() (bool, *message.Req
 // all nodes in a shard will do accout Transfer, to sync the state trie
 func (cphm *CLPAPbftInsideExtraHandleMod) accountTransfer_do(atm *message.AccountTransferMsg) {
 	// change the partition Map
+	// 更新分区映射
 	cnt := 0
 	for key, val := range atm.ModifiedMap {
 		cnt++
@@ -200,10 +206,12 @@ func (cphm *CLPAPbftInsideExtraHandleMod) accountTransfer_do(atm *message.Accoun
 	}
 	cphm.pbftNode.pl.Plog.Printf("%d key-vals are updated\n", cnt)
 	// add the account into the state trie
+	// 将账户状态添加到状态树中
 	cphm.pbftNode.pl.Plog.Printf("%d addrs to add\n", len(atm.Addrs))
 	cphm.pbftNode.pl.Plog.Printf("%d accountstates to add\n", len(atm.AccountState))
 	cphm.pbftNode.CurChain.AddAccounts(atm.Addrs, atm.AccountState, cphm.pbftNode.view.Load())
 
+	// 更新账户迁移的相关状态
 	if uint64(len(cphm.cdm.ModifiedMap)) != atm.ATid {
 		cphm.cdm.ModifiedMap = append(cphm.cdm.ModifiedMap, atm.ModifiedMap)
 	}
@@ -213,6 +221,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) accountTransfer_do(atm *message.Accoun
 	cphm.cdm.ReceivedNewTx = make([]*core.Transaction, 0)
 	cphm.cdm.PartitionOn = false
 
+	// 重置
 	cphm.cdm.CollectLock.Lock()
 	cphm.cdm.CollectOver = false
 	cphm.cdm.CollectLock.Unlock()
