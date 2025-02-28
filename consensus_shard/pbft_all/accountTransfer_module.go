@@ -15,10 +15,12 @@ import (
 
 // this message used in propose stage, so it will be invoked by InsidePBFT_Module
 func (cphm *CLPAPbftInsideExtraHandleMod) sendPartitionReady() {
+	// 锁定并设置当前分片为准备状态
 	cphm.cdm.P_ReadyLock.Lock()
 	cphm.cdm.PartitionReady[cphm.pbftNode.ShardID] = true
 	cphm.cdm.P_ReadyLock.Unlock()
 
+	// 创建PartitionReady消息
 	pr := message.PartitionReady{
 		FromShard: cphm.pbftNode.ShardID,
 		NowSeqID:  cphm.pbftNode.sequenceID,
@@ -27,6 +29,8 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendPartitionReady() {
 	if err != nil {
 		log.Panic()
 	}
+
+	// 将消息发送给其他分片
 	send_msg := message.MergeMessage(message.CPartitionReady, pByte)
 	for sid := 0; sid < int(cphm.pbftNode.pbftChainConfig.ShardNums); sid++ {
 		if sid != int(pr.FromShard) {
@@ -38,6 +42,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendPartitionReady() {
 
 // get whether all shards is ready, it will be invoked by InsidePBFT_Module
 func (cphm *CLPAPbftInsideExtraHandleMod) getPartitionReady() bool {
+	// 防止资源冲突
 	cphm.cdm.P_ReadyLock.Lock()
 	defer cphm.cdm.P_ReadyLock.Unlock()
 	cphm.pbftNode.seqMapLock.Lock()
@@ -45,6 +50,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) getPartitionReady() bool {
 	cphm.cdm.ReadySeqLock.Lock()
 	defer cphm.cdm.ReadySeqLock.Unlock()
 
+	// 检查所有分片是否都准备好
 	flag := true
 	for sid, val := range cphm.pbftNode.seqIDMap {
 		if rval, ok := cphm.cdm.ReadySeq[sid]; !ok || (rval-1 != val) {
@@ -56,6 +62,7 @@ func (cphm *CLPAPbftInsideExtraHandleMod) getPartitionReady() bool {
 
 // send the transactions and the accountState to other leaders
 func (cphm *CLPAPbftInsideExtraHandleMod) sendAccounts_and_Txs() {
+	// 生成需要迁移的账户列表
 	// generate accout transfer and txs message
 	accountToFetch := make([]string, 0)
 	lastMapid := len(cphm.cdm.ModifiedMap) - 1
@@ -64,11 +71,18 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendAccounts_and_Txs() {
 			accountToFetch = append(accountToFetch, key)
 		}
 	}
+
+	// 获取这些账户的状态
 	asFetched := cphm.pbftNode.CurChain.FetchAccounts(accountToFetch)
 	// send the accounts to other shards
+	// 锁定交易池
 	cphm.pbftNode.CurChain.Txpool.GetLocked()
 	cphm.pbftNode.pl.Plog.Println("The size of tx pool is: ", len(cphm.pbftNode.CurChain.Txpool.TxQueue))
+
+	// 遍历所有分片，发送账户和交易
 	for i := uint64(0); i < cphm.pbftNode.pbftChainConfig.ShardNums; i++ {
+
+		// 除了自己
 		if i == cphm.pbftNode.ShardID {
 			continue
 		}
@@ -103,6 +117,8 @@ func (cphm *CLPAPbftInsideExtraHandleMod) sendAccounts_and_Txs() {
 		cphm.pbftNode.CurChain.Txpool.TxQueue = cphm.pbftNode.CurChain.Txpool.TxQueue[:firstPtr]
 
 		cphm.pbftNode.pl.Plog.Printf("The txSend to shard %d is generated \n", i)
+
+		// 创建AccountStateAndTx消息
 		ast := message.AccountStateAndTx{
 			Addrs:        addrSend,
 			AccountState: asSend,
