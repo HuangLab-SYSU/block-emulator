@@ -13,6 +13,45 @@ import (
 	"time"
 )
 
+type TXmig1 struct {
+	Address     string //`json:"address"`
+	FromshardID uint64 //`json:"fromshardID"`
+	ToshardID   uint64 //`json:"toshardID"`
+	// Request_Time int64
+	// CommitTime   int64
+	// ID           int
+}
+
+type TXmig2 struct {
+	Txmig1  *TXmig1
+	MPmig1  bool
+	State   *AccountState
+	MPstate bool
+	// H       int
+	// Address string   `json:"address"`
+	// Value   *big.Int `json:"value"`
+}
+
+type TXann struct {
+	Txmig2    *TXmig2
+	MPmig2    bool
+	State     *AccountState
+	MPstate   bool
+	H         int
+	Address   string `json:"address"`
+	ToshardID int    `json:"toshardID"`
+}
+
+type TXns struct {
+	Txann   *TXann
+	MPann   bool
+	State   *AccountState
+	MPstate bool
+	H       int
+	Address string   `json:"address"`
+	Change  *big.Int `json:"value"`
+}
+
 type Transaction struct {
 	Sender    utils.Address
 	Recipient utils.Address
