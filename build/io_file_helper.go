@@ -30,7 +30,7 @@ var fileUpToDataSet = make(map[string]struct{})
 
 func attachLineToFile(filePath string, line string) error {
 	if _, exist := fileUpToDataSet[filePath]; !exist {
-		if delErr := os.Remove(filePath); delErr != nil {
+		if delErr := os.Remove(filePath); delErr != nil && !os.IsNotExist(delErr) {
 			log.Panic(delErr)
 		}
 		fileUpToDataSet[filePath] = struct{}{}
