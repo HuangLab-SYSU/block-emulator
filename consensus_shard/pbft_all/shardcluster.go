@@ -67,19 +67,19 @@ func (crom *SHARD_CLUSTER) handleInjectTx(content []byte) {
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled injected txs msg, txs: %d \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, len(it.Txs))
 }
 
-func sendMsg(val int) {
-	sii := message.TXAUX_1_MSG{
-		Msg: core.TXmig1{
-			Address: "",
-		},
-	}
-	sByte, err := json.Marshal(sii)
-	if err != nil {
-		log.Panic()
-	}
-	msg_send := message.MergeMessage(message.TXaux_1, sByte)
-	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[sid][0])
-}
+// func sendMsg(val int) {
+// 	sii := message.TXAUX_1_MSG{
+// 		Msg: core.TXmig1{
+// 			Address: "",
+// 		},
+// 	}
+// 	sByte, err := json.Marshal(sii)
+// 	if err != nil {
+// 		log.Panic()
+// 	}
+// 	msg_send := message.MergeMessage(message.TXaux_1, sByte)
+// 	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[sid][0])
+// }
 
 func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 	pm := new(message.PartitionModifiedMap)
