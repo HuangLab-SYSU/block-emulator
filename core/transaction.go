@@ -23,23 +23,25 @@ type TXmig1 struct {
 }
 
 type TXmig2 struct {
-	Txmig1  *TXmig1
-	MPmig1  bool
-	State   *AccountState
-	MPstate bool
+	Txmig1          TXmig1
+	MPmig1          bool
+	State           CLUSTER_ACCOUNT_STATE
+	MPstate         bool
+	TimeoutDuration time.Duration // 超时的时间
+	StartTime       time.Time     // 表示开始进行账户转移的时间
 	// H       int
 	// Address string   `json:"address"`
 	// Value   *big.Int `json:"value"`
 }
 
 type TXann struct {
-	Txmig2    *TXmig2
-	MPmig2    bool
-	State     *AccountState
-	MPstate   bool
-	H         int
-	Address   string `json:"address"`
-	ToshardID int    `json:"toshardID"`
+	Txmig2  TXmig2
+	MPmig2  bool
+	State   CLUSTER_ACCOUNT_STATE
+	MPstate bool
+	// H         int
+	// Address   string `json:"address"`
+	// ToshardID int
 }
 
 type TXns struct {

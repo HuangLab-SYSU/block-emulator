@@ -8,6 +8,7 @@ import (
 	"blockEmulator/networks"
 	"encoding/json"
 	"log"
+	"time"
 )
 
 type SHARD_CLUSTER struct {
@@ -88,21 +89,28 @@ func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 		log.Panic()
 	}
 
+	// PartitionModified变量 key: 账户的编号, val: 分片编号
 	for key, val := range pm.PartitionModified {
 		if crom.pbftNode.CurChain.Get_PartitionMap(key) == crom.pbftNode.ShardID {
-			// 发送TXaux2（编号为val的分片）
-			txau1 := &core.TXmig1{
+			// 发送TXaux2（发送至编号为val的分片）
+			txau1 := core.TXmig1{
 				Address:     key,
 				FromshardID: crom.pbftNode.ShardID,
 				ToshardID:   val,
 			}
 			sii := message.TXAUX_2_MSG{
 				Msg: core.TXmig2{
-					Txmig1:  txau1,
-					MPmig1:  true,
-					State:   &core.AccountState{},
-					MPstate: true,
+					Txmig1: txau1,
+					MPmig1: true,
+					State: core.CLUSTER_ACCOUNT_STATE{
+						Key:      key,
+						Location: val,
+					},
+					MPstate:         true,
+					TimeoutDuration: 10 * time.Second,
+					StartTime:       time.Now(),
 				},
+				Sender: crom.pbftNode.ShardID,
 			}
 			sByte, err := json.Marshal(sii)
 			if err != nil {
@@ -110,12 +118,60 @@ func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 			}
 			msg_send := message.MergeMessage(message.TXaux_2, sByte)
 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[val][0])
+
+			// 更新账户在源分片中的分片编号为目标分片 (未实现)
 		}
 	}
 
 	crom.cdm.ModifiedMap = append(crom.cdm.ModifiedMap, pm.PartitionModified)
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : has received partition message\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 	// crom.cdm.PartitionOn = true
+}
+
+func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
+	data := new(message.TXAUX_2_MSG)
+	err := json.Unmarshal(content, data)
+	if err != nil {
+		log.Panic()
+	}
+	if time.Since(data.Msg.StartTime) >= data.Msg.TimeoutDuration {
+		return
+	}
+	if !data.Msg.MPmig1 || !data.Msg.MPstate {
+		return
+	}
+	// accout_key := data.Msg.Txmig1.Address
+	// dest_shard := data.Msg.Txmig1.ToshardID
+	// 更新账户的分片状态 （未完成）
+	// 发送TXann到源分片
+	sii := message.TXANN_MSG{
+		Msg: core.TXann{
+			Txmig2:  data.Msg,
+			MPmig2:  true,
+			State:   data.Msg.State,
+			MPstate: true,
+		},
+		Sender: crom.pbftNode.ShardID,
+	}
+	sByte, err := json.Marshal(sii)
+	if err != nil {
+		log.Panic()
+	}
+	msg_send := message.MergeMessage(message.TXaux_2, sByte)
+	// 发送到源分片，即发过来的分片编号
+	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Sender][0])
+}
+
+func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
+	data := new(message.TXANN_MSG)
+	err := json.Unmarshal(content, data)
+	if err != nil {
+		log.Panic()
+	}
+}
+
+func (crom *SHARD_CLUSTER) handleTXns(content []byte) {
+
 }
 
 func (crom *SHARD_CLUSTER) HandleMessageOutsidePBFT(msgType message.MessageType, content []byte) bool {
@@ -130,12 +186,11 @@ func (crom *SHARD_CLUSTER) HandleMessageOutsidePBFT(msgType message.MessageType,
 		crom.handleInjectTx(content)
 
 	case message.TXaux_2:
-		//
-
+		crom.handleTXaux_2(content)
 	case message.TXann:
-		//
+		crom.handleTXann(content)
 	case message.TXns:
-		//
+		crom.handleTXns(content)
 
 	default:
 	}

@@ -13,17 +13,20 @@ const (
 
 type TXAUX_1_MSG struct {
 	Msg    core.TXmig1
-	Sender int
+	Sender uint64
 }
 
 type TXAUX_2_MSG struct {
-	Msg core.TXmig2
+	Msg    core.TXmig2
+	Sender uint64
 }
 
-type TXANN struct {
-	Msg core.TXann
+type TXANN_MSG struct {
+	Msg    core.TXann
+	Sender uint64
 }
 
-type TXNS struct {
-	Msg core.TXns
+type TXNS_MSG struct {
+	Msg    core.TXns
+	Sender uint64
 }
