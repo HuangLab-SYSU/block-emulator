@@ -6,6 +6,7 @@ import (
 	"blockEmulator/core"
 	"blockEmulator/message"
 	"blockEmulator/networks"
+	"blockEmulator/params"
 	"encoding/json"
 	"log"
 	"time"
@@ -160,7 +161,7 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	if err != nil {
 		log.Panic()
 	}
-	msg_send := message.MergeMessage(message.TXaux_2, sByte)
+	msg_send := message.MergeMessage(message.TXann, sByte)
 	// 发送到源分片，即发过来的分片编号
 	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Sender][0])
 }
@@ -185,11 +186,26 @@ func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
 	if err != nil {
 		log.Panic()
 	}
-	msg_send := message.MergeMessage(message.TXaux_2, sByte)
+	msg_send := message.MergeMessage(message.TXns, sByte)
 
 	// 在本分片内达成共识（发送到所有非主节点的节点）
-
-	//
+	if params.NodesInShard >= 1 {
+		// 向本分片内除了本节点的其他节点发送TXns（共识）
+		var i uint64
+		for i = 0; i < uint64(params.NodesInShard); i++ {
+			if i != crom.pbftNode.NodeID {
+				go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[crom.pbftNode.ShardID][i])
+			}
+		}
+	}
+	// 向其他分片的所有节点发送TXns
+	for i := 0; i < params.ShardNum; i++ {
+		if i != int(crom.pbftNode.NodeID) {
+			for j := 0; j < params.NodesInShard; j++ {
+				go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[uint64(i)][uint64(j)])
+			}
+		}
+	}
 }
 
 // stage 4：节点接收到TXns后更新账户状态
