@@ -17,6 +17,7 @@ type Account struct {
 	PublicKey []byte
 }
 
+// Shard Cluster的账户状态（只需要存储账户的Location字段）
 type CLUSTER_ACCOUNT_STATE struct {
 	Key      string // 该账户的编码
 	Location uint64 // 该账户目前所在的分片

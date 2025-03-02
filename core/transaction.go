@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// Shard Cluster的四种交易类型
 type TXmig1 struct {
 	Address     string //`json:"address"`
 	FromshardID uint64 //`json:"fromshardID"`
@@ -45,13 +46,13 @@ type TXann struct {
 }
 
 type TXns struct {
-	Txann   *TXann
+	Txann   TXann
 	MPann   bool
-	State   *AccountState
+	State   CLUSTER_ACCOUNT_STATE
 	MPstate bool
-	H       int
-	Address string   `json:"address"`
-	Change  *big.Int `json:"value"`
+	// H       int
+	Address string `json:"address"`
+	// Change  *big.Int `json:"value"`
 }
 
 type Transaction struct {

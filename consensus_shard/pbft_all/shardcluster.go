@@ -68,20 +68,21 @@ func (crom *SHARD_CLUSTER) handleInjectTx(content []byte) {
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled injected txs msg, txs: %d \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, len(it.Txs))
 }
 
-// func sendMsg(val int) {
-// 	sii := message.TXAUX_1_MSG{
-// 		Msg: core.TXmig1{
-// 			Address: "",
-// 		},
-// 	}
-// 	sByte, err := json.Marshal(sii)
-// 	if err != nil {
-// 		log.Panic()
-// 	}
-// 	msg_send := message.MergeMessage(message.TXaux_1, sByte)
-// 	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[sid][0])
-// }
-
+//	func sendMsg(val int) {
+//		sii := message.TXAUX_1_MSG{
+//			Msg: core.TXmig1{
+//				Address: "",
+//			},
+//		}
+//		sByte, err := json.Marshal(sii)
+//		if err != nil {
+//			log.Panic()
+//		}
+//		msg_send := message.MergeMessage(message.TXaux_1, sByte)
+//		go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[sid][0])
+//	}
+//
+// stage1：源分片接收来自监管节点的消息，更新账户状态，然后将消息TXau2发送给目标分片
 func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 	pm := new(message.PartitionModifiedMap)
 	err := json.Unmarshal(content, pm)
@@ -89,15 +90,17 @@ func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 		log.Panic()
 	}
 
-	// PartitionModified变量 key: 账户的编号, val: 分片编号
+	// PartitionModified变量 key: 账户的编码, val: 目标分片编号
 	for key, val := range pm.PartitionModified {
+		// 如果这个账户源分片为当前分片，则处理
 		if crom.pbftNode.CurChain.Get_PartitionMap(key) == crom.pbftNode.ShardID {
-			// 发送TXaux2（发送至编号为val的分片）
+			// 生成TXaux1
 			txau1 := core.TXmig1{
 				Address:     key,
 				FromshardID: crom.pbftNode.ShardID,
 				ToshardID:   val,
 			}
+			// 发送TXaux2到目标分片
 			sii := message.TXAUX_2_MSG{
 				Msg: core.TXmig2{
 					Txmig1: txau1,
@@ -128,6 +131,7 @@ func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 	// crom.cdm.PartitionOn = true
 }
 
+// stage2：目标分片接收到TXaux2将进行验证，验证成功则更新账户状态，将TXann发送给源分片
 func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	data := new(message.TXAUX_2_MSG)
 	err := json.Unmarshal(content, data)
@@ -140,9 +144,8 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	if !data.Msg.MPmig1 || !data.Msg.MPstate {
 		return
 	}
-	// accout_key := data.Msg.Txmig1.Address
-	// dest_shard := data.Msg.Txmig1.ToshardID
 	// 更新账户的分片状态 （未完成）
+
 	// 发送TXann到源分片
 	sii := message.TXANN_MSG{
 		Msg: core.TXann{
@@ -162,16 +165,42 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Sender][0])
 }
 
+// stage3：源分片接收到消息TXann，在本分片达成共识，随后将TXns广播给所有分片的所有节点
 func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
 	data := new(message.TXANN_MSG)
 	err := json.Unmarshal(content, data)
 	if err != nil {
 		log.Panic()
 	}
+	sii := message.TXNS_MSG{
+		Msg: core.TXns{
+			Txann:   data.Msg,
+			MPann:   true,
+			State:   data.Msg.State,
+			Address: data.Msg.State.Key,
+		},
+		Sender: crom.pbftNode.ShardID,
+	}
+	sByte, err := json.Marshal(sii)
+	if err != nil {
+		log.Panic()
+	}
+	msg_send := message.MergeMessage(message.TXaux_2, sByte)
+
+	// 在本分片内达成共识（发送到所有非主节点的节点）
+
+	//
 }
 
+// stage 4：节点接收到TXns后更新账户状态
 func (crom *SHARD_CLUSTER) handleTXns(content []byte) {
+	data := new(message.TXNS_MSG)
+	err := json.Unmarshal(content, data)
+	if err != nil {
+		log.Panic()
+	}
 
+	// 更新账户状态 (未实现)
 }
 
 func (crom *SHARD_CLUSTER) HandleMessageOutsidePBFT(msgType message.MessageType, content []byte) bool {
