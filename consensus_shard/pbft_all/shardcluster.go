@@ -83,7 +83,7 @@ func (crom *SHARD_CLUSTER) handleInjectTx(content []byte) {
 //		go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[sid][0])
 //	}
 //
-// stage1：源分片接收来自监管节点的消息，更新账户状态，然后将消息TXau2发送给目标分片
+// stage1：源分片接收来自监管节点的消息(TXaux1)，更新账户状态，然后将消息TXaux2发送给目标分片
 func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 	pm := new(message.PartitionModifiedMap)
 	err := json.Unmarshal(content, pm)
@@ -150,11 +150,10 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	// 发送TXann到源分片
 	sii := message.TXANN_MSG{
 		Msg: core.TXann{
-			Txmig2:    data.Msg,
-			MPmig2:    true,
-			State:     data.Msg.State,
-			MPstate:   true,
-			StartTime: data.Msg.StartTime,
+			Txmig2:  data.Msg,
+			MPmig2:  true,
+			State:   data.Msg.State,
+			MPstate: true,
 		},
 		Sender: crom.pbftNode.ShardID,
 	}
@@ -170,14 +169,14 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 
 // stage3：源分片接收到消息TXann，在本分片达成共识，随后将TXns广播给所有分片的所有节点
 func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
-	// 如果此时已经超时，则重新源分片视为账户转移失败
 
 	data := new(message.TXANN_MSG)
 	err := json.Unmarshal(content, data)
 	if err != nil {
 		log.Panic()
 	}
-	if time.Since(data.Msg.StartTime) > 100*time.Second {
+	// 如果此时已经超时，则重新源分片视为账户转移失败
+	if time.Since(data.Msg.Txmig2.StartTime) > data.Msg.Txmig2.TimeoutDuration {
 		return
 	}
 	sii := message.TXNS_MSG{
