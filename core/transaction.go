@@ -36,10 +36,11 @@ type TXmig2 struct {
 }
 
 type TXann struct {
-	Txmig2  TXmig2
-	MPmig2  bool
-	State   CLUSTER_ACCOUNT_STATE
-	MPstate bool
+	Txmig2    TXmig2
+	MPmig2    bool
+	State     CLUSTER_ACCOUNT_STATE
+	MPstate   bool
+	StartTime time.Time
 	// H         int
 	// Address   string `json:"address"`
 	// ToshardID int

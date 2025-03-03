@@ -111,7 +111,7 @@ func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 						Location: val,
 					},
 					MPstate:         true,
-					TimeoutDuration: 10 * time.Second,
+					TimeoutDuration: 100 * time.Second,
 					StartTime:       time.Now(),
 				},
 				Sender: crom.pbftNode.ShardID,
@@ -150,10 +150,11 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	// 发送TXann到源分片
 	sii := message.TXANN_MSG{
 		Msg: core.TXann{
-			Txmig2:  data.Msg,
-			MPmig2:  true,
-			State:   data.Msg.State,
-			MPstate: true,
+			Txmig2:    data.Msg,
+			MPmig2:    true,
+			State:     data.Msg.State,
+			MPstate:   true,
+			StartTime: data.Msg.StartTime,
 		},
 		Sender: crom.pbftNode.ShardID,
 	}
@@ -164,14 +165,20 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	msg_send := message.MergeMessage(message.TXann, sByte)
 	// 发送到源分片，即发过来的分片编号
 	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Sender][0])
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled TXaux2 \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }
 
 // stage3：源分片接收到消息TXann，在本分片达成共识，随后将TXns广播给所有分片的所有节点
 func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
+	// 如果此时已经超时，则重新源分片视为账户转移失败
+
 	data := new(message.TXANN_MSG)
 	err := json.Unmarshal(content, data)
 	if err != nil {
 		log.Panic()
+	}
+	if time.Since(data.Msg.StartTime) > 100*time.Second {
+		return
 	}
 	sii := message.TXNS_MSG{
 		Msg: core.TXns{
@@ -193,19 +200,23 @@ func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
 		// 向本分片内除了本节点的其他节点发送TXns（共识）
 		var i uint64
 		for i = 0; i < uint64(params.NodesInShard); i++ {
+			// 不等于本节点ID
 			if i != crom.pbftNode.NodeID {
 				go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[crom.pbftNode.ShardID][i])
 			}
 		}
 	}
+
 	// 向其他分片的所有节点发送TXns
 	for i := 0; i < params.ShardNum; i++ {
-		if i != int(crom.pbftNode.NodeID) {
+		// 不为本分片ID
+		if i != int(crom.pbftNode.ShardID) {
 			for j := 0; j < params.NodesInShard; j++ {
 				go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[uint64(i)][uint64(j)])
 			}
 		}
 	}
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled TXann \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }
 
 // stage 4：节点接收到TXns后更新账户状态
@@ -217,6 +228,7 @@ func (crom *SHARD_CLUSTER) handleTXns(content []byte) {
 	}
 
 	// 更新账户状态 (未实现)
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled TXns \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }
 
 func (crom *SHARD_CLUSTER) HandleMessageOutsidePBFT(msgType message.MessageType, content []byte) bool {
