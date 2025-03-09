@@ -124,7 +124,9 @@ func (crom *SHARD_CLUSTER) handleTXaux_2(content []byte) {
 	if err != nil {
 		log.Panic()
 	}
+	// 超时，目标分片接收到TXaux2超时，直接视为失败
 	if time.Since(data.Msg.StartTime) >= data.Msg.TimeoutDuration {
+		crom.pbftNode.pl.Plog.Printf("S%dN%d : account transfer time out\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 		return
 	}
 	if !data.Msg.MPmig1 || !data.Msg.MPstate {
@@ -160,8 +162,10 @@ func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
 	if err != nil {
 		log.Panic()
 	}
-	// 如果此时已经超时，则重新源分片视为账户转移失败
+	// 如果此时已经超时，则源分片视为账户转移失败
 	if time.Since(data.Msg.Txmig2.StartTime) > data.Msg.Txmig2.TimeoutDuration {
+		crom.pbftNode.pl.Plog.Printf("S%dN%d : account transfer time out\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+		// 在账户转移失败的情况讨论中，源分片需要询问目标分片目前的账户状态，如果是失败那么再进行转移
 		return
 	}
 	sii := message.TXNS_MSG{
