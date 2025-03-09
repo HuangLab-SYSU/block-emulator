@@ -69,20 +69,6 @@ func (crom *SHARD_CLUSTER) handleInjectTx(content []byte) {
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled injected txs msg, txs: %d \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, len(it.Txs))
 }
 
-//	func sendMsg(val int) {
-//		sii := message.TXAUX_1_MSG{
-//			Msg: core.TXmig1{
-//				Address: "",
-//			},
-//		}
-//		sByte, err := json.Marshal(sii)
-//		if err != nil {
-//			log.Panic()
-//		}
-//		msg_send := message.MergeMessage(message.TXaux_1, sByte)
-//		go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[sid][0])
-//	}
-//
 // stage1：源分片接收来自监管节点的消息(TXaux1)，更新账户状态，然后将消息TXaux2发送给目标分片
 func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 	pm := new(message.PartitionModifiedMap)
@@ -129,7 +115,6 @@ func (crom *SHARD_CLUSTER) handlePartitionMsg(content []byte) {
 
 	crom.cdm.ModifiedMap = append(crom.cdm.ModifiedMap, pm.PartitionModified)
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : has received partition message\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
-	// crom.cdm.PartitionOn = true
 }
 
 // stage2：目标分片接收到TXaux2将进行验证，验证成功则更新账户状态，将TXann发送给源分片
