@@ -227,6 +227,9 @@ func (crom *SHARD_CLUSTER) handleTXann(content []byte) {
 		// 发送到目标分片，即发过来的分片编号
 		go networks.TcpDial(send_msg_struct, crom.pbftNode.ip_nodeTable[data.Sender][0])
 
+		// 设置receiveddata为false
+		crom.sq.receivedData = false
+
 		// 阻塞程序，直到查询结果成功
 		for {
 			crom.sq.mu.Lock()
