@@ -20,7 +20,7 @@ type Account struct {
 // Shard Cluster的账户状态（只需要存储账户的Location字段）
 type CLUSTER_ACCOUNT_STATE struct {
 	Key      string // 该账户的编码
-	Location uint64 // 该账户目前所在的分片
+	Location uint64 // 该账户应该所在的分片ID（指划分结果）
 }
 
 // AccoutState record the details of an account, it will be saved in status trie
