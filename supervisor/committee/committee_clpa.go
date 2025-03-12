@@ -143,6 +143,14 @@ func (ccm *CLPACommitteeModule) MsgSendingControl() {
 			ccm.clpaLock.Lock()
 			clpaCnt++
 			mmap, _ := ccm.clpaGraph.CLPA_Partition()
+			ccm.sl.Slog.Printf("the num of account needs to transfer: %d", len(mmap))
+			// 如果没有要迁移的账户，则生成一个
+			if len(mmap) == 0 {
+				var AccountKey string = "32be343b94f860124dc4fee278fdcbd38c102d88"
+				var AccountShardId = 1
+				mmap[AccountKey] = uint64(AccountShardId)
+				ccm.sl.Slog.Printf("create a test account that going to transfer")
+			}
 
 			ccm.clpaMapSend(mmap)
 			for key, val := range mmap {
