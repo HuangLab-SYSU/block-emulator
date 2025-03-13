@@ -3,7 +3,7 @@
   
   "PbftViewChangeTimeOut":20000,
 
-  "ExpDataRootDir": "expTest",
+  "ExpDataRootDir": "result/account_tranfer_err_1",
 
   "Block_Interval": 5000,
 

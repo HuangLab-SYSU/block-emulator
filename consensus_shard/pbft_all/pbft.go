@@ -187,14 +187,14 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 	case "ShardCluster":
 		ncdm := dataSupport.NewCLPADataSupport()
 		fmt.Println("Using shard custter consensus")
-		p.ihm = &SHARD_CLUSTER{
+		p.ihm = &SHARD_CUSTTER{
 			pbftNode: p,
 			cdm:      ncdm,
 			sq: source_query{
 				receivedData: false,
 			},
 		}
-		p.ohm = &SHARD_CLUSTER{
+		p.ohm = &SHARD_CUSTTER{
 			pbftNode: p,
 			cdm:      ncdm,
 			sq: source_query{
