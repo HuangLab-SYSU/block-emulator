@@ -120,8 +120,6 @@ func (crom *SHARD_CUSTTER) handlePartitionMsg(content []byte) {
 			msg_send := message.MergeMessage(message.TXaux_2, sByte)
 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[val][0])
 			crom.pbftNode.pl.Plog.Printf("S%dN%d : source shard sended Txaux2 to dest shard\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
-
-			crom.pbftNode.pl.Plog.Printf("S%dN%d : account %s's location is updated to: %d \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, key, val)
 			crom.pbftNode.pl.Plog.Printf("S%dN%d : source shard handle stage1 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 		}
 	}
@@ -156,6 +154,7 @@ func (crom *SHARD_CUSTTER) handleModifymap(content []byte) {
 		crom.pbftNode.CurChain.Update_PartitionMap(key, val)
 	}
 	crom.cdm.ModifiedMap = append(crom.cdm.ModifiedMap, data.Mp)
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : get partitionmap \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }
 
 // stage2：目标分片接收到TXaux2将进行验证，验证成功则更新账户状态，将TXann发送给所有分片
