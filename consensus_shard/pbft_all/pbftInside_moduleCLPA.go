@@ -102,6 +102,26 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 			ssid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Sender)
 			rsid := cphm.pbftNode.CurChain.Get_PartitionMap(tx.Recipient)
 			if !tx.Relayed && ssid != cphm.pbftNode.ShardID {
+				cphm.pbftNode.pl.Plog.Printf(
+					"S%dN%d : TX_ERROR: account %s's ssid is: %d, but shard id is: %d \n",
+					cphm.pbftNode.ShardID,
+					cphm.pbftNode.NodeID,
+					tx.Sender,
+					ssid,
+					cphm.pbftNode.ShardID,
+				)
+			}
+			if tx.Relayed && rsid != cphm.pbftNode.ShardID {
+				cphm.pbftNode.pl.Plog.Printf(
+					"S%dN%d : TX_ERROR: account %s's rsid is: %d, but shard id is: %d \n",
+					cphm.pbftNode.ShardID,
+					cphm.pbftNode.NodeID,
+					tx.Recipient,
+					rsid,
+					cphm.pbftNode.ShardID,
+				)
+			}
+			if !tx.Relayed && ssid != cphm.pbftNode.ShardID {
 				log.Panic("incorrect tx")
 			}
 			if tx.Relayed && rsid != cphm.pbftNode.ShardID {

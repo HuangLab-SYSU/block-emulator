@@ -111,15 +111,6 @@ func (ccm *CLPACommitteeModule) MsgSendingControl() {
 	reader := csv.NewReader(txfile)
 	txlist := make([]*core.Transaction, 0) // save the txs in this epoch (round)
 	clpaCnt := 0
-	{
-		ccm.sl.Slog.Println("create an account that needs transfer for testing")
-		test_sending_map := make(map[string]uint64)
-		var AccountKey string = "32be343b94f860124dc4fee278fdcbd38c102d88"
-		var AccountShardId uint64 = 1
-		test_sending_map[AccountKey] = AccountShardId
-		ccm.clpaMapSend(test_sending_map)
-		ccm.modifiedMap[AccountKey] = AccountShardId
-	}
 	for {
 		data, err := reader.Read()
 		if err == io.EOF {
@@ -152,14 +143,7 @@ func (ccm *CLPACommitteeModule) MsgSendingControl() {
 			ccm.clpaLock.Lock()
 			clpaCnt++
 			mmap, _ := ccm.clpaGraph.CLPA_Partition()
-			// ccm.sl.Slog.Printf("the num of account needs to transfer: %d", len(mmap))
-			// // 如果没有要迁移的账户，则生成一个
-			// if len(mmap) == 0 {
-			// 	var AccountKey string = "32be343b94f860124dc4fee278fdcbd38c102d88"
-			// 	var AccountShardId = 1
-			// 	mmap[AccountKey] = uint64(AccountShardId)
-			// 	ccm.sl.Slog.Printf("create a test account that going to transfer")
-			// }
+
 			ccm.clpaMapSend(mmap)
 			for key, val := range mmap {
 				ccm.modifiedMap[key] = val

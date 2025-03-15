@@ -5,12 +5,13 @@ import (
 )
 
 const (
-	TXaux_1      MessageType = "CLuTXaux1"
-	TXaux_2      MessageType = "CLuTXaux2"
-	TXann        MessageType = "CLuTXann"
-	TXns         MessageType = "CLuTXns"
-	ScourceQuery MessageType = "CLuSourQ"
-	DestReply    MessageType = "CLuDestR"
+	TXaux_1       MessageType = "CLuTXaux1"
+	TXaux_2       MessageType = "CLuTXaux2"
+	TXann         MessageType = "CLuTXann"
+	TXns          MessageType = "CLuTXns"
+	ScourceQuery  MessageType = "CLuSourQ"
+	DestReply     MessageType = "CLuDestR"
+	CLU_ModifyMap MessageType = "ModiftMap"
 )
 
 type TXAUX_1_MSG struct {
@@ -42,4 +43,8 @@ type CLU_DEST_REPLY struct {
 	AccountKey      string
 	AccountLocation uint64
 	Sender          uint64
+}
+
+type CLU_MODIFYMAP_MSG struct {
+	Mp map[string]uint64
 }

@@ -6,7 +6,6 @@ import (
 	"blockEmulator/chain"
 	"blockEmulator/consensus_shard/pbft_all/dataSupport"
 	"blockEmulator/consensus_shard/pbft_all/pbft_log"
-	"blockEmulator/core"
 	"blockEmulator/message"
 	"blockEmulator/networks"
 	"blockEmulator/params"
@@ -15,7 +14,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/big"
 	"net"
 	"strconv"
 	"sync"
@@ -105,28 +103,28 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 		log.Panic("cannot new a blockchain")
 	}
 
-	if shardID == 0 {
-		var AccountString []string = []string{
-			"32be343b94f860124dc4fee278fdcbd38c102d88",
-			"104994f45d9d697ca104e5704a7b77d7fec3537c",
-		}
-		var AccountState []*core.AccountState
-		AccountValue, ok := new(big.Int).SetString("10000000000000000000000000", 10)
-		//                                               149990000000000000000
-		if !ok {
-			fmt.Println("Failed to parse the string as a big integer.")
-		}
-		AccountState = append(AccountState, &core.AccountState{
-			Nonce:   123456,
-			Balance: AccountValue,
-		})
-		AccountState = append(AccountState, &core.AccountState{
-			Nonce:   654321,
-			Balance: AccountValue,
-		})
-		p.CurChain.AddAccounts(AccountString, AccountState, 0)
-		fmt.Printf("Shard %d add two accounts", shardID)
-	}
+	// if shardID == 0 {
+	// 	var AccountString []string = []string{
+	// 		"32be343b94f860124dc4fee278fdcbd38c102d88",
+	// 		"104994f45d9d697ca104e5704a7b77d7fec3537c",
+	// 	}
+	// 	var AccountState []*core.AccountState
+	// 	AccountValue, ok := new(big.Int).SetString("10000000000000000000000000", 10)
+	// 	//                                               149990000000000000000
+	// 	if !ok {
+	// 		fmt.Println("Failed to parse the string as a big integer.")
+	// 	}
+	// 	AccountState = append(AccountState, &core.AccountState{
+	// 		Nonce:   123456,
+	// 		Balance: AccountValue,
+	// 	})
+	// 	AccountState = append(AccountState, &core.AccountState{
+	// 		Nonce:   654321,
+	// 		Balance: AccountValue,
+	// 	})
+	// 	p.CurChain.AddAccounts(AccountString, AccountState, 0)
+	// 	fmt.Printf("Shard %d add two accounts", shardID)
+	// }
 
 	p.RunningNode = &shard.Node{
 		NodeID:  nodeID,
@@ -187,12 +185,9 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 	case "ShardCluster":
 		ncdm := dataSupport.NewCLPADataSupport()
 		fmt.Println("Using shard custter consensus")
-		p.ihm = &SHARD_CUSTTER{
+		p.ihm = &CLPAPbftInsideExtraHandleMod{
 			pbftNode: p,
 			cdm:      ncdm,
-			sq: source_query{
-				receivedData: false,
-			},
 		}
 		p.ohm = &SHARD_CUSTTER{
 			pbftNode: p,
