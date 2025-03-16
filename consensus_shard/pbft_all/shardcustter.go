@@ -123,38 +123,45 @@ func (crom *SHARD_CUSTTER) handlePartitionMsg(content []byte) {
 			crom.pbftNode.pl.Plog.Printf("S%dN%d : source shard handle stage1 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 		}
 	}
-	for key, val := range pm.PartitionModified {
-		crom.pbftNode.CurChain.Update_PartitionMap(key, val)
-	}
 	crom.cdm.ModifiedMap = append(crom.cdm.ModifiedMap, pm.PartitionModified)
-	if crom.pbftNode.ShardID == 0 {
-		for i := uint64(0); i < uint64(params.ShardNum); i++ {
-			for j := uint64(1); j < uint64(params.NodesInShard); j++ {
-				modi_msg := message.CLU_MODIFYMAP_MSG{
-					Mp: pm.PartitionModified,
-				}
-				sbytes, err := json.Marshal(modi_msg)
-				if err != nil {
-					log.Panic()
-				}
-				mg_sd := message.MergeMessage(message.CLU_ModifyMap, sbytes)
-				go networks.TcpDial(mg_sd, crom.pbftNode.ip_nodeTable[i][j])
-			}
-		}
-	}
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : has received partition message\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+	crom.cdm.PartitionOn = true
 }
 
-func (crom *SHARD_CUSTTER) handleModifymap(content []byte) {
-	data := new(message.CLU_MODIFYMAP_MSG)
-	err := json.Unmarshal(content, data)
+// wait for other shards' last rounds are over
+func (crom *SHARD_CUSTTER) handlePartitionReady(content []byte) {
+	pr := new(message.PartitionReady)
+	err := json.Unmarshal(content, pr)
 	if err != nil {
 		log.Panic()
 	}
-	for key, val := range data.Mp {
-		crom.pbftNode.CurChain.Update_PartitionMap(key, val)
+	crom.cdm.P_ReadyLock.Lock()
+	crom.cdm.PartitionReady[pr.FromShard] = true
+	crom.cdm.P_ReadyLock.Unlock()
+
+	crom.pbftNode.seqMapLock.Lock()
+	crom.cdm.ReadySeq[pr.FromShard] = pr.NowSeqID
+	crom.pbftNode.seqMapLock.Unlock()
+
+	crom.pbftNode.pl.Plog.Printf("ready message from shard %d, seqid is %d\n", pr.FromShard, pr.NowSeqID)
+}
+
+// when the message from other shard arriving, it should be added into the message pool
+func (crom *SHARD_CUSTTER) handleAccountStateAndTxMsg(content []byte) {
+	at := new(message.AccountStateAndTx)
+	err := json.Unmarshal(content, at)
+	if err != nil {
+		log.Panic()
 	}
-	crom.cdm.ModifiedMap = append(crom.cdm.ModifiedMap, data.Mp)
-	crom.pbftNode.pl.Plog.Printf("S%dN%d : get partitionmap \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+	crom.cdm.AccountStateTx[at.FromShard] = at
+	crom.pbftNode.pl.Plog.Printf("S%dN%d has added the accoutStateandTx from %d to pool\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, at.FromShard)
+
+	if len(crom.cdm.AccountStateTx) == int(crom.pbftNode.pbftChainConfig.ShardNums)-1 {
+		crom.cdm.CollectLock.Lock()
+		crom.cdm.CollectOver = true
+		crom.cdm.CollectLock.Unlock()
+		crom.pbftNode.pl.Plog.Printf("S%dN%d has added all accoutStateandTx~~~\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+	}
 }
 
 // stage2：目标分片接收到TXaux2将进行验证，验证成功则更新账户状态，将TXann发送给所有分片
@@ -198,12 +205,6 @@ func (crom *SHARD_CUSTTER) handleTXaux_2(content []byte) {
 	// 广播 TXann 给除了自己和源分片主节点的所有分片
 	for i := uint64(0); i < uint64(params.ShardNum); i++ {
 		for j := uint64(1); j < uint64(params.NodesInShard); j++ {
-			// if i == crom.pbftNode.ShardID && j == crom.pbftNode.NodeID {
-			// 	continue
-			// }
-			// if i == data.Msg.State.SourceID && j == 0 {
-			// 	continue
-			// }
 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[uint64(i)][uint64(j)])
 		}
 	}
@@ -327,39 +328,17 @@ func (crom *SHARD_CUSTTER) handleTXann(content []byte) {
 	// 将TXns发送给目标分片
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : shource shard send TXns to dest shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Msg.State.Location][0])
-
-	// // 在本分片内达成共识（发送到所有非主节点的节点）
-	// if params.NodesInShard >= 1 {
-	// 	// 向本分片内除了本节点的其他节点发送TXns（共识）
-	// 	var i uint64
-	// 	for i = 0; i < uint64(params.NodesInShard); i++ {
-	// 		// 不等于本节点ID
-	// 		if i != crom.pbftNode.NodeID {
-	// 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[crom.pbftNode.ShardID][i])
-	// 		}
-	// 	}
-	// }
-
-	// // 向其他分片的所有节点发送TXns
-	// for i := 0; i < params.ShardNum; i++ {
-	// 	// 不为本分片ID
-	// 	if i != int(crom.pbftNode.ShardID) {
-	// 		for j := 0; j < params.NodesInShard; j++ {
-	// 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[uint64(i)][uint64(j)])
-	// 		}
-	// 	}
-	// }
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : shource shard handle stage 3 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }
 
 // stage 4：节点接收到TXns后更新账户状态
 func (crom *SHARD_CUSTTER) handleTXns(content []byte) {
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : dest shard received TXns from source shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
-	// data := new(message.TXNS_MSG)
-	// err := json.Unmarshal(content, data)
-	// if err != nil {
-	// 	log.Panic()
-	// }
+	data := new(message.TXNS_MSG)
+	err := json.Unmarshal(content, data)
+	if err != nil {
+		log.Panic()
+	}
 
 	// // 更新账户状态
 	// crom.pbftNode.CurChain.Update_PartitionMap(data.Msg.Address, data.Msg.State.Location)
@@ -369,14 +348,18 @@ func (crom *SHARD_CUSTTER) handleTXns(content []byte) {
 
 func (crom *SHARD_CUSTTER) HandleMessageOutsidePBFT(msgType message.MessageType, content []byte) bool {
 	switch msgType {
-	case message.CPartitionMsg:
-		crom.handlePartitionMsg(content)
 	case message.CRelay:
 		crom.handleRelay(content)
 	case message.CRelayWithProof:
 		crom.handleRelayWithProof(content)
 	case message.CInject:
 		crom.handleInjectTx(content)
+	case message.CPartitionMsg:
+		crom.handlePartitionMsg(content)
+	case message.AccountState_and_TX:
+		crom.handleAccountStateAndTxMsg(content)
+	case message.CPartitionReady:
+		crom.handlePartitionReady(content)
 
 	case message.TXaux_2:
 		crom.handleTXaux_2(content)
@@ -388,8 +371,6 @@ func (crom *SHARD_CUSTTER) HandleMessageOutsidePBFT(msgType message.MessageType,
 		crom.handleSourceQuery(content)
 	case message.DestReply:
 		crom.handleDestReply(content)
-	case message.CLU_ModifyMap:
-		crom.handleModifymap(content)
 
 	default:
 		crom.pbftNode.pl.Plog.Printf("S%dN%d : unknown message type: %s \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, msgType)

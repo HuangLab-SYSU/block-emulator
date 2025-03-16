@@ -3,7 +3,7 @@
   
   "PbftViewChangeTimeOut":20000,
 
-  "ExpDataRootDir": "result/CLPA_3",
+  "ExpDataRootDir": "result/account_transfer_8",
 
   "Block_Interval": 5000,
 
