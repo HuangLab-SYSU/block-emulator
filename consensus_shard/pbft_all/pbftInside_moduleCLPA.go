@@ -122,10 +122,12 @@ func (cphm *CLPAPbftInsideExtraHandleMod) HandleinCommit(cmsg *message.Commit) b
 				)
 			}
 			if !tx.Relayed && ssid != cphm.pbftNode.ShardID {
-				log.Panic("incorrect tx")
+				// log.Panic("incorrect tx")
+				continue
 			}
 			if tx.Relayed && rsid != cphm.pbftNode.ShardID {
-				log.Panic("incorrect tx")
+				// log.Panic("incorrect tx")
+				continue
 			}
 			if rsid != cphm.pbftNode.ShardID {
 				relay1Txs = append(relay1Txs, tx)

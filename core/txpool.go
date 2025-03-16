@@ -53,13 +53,14 @@ func (txpool *TxPool) AddTxs2Pool_Head(tx []*Transaction) {
 }
 
 // Pack transactions for a proposal
-func (txpool *TxPool) PackTxs(max_txs uint64) []*Transaction {
+func (txpool *TxPool) PackTxs(max_txs uint64, mp map[string]uint64) []*Transaction {
 	txpool.lock.Lock()
 	defer txpool.lock.Unlock()
 	txNum := max_txs
 	if uint64(len(txpool.TxQueue)) < txNum {
 		txNum = uint64(len(txpool.TxQueue))
 	}
+	// 检测（针对重放攻击），遍历TxQueue直到满足最大数量
 	txs_Packed := txpool.TxQueue[:txNum]
 	txpool.TxQueue = txpool.TxQueue[txNum:]
 	return txs_Packed

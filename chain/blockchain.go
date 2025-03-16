@@ -169,7 +169,8 @@ func (bc *BlockChain) GenerateBlock(miner int32) *core.Block {
 	if params.UseBlocksizeInBytes == 1 {
 		txs = bc.Txpool.PackTxsWithBytes(params.BlocksizeInBytes)
 	} else {
-		txs = bc.Txpool.PackTxs(bc.ChainConfig.BlockSize)
+		// 还需要传入PartitionMap的参数
+		txs = bc.Txpool.PackTxs(bc.ChainConfig.BlockSize, bc.PartitionMap)
 	}
 
 	bh := &core.BlockHeader{

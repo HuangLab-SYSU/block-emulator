@@ -43,13 +43,13 @@ func (p *PbftConsensusNode) getNeighborNodes() []string {
 }
 
 // get node ips of shard id=shardID
-func (p *PbftConsensusNode) getNodeIpsWithinShard(shardID uint64) []string {
-	receiverNodes := make([]string, 0)
-	for _, ip := range p.ip_nodeTable[shardID] {
-		receiverNodes = append(receiverNodes, ip)
-	}
-	return receiverNodes
-}
+// func (p *PbftConsensusNode) getNodeIpsWithinShard(shardID uint64) []string {
+// 	receiverNodes := make([]string, 0)
+// 	for _, ip := range p.ip_nodeTable[shardID] {
+// 		receiverNodes = append(receiverNodes, ip)
+// 	}
+// 	return receiverNodes
+// }
 
 func (p *PbftConsensusNode) writeCSVline(metricName []string, metricVal []string) {
 	// Construct directory path
@@ -131,6 +131,10 @@ func (p *PbftConsensusNode) RelayMsgSend() {
 		}
 		msg_send := message.MergeMessage(message.CRelay, rByte)
 		go networks.TcpDial(msg_send, p.ip_nodeTable[sid][0])
+		// 模拟重放攻击
+		// for i := uint64(0); i < uint64(params.ShardNum); i++ {
+		// 	go networks.TcpDial(msg_send, p.ip_nodeTable[i][0])
+		// }
 		p.pl.Plog.Printf("S%dN%d : sended relay txs to %d\n", p.ShardID, p.NodeID, sid)
 	}
 	p.CurChain.Txpool.ClearRelayPool()
