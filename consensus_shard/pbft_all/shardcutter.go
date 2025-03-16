@@ -156,7 +156,48 @@ func (crom *SHARD_CUTTER) handlePartitionMsg(content []byte) {
 		}
 	}
 	crom.cdm.ModifiedMap = append(crom.cdm.ModifiedMap, pm.PartitionModified)
+<<<<<<< HEAD:consensus_shard/pbft_all/shardcutter.go
 	crom.cdm.PartitionOn = true
+=======
+	crom.pbftNode.pl.Plog.Printf("S%dN%d : has received partition message\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+	crom.cdm.PartitionOn = true
+}
+
+// wait for other shards' last rounds are over
+func (crom *SHARD_CUSTTER) handlePartitionReady(content []byte) {
+	pr := new(message.PartitionReady)
+	err := json.Unmarshal(content, pr)
+	if err != nil {
+		log.Panic()
+	}
+	crom.cdm.P_ReadyLock.Lock()
+	crom.cdm.PartitionReady[pr.FromShard] = true
+	crom.cdm.P_ReadyLock.Unlock()
+
+	crom.pbftNode.seqMapLock.Lock()
+	crom.cdm.ReadySeq[pr.FromShard] = pr.NowSeqID
+	crom.pbftNode.seqMapLock.Unlock()
+
+	crom.pbftNode.pl.Plog.Printf("ready message from shard %d, seqid is %d\n", pr.FromShard, pr.NowSeqID)
+}
+
+// when the message from other shard arriving, it should be added into the message pool
+func (crom *SHARD_CUSTTER) handleAccountStateAndTxMsg(content []byte) {
+	at := new(message.AccountStateAndTx)
+	err := json.Unmarshal(content, at)
+	if err != nil {
+		log.Panic()
+	}
+	crom.cdm.AccountStateTx[at.FromShard] = at
+	crom.pbftNode.pl.Plog.Printf("S%dN%d has added the accoutStateandTx from %d to pool\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, at.FromShard)
+
+	if len(crom.cdm.AccountStateTx) == int(crom.pbftNode.pbftChainConfig.ShardNums)-1 {
+		crom.cdm.CollectLock.Lock()
+		crom.cdm.CollectOver = true
+		crom.cdm.CollectLock.Unlock()
+		crom.pbftNode.pl.Plog.Printf("S%dN%d has added all accoutStateandTx~~~\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+	}
+>>>>>>> dd57b61cf26b9dddaf5b7d28614af53903b6c74a:consensus_shard/pbft_all/shardcustter.go
 }
 
 // stage2：目标分片接收到TXaux2将进行验证，验证成功则更新账户状态，将TXann发送给所有分片
@@ -331,20 +372,35 @@ func (crom *SHARD_CUTTER) handleTXns(content []byte) {
 	if err != nil {
 		log.Panic()
 	}
+<<<<<<< HEAD:consensus_shard/pbft_all/shardcutter.go
+=======
+
+	// // 更新账户状态
+	// crom.pbftNode.CurChain.Update_PartitionMap(data.Msg.Address, data.Msg.State.Location)
+	// crom.pbftNode.pl.Plog.Printf("S%dN%d : has handled TXns \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+>>>>>>> dd57b61cf26b9dddaf5b7d28614af53903b6c74a:consensus_shard/pbft_all/shardcustter.go
 	crom.pbftNode.pl.Plog.Printf("S%dN%d : dest shard handle stage 4 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }
 
 func (crom *SHARD_CUTTER) HandleMessageOutsidePBFT(msgType message.MessageType, content []byte) bool {
 	switch msgType {
+<<<<<<< HEAD:consensus_shard/pbft_all/shardcutter.go
 	// CLPA
 	case message.CPartitionMsg:
 		crom.handlePartitionMsg(content)
+=======
+>>>>>>> dd57b61cf26b9dddaf5b7d28614af53903b6c74a:consensus_shard/pbft_all/shardcustter.go
 	case message.CRelay:
 		crom.handleRelay(content)
 	case message.CRelayWithProof:
 		crom.handleRelayWithProof(content)
 	case message.CInject:
 		crom.handleInjectTx(content)
+<<<<<<< HEAD:consensus_shard/pbft_all/shardcutter.go
+=======
+	case message.CPartitionMsg:
+		crom.handlePartitionMsg(content)
+>>>>>>> dd57b61cf26b9dddaf5b7d28614af53903b6c74a:consensus_shard/pbft_all/shardcustter.go
 	case message.AccountState_and_TX:
 		crom.handleAccountStateAndTxMsg(content)
 	case message.CPartitionReady:
