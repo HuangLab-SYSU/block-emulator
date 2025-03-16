@@ -5,12 +5,12 @@ import (
 )
 
 const (
-	TXaux_1      MessageType = "CLuTXaux1"
-	TXaux_2      MessageType = "CLuTXaux2"
-	TXann        MessageType = "CLuTXann"
-	TXns         MessageType = "CLuTXns"
-	ScourceQuery MessageType = "CLuSourQ"
-	DestReply    MessageType = "CLuDestR"
+	TXaux_1      MessageType = "CUTXaux1"
+	TXaux_2      MessageType = "CUTXaux2"
+	TXann        MessageType = "CUTXann"
+	TXns         MessageType = "CUTXns"
+	ScourceQuery MessageType = "CUSourQ"
+	DestReply    MessageType = "CUDestR"
 )
 
 type TXAUX_1_MSG struct {

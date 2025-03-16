@@ -103,29 +103,6 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 		log.Panic("cannot new a blockchain")
 	}
 
-	// if shardID == 0 {
-	// 	var AccountString []string = []string{
-	// 		"32be343b94f860124dc4fee278fdcbd38c102d88",
-	// 		"104994f45d9d697ca104e5704a7b77d7fec3537c",
-	// 	}
-	// 	var AccountState []*core.AccountState
-	// 	AccountValue, ok := new(big.Int).SetString("10000000000000000000000000", 10)
-	// 	//                                               149990000000000000000
-	// 	if !ok {
-	// 		fmt.Println("Failed to parse the string as a big integer.")
-	// 	}
-	// 	AccountState = append(AccountState, &core.AccountState{
-	// 		Nonce:   123456,
-	// 		Balance: AccountValue,
-	// 	})
-	// 	AccountState = append(AccountState, &core.AccountState{
-	// 		Nonce:   654321,
-	// 		Balance: AccountValue,
-	// 	})
-	// 	p.CurChain.AddAccounts(AccountString, AccountState, 0)
-	// 	fmt.Printf("Shard %d add two accounts", shardID)
-	// }
-
 	p.RunningNode = &shard.Node{
 		NodeID:  nodeID,
 		ShardID: shardID,
@@ -182,14 +159,14 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 		p.ohm = &RawBrokerOutsideModule{
 			pbftNode: p,
 		}
-	case "ShardCluster":
+	case "ShardCutter":
 		ncdm := dataSupport.NewCLPADataSupport()
-		fmt.Println("Using shard custter consensus")
+		fmt.Println("Using shard cutter consensus")
 		p.ihm = &CLPAPbftInsideExtraHandleMod{
 			pbftNode: p,
 			cdm:      ncdm,
 		}
-		p.ohm = &SHARD_CUSTTER{
+		p.ohm = &SHARD_CUTTER{
 			pbftNode: p,
 			cdm:      ncdm,
 			sq: source_query{
