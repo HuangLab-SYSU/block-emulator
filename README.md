@@ -29,7 +29,7 @@ The main purpose of this testbed is to help users (researchers, students, etc.) 
 
 **BlockEmulator** is designed as an experimental platform that adopts a lightweight system architecture. It simplifies the implementation of industrial-class blockchains since **BlockEmulator** only implements the core functions of a blockchain, including the transaction pool, block packaging, consensus protocols, and on-chain transaction storage. It also supports common consensus protocols, such as Practical Byzantine Fault Tolerance (PBFT).
 
-In particular, BlockEmulator offers the system-level design and implementation for blockchain-sharding mechanisms. For example, the cross-shard transaction mechanisms implemented by BlockEmulator include the following two representative solutions, i.e., i) **Relay transaction mechanism** proposed by **Monoxide** (NSDI'2019), and the **BrokerChain** protocol (INFOCOM'2022) [PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding).
+In particular, BlockEmulator offers the system-level design and implementation for blockchain-sharding mechanisms. For example, the cross-shard transaction mechanisms implemented by BlockEmulator include the following two representative solutions: i) **Relay transaction mechanism** proposed by **Monoxide** (NSDI'2019), and ii) the **BrokerChain** protocol (INFOCOM'2022) [PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding).
 
 BlockEmulator is oriented toward blockchain researchers. It provides a blockchain experimental platform for quickly implementing their own algorithms, protocols, and mechanisms. It also offers very helpful functions to help researchers collect experimental data, facilitating their plotting experimental figures.
 
@@ -39,11 +39,14 @@ BlockEmulator is oriented toward blockchain researchers. It provides a blockchai
 To provide an official handbook for BlockEmulator, we have written a technical paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols" [arXiv page](https://arxiv.org/abs/2311.03612). Please cite our paper if you use BlockEmulator as an experiment tool in your own paper.
 
 ```
-@article{huang2023blockemulator,
+@article{huang2025blockemulator,
    title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols},
    author={Huang, Huawei and Ye, Guang and Yang, Qinglin and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Zheng, Jian and Li, Taotao and  Zheng, Zibin},
-   journal={arXiv preprint arXiv:2311.03612},
-   year={2023}
+   journal={IEEE Transactions on Service Computing (TSC)},
+   volume={},
+   number={},
+   page={1-16},
+   year={2025}
    }
 ```
 
