@@ -26,7 +26,7 @@ type TXmig1 struct {
 type TXmig2 struct {
 	Txmig1          TXmig1
 	MPmig1          bool
-	State           CLUSTER_ACCOUNT_STATE
+	State           CUTTER_ACCOUNT_STATE
 	MPstate         bool
 	TimeoutDuration time.Duration // 超时的时间
 	StartTime       time.Time     // 表示开始进行账户转移的时间
@@ -38,7 +38,7 @@ type TXmig2 struct {
 type TXann struct {
 	Txmig2  TXmig2
 	MPmig2  bool
-	State   CLUSTER_ACCOUNT_STATE
+	State   CUTTER_ACCOUNT_STATE
 	MPstate bool
 	// H         int
 	// Address   string `json:"address"`
@@ -48,7 +48,7 @@ type TXann struct {
 type TXns struct {
 	Txann   TXann
 	MPann   bool
-	State   CLUSTER_ACCOUNT_STATE
+	State   CUTTER_ACCOUNT_STATE
 	MPstate bool
 	// H       int
 	Address string `json:"address"`

@@ -3,7 +3,7 @@
   
   "PbftViewChangeTimeOut":20000,
 
-  "ExpDataRootDir": "result/final_2",
+  "ExpDataRootDir": "result/ac_transfer_error_2",
 
   "Block_Interval": 5000,
 

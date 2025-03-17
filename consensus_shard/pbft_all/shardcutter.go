@@ -14,16 +14,17 @@ import (
 )
 
 type source_query struct {
-	mu              sync.Mutex
-	receivedData    bool
-	AccountKey      string
-	AccountLocation uint64
+	QueryChannel map[string]chan bool
+	// receivedData map[string]bool
+	PartionMap map[string]uint64
+	mu         sync.Mutex
 }
 
 type SHARD_CUTTER struct {
-	cdm      *dataSupport.Data_supportCLPA
-	pbftNode *PbftConsensusNode
-	sq       source_query
+	cdm         *dataSupport.Data_supportCLPA
+	pbftNode    *PbftConsensusNode
+	sq          source_query
+	time_couter uint64 // 计时器，用来随机制造账户迁移失败
 }
 
 // receive relay transaction, which is for cross shard txs
@@ -133,9 +134,9 @@ func (crom *SHARD_CUTTER) handlePartitionMsg(content []byte) {
 				Msg: core.TXmig2{
 					Txmig1: txau1,
 					MPmig1: true,
-					State: core.CLUSTER_ACCOUNT_STATE{
+					State: core.CUTTER_ACCOUNT_STATE{
 						Key:      key,
-						Location: val,
+						DestID:   val,
 						SourceID: crom.pbftNode.ShardID,
 					},
 					MPstate:         true,
@@ -197,7 +198,10 @@ func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
 
 	// 广播 TXann 给除了主节点的所有节点
 	for i := uint64(0); i < uint64(params.ShardNum); i++ {
-		for j := uint64(1); j < uint64(params.NodesInShard); j++ {
+		for j := uint64(0); j < uint64(params.NodesInShard); j++ {
+			if i == crom.pbftNode.ShardID && j == crom.pbftNode.NodeID {
+				continue
+			}
 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[uint64(i)][uint64(j)])
 		}
 	}
@@ -206,43 +210,51 @@ func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
 
 // 目标分片处理账户转移失败类型2中源分片发过来的请求
 func (crom *SHARD_CUTTER) handleSourceQuery(content []byte) {
-	data := new(message.CLU_SOURCE_QUERY)
+	data := new(message.CU_SOURCE_QUERY)
 	err := json.Unmarshal(content, data)
 	if err != nil {
 		log.Panic()
 	}
-	sii := message.CLU_DEST_REPLY{
-		AccountKey:      data.AccountKey,
-		AccountLocation: crom.pbftNode.ShardID,
-		Sender:          crom.pbftNode.ShardID,
+	sii := message.CU_DEST_REPLY{
+		State:  data.State,
+		Sender: crom.pbftNode.ShardID,
 	}
 	sByte, err := json.Marshal(sii)
 	if err != nil {
 		log.Panic()
 	}
-	msg_send := message.MergeMessage(message.TXann, sByte)
-	// 发送到源分片，即发过来的分片编号
+	msg_send := message.MergeMessage(message.DestReply, sByte)
+	// 发送到源分片，发送这个请求的节点
 	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Sender][0])
-	crom.pbftNode.pl.Plog.Printf("S%dN%d : dest shard has handled Query from Source shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+	crom.pbftNode.pl.Plog.Printf(
+		"S%dN%d : get account state query from source shard \n",
+		crom.pbftNode.ShardID,
+		crom.pbftNode.NodeID,
+	)
 }
 
 // 源分片处理账户转移失败类型2中目标分片返回的请求
 func (crom *SHARD_CUTTER) handleDestReply(content []byte) {
-	data := new(message.CLU_DEST_REPLY)
+	data := new(message.CU_DEST_REPLY)
 	err := json.Unmarshal(content, data)
 	if err != nil {
 		log.Panic()
 	}
 	crom.sq.mu.Lock()
-	crom.sq.receivedData = true
-	crom.sq.AccountKey = data.AccountKey
-	crom.sq.AccountLocation = data.AccountLocation
+	crom.sq.PartionMap[data.State.Key] = data.State.DestID
+	crom.sq.QueryChannel[data.State.Key] <- true
 	crom.sq.mu.Unlock()
-	crom.pbftNode.pl.Plog.Printf("S%dN%d : source has received reply from Dest shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+
+	crom.pbftNode.pl.Plog.Printf(
+		"S%dN%d : receive reply from dest shard \n",
+		crom.pbftNode.ShardID,
+		crom.pbftNode.NodeID,
+	)
 }
 
 // stage3：源/其他分片接收到消息TXann，并更新账户信息。随后将TXns发送给目标分片
 func (crom *SHARD_CUTTER) handleTXann(content []byte) {
+	crom.time_couter++
 
 	data := new(message.TXANN_MSG)
 	err := json.Unmarshal(content, data)
@@ -251,84 +263,101 @@ func (crom *SHARD_CUTTER) handleTXann(content []byte) {
 	}
 
 	// 如果不是源分片的主节点，则更新账户
-	if !(crom.pbftNode.ShardID == data.Msg.Txmig2.Txmig1.FromshardID && crom.pbftNode.NodeID == 0) {
+	if !(crom.pbftNode.ShardID == data.Msg.State.SourceID && crom.pbftNode.NodeID == 0) {
 		crom.pbftNode.pl.Plog.Printf(
 			"S%dN%d : update account %s's location to: %d \n",
 			crom.pbftNode.ShardID,
 			crom.pbftNode.NodeID,
 			data.Msg.State.Key,
-			data.Msg.State.Location,
+			data.Msg.State.DestID,
 		)
 		return
 	}
-	// 如果此时已经超时
-	if time.Since(data.Msg.Txmig2.StartTime) > data.Msg.Txmig2.TimeoutDuration {
+	// 如果此时已经超时，或者出现人为制造转移错误
+	if time.Since(data.Msg.Txmig2.StartTime) > data.Msg.Txmig2.TimeoutDuration || crom.time_couter%500 == 0 {
 		crom.pbftNode.pl.Plog.Printf(
 			"S%dN%d : account transfer time out, query for dest shard \n",
 			crom.pbftNode.ShardID,
 			crom.pbftNode.NodeID,
 		)
+		go func() {
+			crom.sq.mu.Lock()
+			crom.sq.QueryChannel[data.Msg.State.Key] = make(chan bool)
+			crom.sq.mu.Unlock()
 
-		// 在账户转移失败的情况讨论中，源分片需要询问目标分片目前的账户状态，如果不是失败那么再进行转移
-		send_msg_data := message.CLU_SOURCE_QUERY{
-			AccountKey: data.Msg.State.Key,
-			Sender:     crom.pbftNode.ShardID,
+			// 在账户转移失败的情况讨论中，源分片需要询问目标分片目前的账户状态，如果不是失败那么再进行转移
+			send_msg_data := message.CU_SOURCE_QUERY{
+				State:  data.Msg.State,
+				Sender: crom.pbftNode.ShardID,
+			}
+			send_bytes, err := json.Marshal(send_msg_data)
+			if err != nil {
+				log.Panic()
+			}
+			send_msg_struct := message.MergeMessage(message.ScourceQuery, send_bytes)
+			// 发送到目标分片
+			go networks.TcpDial(send_msg_struct, crom.pbftNode.ip_nodeTable[data.Msg.State.DestID][0])
+
+			crom.sq.mu.Lock()
+			Channel := crom.sq.QueryChannel[data.Msg.State.Key]
+			crom.sq.mu.Unlock()
+
+			// 阻塞程序，直到查询结果成功
+			<-Channel
+
+			crom.sq.mu.Lock()
+			destId := crom.sq.PartionMap[data.Msg.State.Key]
+			crom.sq.mu.Unlock()
+
+			// 如果目标分片中，该账户状态为目标分片（检测成功），则继续
+			if destId == data.Msg.State.DestID {
+				crom.pbftNode.pl.Plog.Printf(
+					"S%dN%d : Obtain account state verification from the source shard\n",
+					crom.pbftNode.ShardID,
+					crom.pbftNode.NodeID,
+				)
+			} else {
+				log.Panic("incorrect account state")
+			}
+			sii := message.TXNS_MSG{
+				Msg: core.TXns{
+					Txann:   data.Msg,
+					MPann:   true,
+					State:   data.Msg.State,
+					Address: data.Msg.State.Key,
+				},
+				Sender: crom.pbftNode.ShardID,
+			}
+			sByte, err := json.Marshal(sii)
+			if err != nil {
+				log.Panic()
+			}
+			msg_send := message.MergeMessage(message.TXns, sByte)
+
+			// 将TXns发送给目标分片
+			crom.pbftNode.pl.Plog.Printf("S%dN%d : shource shard send TXns to dest shard, handle stage 3 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Msg.State.DestID][0])
+		}()
+	} else {
+		sii := message.TXNS_MSG{
+			Msg: core.TXns{
+				Txann:   data.Msg,
+				MPann:   true,
+				State:   data.Msg.State,
+				Address: data.Msg.State.Key,
+			},
+			Sender: crom.pbftNode.ShardID,
 		}
-		send_bytes, err := json.Marshal(send_msg_data)
+		sByte, err := json.Marshal(sii)
 		if err != nil {
 			log.Panic()
 		}
-		send_msg_struct := message.MergeMessage(message.ScourceQuery, send_bytes)
-		// 发送到目标分片，即发过来的分片编号
-		go networks.TcpDial(send_msg_struct, crom.pbftNode.ip_nodeTable[data.Sender][0])
+		msg_send := message.MergeMessage(message.TXns, sByte)
 
-		// 设置receiveddata为false
-		crom.sq.receivedData = false
-
-		// 阻塞程序，直到查询结果成功
-		for {
-			crom.sq.mu.Lock()
-			// 如果获得了结果
-			if crom.sq.receivedData {
-				crom.pbftNode.pl.Plog.Printf("S%dN%d : has received data from dest shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
-				// 如果目标分片中，该账户状态为目标分片（检测成功），则继续
-				if crom.sq.AccountLocation == data.Msg.State.Location || true {
-					crom.pbftNode.pl.Plog.Printf(
-						"S%dN%d : Obtain verification from the source shard\n",
-						crom.pbftNode.ShardID,
-						crom.pbftNode.NodeID,
-					)
-					crom.sq.mu.Unlock()
-					break
-				} else { // 否则结束，认为账户转移失败
-					crom.sq.mu.Unlock()
-					return
-				}
-			}
-			crom.sq.mu.Unlock()
-			// 等待500毫秒
-			time.Sleep(500 * time.Millisecond)
-		}
+		// 将TXns发送给目标分片
+		crom.pbftNode.pl.Plog.Printf("S%dN%d : shource shard send TXns to dest shard, handle stage 3 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+		go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Msg.State.DestID][0])
 	}
-	sii := message.TXNS_MSG{
-		Msg: core.TXns{
-			Txann:   data.Msg,
-			MPann:   true,
-			State:   data.Msg.State,
-			Address: data.Msg.State.Key,
-		},
-		Sender: crom.pbftNode.ShardID,
-	}
-	sByte, err := json.Marshal(sii)
-	if err != nil {
-		log.Panic()
-	}
-	msg_send := message.MergeMessage(message.TXns, sByte)
-
-	// 将TXns发送给目标分片
-	crom.pbftNode.pl.Plog.Printf("S%dN%d : shource shard send TXns to dest shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
-	go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Msg.State.Location][0])
-	crom.pbftNode.pl.Plog.Printf("S%dN%d : shource shard handle stage 3 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 }
 
 // stage 4：节点接收到TXns后更新账户状态

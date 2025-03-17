@@ -33,13 +33,12 @@ type TXNS_MSG struct {
 	Sender uint64
 }
 
-type CLU_SOURCE_QUERY struct {
-	AccountKey string
-	Sender     uint64
+type CU_SOURCE_QUERY struct {
+	State  core.CUTTER_ACCOUNT_STATE
+	Sender uint64
 }
 
-type CLU_DEST_REPLY struct {
-	AccountKey      string
-	AccountLocation uint64
-	Sender          uint64
+type CU_DEST_REPLY struct {
+	State  core.CUTTER_ACCOUNT_STATE
+	Sender uint64
 }

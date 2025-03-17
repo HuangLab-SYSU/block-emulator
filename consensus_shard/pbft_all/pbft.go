@@ -167,10 +167,12 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 			cdm:      ncdm,
 		}
 		p.ohm = &SHARD_CUTTER{
-			pbftNode: p,
-			cdm:      ncdm,
+			pbftNode:    p,
+			cdm:         ncdm,
+			time_couter: 0,
 			sq: source_query{
-				receivedData: false,
+				PartionMap:   make(map[string]uint64),
+				QueryChannel: make(map[string]chan bool),
 			},
 		}
 	default:

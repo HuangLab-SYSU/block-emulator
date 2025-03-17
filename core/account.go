@@ -18,9 +18,9 @@ type Account struct {
 }
 
 // Shard Cluster的账户状态（只需要存储账户的Location字段）
-type CLUSTER_ACCOUNT_STATE struct {
+type CUTTER_ACCOUNT_STATE struct {
 	Key      string // 该账户的编码
-	Location uint64 // 该账户目标分片
+	DestID   uint64 // 该账户目标分片
 	SourceID uint64 // 该账户的源分片
 }
 
