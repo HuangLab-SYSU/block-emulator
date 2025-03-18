@@ -167,9 +167,12 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 			cdm:      ncdm,
 		}
 		p.ohm = &SHARD_CUTTER{
-			pbftNode:    p,
-			cdm:         ncdm,
-			time_couter: 0,
+			pbftNode: p,
+			cdm:      ncdm,
+			cnt: err_counter{
+				transfer_err_counter:  0,
+				replay_attack_counter: 0,
+			},
 			sq: source_query{
 				PartionMap:   make(map[string]uint64),
 				QueryChannel: make(map[string]chan bool),

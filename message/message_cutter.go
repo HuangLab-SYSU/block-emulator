@@ -11,6 +11,7 @@ const (
 	TXns         MessageType = "CUTXns"
 	ScourceQuery MessageType = "CUSourQ"
 	DestReply    MessageType = "CUDestR"
+	ReplayAttack MessageType = "CUAttack"
 )
 
 type TXAUX_1_MSG struct {
@@ -41,4 +42,10 @@ type CU_SOURCE_QUERY struct {
 type CU_DEST_REPLY struct {
 	State  core.CUTTER_ACCOUNT_STATE
 	Sender uint64
+}
+
+type CU_REPLAY_ATTACK struct {
+	AccountID string
+	Sender    uint64
+	Location  uint64
 }
