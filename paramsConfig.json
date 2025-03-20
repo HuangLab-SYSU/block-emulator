@@ -3,7 +3,7 @@
   
   "PbftViewChangeTimeOut":20000,
 
-  "ExpDataRootDir": "result/replay_attack",
+  "ExpDataRootDir": "result/final_result",
 
   "Block_Interval": 5000,
 

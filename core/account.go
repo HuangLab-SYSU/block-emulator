@@ -19,10 +19,10 @@ type Account struct {
 
 // Shard Cluster的账户状态（只需要存储账户的Location字段）
 type CUTTER_ACCOUNT_STATE struct {
-	Key      string   // 该账户的编码
-	DestID   uint64   // 该账户目标分片
-	SourceID uint64   // 该账户的源分片
-	Balance  *big.Int // 该账户的余额
+	Key      string // 该账户的编码
+	DestID   uint64 // 该账户目标分片
+	SourceID uint64 // 该账户的源分片
+	// Balance  *big.Int // 该账户的余额
 }
 
 // AccoutState record the details of an account, it will be saved in status trie
