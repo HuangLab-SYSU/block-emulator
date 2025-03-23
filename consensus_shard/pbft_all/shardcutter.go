@@ -23,6 +23,7 @@ type source_query struct {
 type err_counter struct {
 	transfer_err_counter  uint64 // 用来随机制造账户迁移失败
 	replay_attack_counter uint64 // 用来随机生成重放攻击
+	te_counter            uint64 // 账户转移失败情况1
 }
 
 type SHARD_CUTTER struct {
@@ -127,7 +128,12 @@ func (crom *SHARD_CUTTER) handlePartitionMsg(content []byte) {
 	for key, val := range pm.PartitionModified {
 		// 如果这个账户源分片为当前分片，则处理
 		if crom.pbftNode.CurChain.Get_PartitionMap(key) == crom.pbftNode.ShardID {
-			crom.pbftNode.pl.Plog.Printf("S%dN%d : source shard received TXaux1 for account %s from M-shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, key)
+			crom.pbftNode.pl.Plog.Printf(
+				"S%dN%d : source shard received TXaux1 for account %s from M-shard \n",
+				crom.pbftNode.ShardID,
+				crom.pbftNode.NodeID,
+				key,
+			)
 			// 生成TXaux1
 			txau1 := core.TXmig1{
 				Address:     key,
@@ -173,11 +179,19 @@ func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
 	if err != nil {
 		log.Panic()
 	}
+	crom.cnt.te_counter++
+	if crom.cnt.te_counter%513 == 0 {
+		time.Sleep(data.Msg.TimeoutDuration + time.Second)
+	}
 	// 超时，目标分片接收到TXaux2超时，直接视为失败
-	// if time.Since(data.Msg.StartTime) >= data.Msg.TimeoutDuration {
-	// 	crom.pbftNode.pl.Plog.Printf("S%dN%d : account transfer time out\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
-	// 	return
-	// }
+	if time.Since(data.Msg.StartTime) >= data.Msg.TimeoutDuration {
+		crom.pbftNode.pl.Plog.Printf(
+			"S%dN%d : account %s transfer time out in stage 2\n",
+			crom.pbftNode.ShardID,
+			crom.pbftNode.NodeID,
+			data.Msg.State.Key,
+		)
+	}
 	if !data.Msg.MPmig1 || !data.Msg.MPstate {
 		return
 	}

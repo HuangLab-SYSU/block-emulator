@@ -3,7 +3,7 @@
   
   "PbftViewChangeTimeOut":20000,
 
-  "ExpDataRootDir": "result/final_result",
+  "ExpDataRootDir": "result/final_result_2",
 
   "Block_Interval": 5000,
 

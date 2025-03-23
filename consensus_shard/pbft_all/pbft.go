@@ -172,6 +172,7 @@ func NewPbftNode(shardID, nodeID uint64, pcc *params.ChainConfig, messageHandleT
 			cnt: err_counter{
 				transfer_err_counter:  0,
 				replay_attack_counter: 0,
+				te_counter:            0,
 			},
 			sq: source_query{
 				PartionMap:   make(map[string]uint64),
