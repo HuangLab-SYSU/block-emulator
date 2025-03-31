@@ -5,13 +5,14 @@ import (
 )
 
 const (
-	TXaux_1      MessageType = "CUTXaux1"
-	TXaux_2      MessageType = "CUTXaux2"
-	TXann        MessageType = "CUTXann"
-	TXns         MessageType = "CUTXns"
-	ScourceQuery MessageType = "CUSourQ"
-	DestReply    MessageType = "CUDestR"
-	ReplayAttack MessageType = "CUAttack"
+	TXaux_1       MessageType = "CUTXaux1"
+	TXaux_2       MessageType = "CUTXaux2"
+	TXann         MessageType = "CUTXann"
+	TXns          MessageType = "CUTXns"
+	ScourceQuery  MessageType = "CUSourQ"
+	DestReply     MessageType = "CUDestR"
+	ReplayAttack  MessageType = "CUAttack"
+	ACC_Trans_Err MessageType = "CUAccErr"
 )
 
 type TXAUX_1_MSG struct {
@@ -45,7 +46,13 @@ type CU_DEST_REPLY struct {
 }
 
 type CU_REPLAY_ATTACK struct {
+	AccountID     string
+	Sender        uint64
+	Should_handle bool
+	Location      uint64
+}
+
+type CU_ACC_TRANS_ERR struct {
 	AccountID string
 	Sender    uint64
-	Location  uint64
 }

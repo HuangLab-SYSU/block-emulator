@@ -162,9 +162,12 @@ func (crom *SHARD_CUTTER) handlePartitionMsg(content []byte) {
 			}
 			msg_send := message.MergeMessage(message.TXaux_2, sByte)
 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[val][0])
-			// crom.pbftNode.pl.Plog.Printf("S%dN%d : account %s's location is updated to: %d \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, key, val)
-			crom.pbftNode.pl.Plog.Printf("S%dN%d : source shard sended Txaux2 for account %s to dest shard, finished stage 1\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, key)
-			// crom.pbftNode.pl.Plog.Printf("S%dN%d : source shard handle stage1 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+			crom.pbftNode.pl.Plog.Printf(
+				"S%dN%d : source shard sended Txaux2 for account %s to dest shard, finished stage 1\n",
+				crom.pbftNode.ShardID,
+				crom.pbftNode.NodeID,
+				key,
+			)
 		}
 	}
 	crom.cdm.ModifiedMap = append(crom.cdm.ModifiedMap, pm.PartitionModified)
@@ -173,15 +176,14 @@ func (crom *SHARD_CUTTER) handlePartitionMsg(content []byte) {
 
 // stage2：目标分片接收到TXaux2将进行验证，验证成功则更新账户状态，将TXann发送给所有分片
 func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
-	// crom.pbftNode.pl.Plog.Printf("S%dN%d : dest shard received TXaux2 from source shard \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
 	data := new(message.TXAUX_2_MSG)
 	err := json.Unmarshal(content, data)
 	if err != nil {
 		log.Panic()
 	}
 	crom.cnt.te_counter++
-	if crom.cnt.te_counter%513 == 0 {
-		time.Sleep(data.Msg.TimeoutDuration + time.Second)
+	if crom.cnt.te_counter%1013 == 0 {
+		time.Sleep(data.Msg.TimeoutDuration + 2*time.Second)
 	}
 	// 超时，目标分片接收到TXaux2超时，直接视为失败
 	if time.Since(data.Msg.StartTime) >= data.Msg.TimeoutDuration {
@@ -191,6 +193,17 @@ func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
 			crom.pbftNode.NodeID,
 			data.Msg.State.Key,
 		)
+		sii := message.CU_ACC_TRANS_ERR{
+			AccountID: data.Msg.State.Key,
+			Sender:    crom.pbftNode.ShardID,
+		}
+		sByte, err := json.Marshal(sii)
+		if err != nil {
+			log.Panic()
+		}
+		msg_send := message.MergeMessage(message.ACC_Trans_Err, sByte)
+		go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[data.Msg.State.SourceID][0])
+		return
 	}
 	if !data.Msg.MPmig1 || !data.Msg.MPstate {
 		return
@@ -201,7 +214,6 @@ func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
 		crom.pbftNode.NodeID,
 		data.Msg.State.Key,
 	)
-	// crom.pbftNode.pl.Plog.Printf("S%dN%d : account %s's location is updated to: %d \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID, data.Msg.Txmig1.Address, data.Msg.Txmig1.ToshardID)
 
 	sii := message.TXANN_MSG{
 		Msg: core.TXann{
@@ -218,7 +230,11 @@ func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
 	}
 	msg_send := message.MergeMessage(message.TXann, sByte)
 
-	crom.pbftNode.pl.Plog.Printf("S%dN%d : Dest shard finished stage 2, send TXann to all nodes\n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+	crom.pbftNode.pl.Plog.Printf(
+		"S%dN%d : Dest shard finished stage 2, send TXann to all nodes\n",
+		crom.pbftNode.ShardID,
+		crom.pbftNode.NodeID,
+	)
 
 	// 广播 TXann 给除了主节点的所有节点
 	for i := uint64(0); i < uint64(params.ShardNum); i++ {
@@ -229,7 +245,20 @@ func (crom *SHARD_CUTTER) handleTXaux_2(content []byte) {
 			go networks.TcpDial(msg_send, crom.pbftNode.ip_nodeTable[uint64(i)][uint64(j)])
 		}
 	}
-	// crom.pbftNode.pl.Plog.Printf("S%dN%d : dest shard handle stage2 done \n", crom.pbftNode.ShardID, crom.pbftNode.NodeID)
+}
+
+func (crom *SHARD_CUTTER) handleTransErr_1(content []byte) {
+	data := new(message.CU_ACC_TRANS_ERR)
+	err := json.Unmarshal(content, data)
+	if err != nil {
+		log.Panic()
+	}
+	crom.pbftNode.pl.Plog.Printf(
+		"S%dN%d : account %s transfer time out in stage 2\n",
+		crom.pbftNode.ShardID,
+		crom.pbftNode.NodeID,
+		data.AccountID,
+	)
 }
 
 // 目标分片处理账户转移失败类型2中源分片发过来的请求
@@ -269,13 +298,6 @@ func (crom *SHARD_CUTTER) handleDestReply(content []byte) {
 	crom.sq.PartionMap[data.State.Key] = data.State.DestID
 	crom.sq.QueryChannel[data.State.Key] <- true
 	crom.sq.mu.Unlock()
-
-	// crom.pbftNode.pl.Plog.Printf(
-	// 	"S%dN%d : receive reply for account %s from dest shard \n",
-	// 	crom.pbftNode.ShardID,
-	// 	crom.pbftNode.NodeID,
-	// 	data.State.Key,
-	// )
 }
 
 // stage3：源/其他分片接收到消息TXann，并更新账户信息。随后将TXns发送给目标分片
@@ -436,6 +458,10 @@ func (crom *SHARD_CUTTER) makeReplayAttack() {
 	if crom.cnt.replay_attack_counter%751 != 0 || !params.ShardCutterMakeReplayAttack || crom.pbftNode.NodeID != 0 {
 		return
 	}
+	var should_handle bool = false
+	if params.ShardCutterHandleReplayAttack || crom.cnt.replay_attack_counter%(751*2) == 0 {
+		should_handle = true
+	}
 	attack_acc, attack_loc, ok := crom.getAccountFromCurChain()
 	if !ok {
 		crom.pbftNode.pl.Plog.Printf(
@@ -447,9 +473,10 @@ func (crom *SHARD_CUTTER) makeReplayAttack() {
 	}
 
 	sii := message.CU_REPLAY_ATTACK{
-		AccountID: attack_acc,
-		Sender:    crom.pbftNode.NodeID,
-		Location:  attack_loc,
+		AccountID:     attack_acc,
+		Sender:        crom.pbftNode.NodeID,
+		Location:      attack_loc,
+		Should_handle: should_handle,
 	}
 	sByte, err := json.Marshal(sii)
 	if err != nil {
@@ -480,18 +507,27 @@ func (crom *SHARD_CUTTER) handleReplayAttack(content []byte) {
 		data.AccountID,
 		data.Sender,
 	)
-	if params.ShardCutterHandleReplayAttack && data.Location != crom.pbftNode.ShardID {
-		crom.pbftNode.pl.Plog.Printf(
-			"S%dN%d : This Relat TX should be send to shard %d, aborted due to the mismatch in the account %s's Location field. \n",
-			crom.pbftNode.ShardID,
-			crom.pbftNode.NodeID,
-			data.Location,
-			data.AccountID,
-		)
+	if data.Should_handle {
+		if data.Location != crom.pbftNode.ShardID {
+			crom.pbftNode.pl.Plog.Printf(
+				"S%dN%d : This Relay TX should be send to shard %d, aborted due to the mismatch in the account %s's Location field. \n",
+				crom.pbftNode.ShardID,
+				crom.pbftNode.NodeID,
+				data.Location,
+				data.AccountID,
+			)
+		} else {
+			crom.pbftNode.pl.Plog.Printf(
+				"S%dN%d : Verify Relay TX: correct , increase account %s balance. \n",
+				crom.pbftNode.ShardID,
+				crom.pbftNode.NodeID,
+				data.AccountID,
+			)
+		}
 		return
 	}
 	crom.pbftNode.pl.Plog.Printf(
-		"S%dN%d : Verify Relay TX: correct , increase account %s balance. \n",
+		"S%dN%d : Increase account %s balance. \n",
 		crom.pbftNode.ShardID,
 		crom.pbftNode.NodeID,
 		data.AccountID,
@@ -525,6 +561,8 @@ func (crom *SHARD_CUTTER) HandleMessageOutsidePBFT(msgType message.MessageType, 
 		crom.handleSourceQuery(content)
 	case message.DestReply:
 		crom.handleDestReply(content)
+	case message.ACC_Trans_Err:
+		crom.handleTransErr_1(content)
 
 	// Replay Attack
 	case message.ReplayAttack:
