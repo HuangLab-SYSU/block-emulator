@@ -6,7 +6,7 @@
 
 这里是 BlockEmulator 官方中文版，本文档根据当前 BlockEmulator 1.0 版本编写。
 
-2024年12月31日，我们项目组上传了一个超详细的用户使用指南，文档名为《2024Dec31-(139页)使用指南-黄华威.pdf》，请从 main 查看。
+2024年12月31日，我们项目组上传了一个超详细的用户使用指南，文档名为《2024Dec31-(139页)使用指南-黄华威.pdf》，请从 main 目录查看。
 
 <h2>一、项目介绍</h2>
 
@@ -39,10 +39,10 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
    title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols},
    author={Huang, Huawei and Ye, Guang and Yang, Qinglin and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Zheng, Jian and Li, Taotao and  Zheng, Zibin},
    journal={IEEE Transactions on Service Computing (TSC)},
-   volume={},
-   number={},
-   page={1-16},
-   year={2025}
+   volume={18},
+   number={2},
+   pages = {690--703},
+   year = {2025},
    }
 ```
 
@@ -184,7 +184,7 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Huawei.PNG" width=200>
 
-中山大学副教授，博士生导师，IEEE 高级会员，中国计算机学会 (CCF) 高级会员，CCF 区块链专委会执行委员、CCF 分布式与并行计算专委会执行委员。2016年取得日本会津大学“计算机科学与工程”博士学位；曾先后担任日本学术振兴会特别研究员、香港理工大学访问学者、日本京都大学特任助理教授。研究方向包括区块链系统与协议、分布式系统与协议、Web3 基础设施。研究成果发表在 CCF-A 类推荐期刊 IEEE Journal on Selected Areas in Communications（JSAC），IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) 与 IEEE Transactions on Computers (TC)等，以及 CCF 推荐 A / B 类国际学术会议 INFOCOM、ICDCS、SRDS、IWQoS等。论文谷歌引用 6600+，H-index 35。出版区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
+中山大学教授，博士生导师，IEEE 高级会员，中国计算机学会 (CCF) 高级会员，CCF 区块链专委会执行委员。2016年取得日本会津大学“计算机科学与工程”博士学位；曾先后担任日本学术振兴会特别研究员、香港理工大学访问学者、京都大学（日本）特任助理教授。研究方向包括区块链系统与协议、分布式系统与协议、Web3 基础设施。研究成果发表在 CCF-A 类推荐期刊 IEEE Journal on Selected Areas in Communications（JSAC），IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) 与 IEEE Transactions on Computers (TC)等，以及 CCF 推荐 A / B 类国际学术会议 INFOCOM、ICDCS、SRDS、IWQoS等。论文谷歌引用 8000+。出版区块链教材《从区块链到 Web3》人民邮电出版社出版，与 Springer 区块链学术专著《From Blockchain to Web3 & Metaverse》。
 
 # 郑子彬
 
