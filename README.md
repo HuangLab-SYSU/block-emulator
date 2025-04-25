@@ -42,11 +42,11 @@ To provide an official handbook for BlockEmulator, we have written a technical p
 @article{huang2025blockemulator,
    title={BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols},
    author={Huang, Huawei and Ye, Guang and Yang, Qinglin and Chen, Qinde and Yin, Zhaokang and Luo, Xiaofei and Lin, Jianru and Zheng, Jian and Li, Taotao and  Zheng, Zibin},
-   journal={IEEE Transactions on Service Computing (TSC)},
-   volume={},
-   number={},
-   page={1-16},
-   year={2025}
+   journal = {IEEE Transactions on Services Computing (TSC)},
+   volume={18},
+   number={2},
+   pages = {690--703},
+   year = {2025},
    }
 ```
 
@@ -93,19 +93,19 @@ Quickly get started with BlockEmulator through the following document. Please re
 
 ## Huawei Huang
 
-Huawei Huang is an associate professor at Sun Yat-sen University. He is an IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. His research interests include blockchain, Web3, metaverse, and distributed computing/protocols. He has more than 150 papers published in top journals or conferences such as IEEE/ACM ToN, JSAC, TPDS, TDSC, TMC, INFOCOM, ICDCS, SRDS, IWQoS, etc. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), etc. He has published two blockchain books titled "From Blockchain to Web3 & Metaverse" and "Blockchain Scalability", both published by Springer in 2023.
+Huawei Huang is a Full Professor at Sun Yat-sen University. He is an IEEE senior member. He received his Ph.D. in Computer Science and Engineering from The University of Aizu, Japan. His research interests include blockchain, Web3, and distributed computing/protocols. He has more than 150 papers published in top journals or conferences such as IEEE/ACM ToN, JSAC, TPDS, TDSC, TMC, INFOCOM, ICDCS, SRDS, IWQoS, etc. He is a PI or Co-PI of several blockchain-involved research projects funded by the National Key Research & Development Program of China, National Natural Science Foundation of China (NSFC), etc. He has published two blockchain books, "From Blockchain to Web3 & Metaverse" and "Blockchain Scalability", both published by Springer.
 
 ## Zibin Zheng
 
-Zheng Zibin (IEEE Fellow) received his Ph.D. degree from the Chinese University of Hong Kong, Hong Kong, in 2012. He is a Professor at the School of Software Engineering, Sun Yat-Sen University, China. His current research interests include service computing, blockchain, and cloud computing.
+Zheng Zibin (IEEE Fellow) received his Ph.D. from the Chinese University of Hong Kong. He is a Professor at the School of Software Engineering, Sun Yat-Sen University, China. His current research interests include service computing, blockchain, and cloud computing.
 
 ## Jianru Lin
 
-Lin Jianru, a research scientist engineer, has rich experience in the design and implementation of decentralized systems, smart contract languages, and virtual machines. He is the translator of the Chinese edition of Highly Scalable Systems. He is also the technical mentor of HuangLab, a blockchain laboratory at Sun Yat-sen University. Visit url{ https://github.com/Jianru-Lin/ } to learn about his open-source projects.
+Lin Jianru, a research scientist engineer in HuangLab, has a lot of experience in designing and implementing decentralized systems, smart contract languages, and virtual machines. He is the translator of the Chinese edition of Highly Scalable Systems. He is also the technical mentor of HuangLab, a blockchain laboratory at Sun Yat-sen University. Visit the URL{ https://github.com/Jianru-Lin/ } to learn about his open-source projects.
 
 ## Taotao Li
 
-Taotao Li is a postdoctoral researcher at the School of Software Engineering, Sun Yat-sen University. He received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences in 2022. The main research interests include blockchain theory and technology application, and the application of cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and the application of cryptographic tools in blockchain. He participated in the development of BlockEmulator.
+Taotao Li is an assistant professor at the School of Software Engineering, Sun Yat-sen University. He received his Ph.D. in cyberspace security from the Institute of Information Engineering, Chinese Academy of Sciences. His main research interests include blockchain theory and technology application and cryptography, including sidechain technology, cross-chain protocol, lightweight blockchain, and cryptographic tools in blockchain. He participated in the development of BlockEmulator.
 
 
 ## Xiaofei Luo
