@@ -208,7 +208,7 @@ func (ccm *CLPACommitteeMod_Broker) MsgSendingControl() {
 	// all transactions are sent. keep sending partition message...
 	for !ccm.Ss.GapEnough() { // wait all txs to be handled
 		time.Sleep(time.Second)
-		if time.Since(ccm.clpaLastRunningTime) >= time.Duration(ccm.clpaFreq)*time.Second {
+		if params.ShardNum > 1 && time.Since(ccm.clpaLastRunningTime) >= time.Duration(ccm.clpaFreq)*time.Second {
 			ccm.clpaLock.Lock()
 			clpaCnt++
 			mmap, _ := ccm.clpaGraph.CLPA_Partition()
