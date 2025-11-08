@@ -77,4 +77,4 @@ When the supervisor node in BlockEmulator reads transactions from the dataset, i
 
 **解释：** 在 BlockEmulator 中，账户（account）和节点（node）是两个不同的概念，交易的 sender（account） 并不会被映射到某一个节点（node），但会被映射到某一个分片（静态分片规则: 发送方账户所属分片 = 发送方账户地址 % 分片数目）。
 
-当 BlockEmulator 的 supervisor 节点从数据集中读取交易后，supervisor 节点会将交易发送到不同的分片，这些分片内的节点会执行接收到的交易。默认情况下，交易会被发送到【发送方的所属分片】。
+当 BlockEmulator 的 supervisor 节点从数据集中读取交易后，supervisor 节点会将这些交易发送到不同的分片；相关分片内的节点会执行接收到的交易。默认情况下，交易会被发送到【发送方的所属分片】。
