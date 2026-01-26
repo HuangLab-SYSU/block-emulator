@@ -52,6 +52,7 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
 
   - BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)】【[公众号介绍文章](https://mp.weixin.qq.com/s/5MelID6kVMQeM1LAET-37w)】
   - Broker2Earn: Towards Maximizing Broker Revenue and System Liquidity for Sharded Blockchains **(INFOCOM 2024)** 【[PDF]( https://www.researchgate.net/publication/379213048_Broker2Earn_Towards_Maximizing_Broker_Revenue_and_System_Liquidity_for_Sharded_Blockchains)】【[公众号介绍文章](https://mp.weixin.qq.com/s/WxuNjGmqil5GmYYSFJ0qVw)】
+  - LiquidityPool: LiquidityPool: Game-Theoretic Analysis of Stakeholder Revenue in Ranking-Dependent DeFi **(WWW 2026)**【PDF( https://www.researchgate.net/publication/400068018_LiquidityPool_Game-Theoretic_Analysis_of_Stakeholder_Revenue_in_Ranking-Dependent_DeFi)】【[公众号介绍文章](https://mp.weixin.qq.com/s/cNxZwCLjRxCs8srDevPHzw?scene=1)】
   - Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】【[公众号介绍文章](https://mp.weixin.qq.com/s/WxuNjGmqil5GmYYSFJ0qVw)】
   - Justitia: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】【[公众号介绍文章](https://mp.weixin.qq.com/s/rU3zytC2xurI1S7VH1msZw)】
   - Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】【[公众号介绍文章](https://mp.weixin.qq.com/s/Li7WJQdnFKWko8kBnCd80A)】
@@ -172,8 +173,8 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 <h2> References </h2>
 
+- [INFOCOM'2022 BrokerChain] H. Huang, X. Peng, J. Zhan, S. Zhang, Y. Lin, Z. Zheng, and S. Guo, “Brokerchain: A cross-shard blockchain protocol for account/balance-based state sharding,” in Proc. of IEEE Conference on Computer Communications (INFOCOM’22), 2022, pp. 1–10.
 - [NSDI'2019 Monoxide] J. Wang and H. Wang, “Monoxide: Scale out blockchains with asynchronous consensus zones,” in 16th USENIX Symposium on Networked Systems Design and Implementation (NSDI 19), 2019, pp. 95–112.
-- [INFOCOM'2022 BrokerChain] H. Huang, X. Peng, J. Zhan, S. Zhang, Y. Lin, Z. Zheng, and S. Guo, “Brokerchain: A cross-shard blockchain protocol for account/balance-based state sharding,” in Proc. of IEEE Conference on Computer Communications (INFOCOM’22), 2022, pp. 1–10. 
 - [SRDS'2022 Achieving] C. Li, H. Huang, Y. Zhao, X. Peng, R. Yang, Z. Zheng, and S. Guo, “Achieving scalability and load balance across blockchain shards for state sharding,” in Proc. of 2022 41st International Symposium on Reliable Distributed Systems (SRDS’22), 2022, pp. 284–294.
 
 
@@ -184,13 +185,8 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Huawei.PNG" width=200>
 
-中山大学教授，博士生导师，IEEE 高级会员，中国计算机学会 (CCF) 高级会员，CCF 区块链专委会执行委员。2016年取得日本会津大学“计算机科学与工程”博士学位；曾先后担任日本学术振兴会特别研究员、香港理工大学访问学者、京都大学（日本）特任助理教授。研究方向包括区块链系统与协议、分布式系统与协议、Web3 基础设施。研究成果发表在 CCF-A 类推荐期刊 IEEE Journal on Selected Areas in Communications（JSAC），IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) 与 IEEE Transactions on Computers (TC)等，以及 CCF 推荐 A / B 类国际学术会议 INFOCOM、ICDCS、SRDS、IWQoS等。论文谷歌引用 8000+。出版区块链教材《从区块链到 Web3》人民邮电出版社出版，与 Springer 区块链学术专著《From Blockchain to Web3 & Metaverse》。
+中山大学教授，IEEE 高级会员，中国计算机学会 (CCF) 高级会员，CCF 区块链专委会执行委员。2016年取得日本会津大学“计算机科学与工程”博士学位；曾先后担任日本学术振兴会特别研究员、香港理工大学访问学者、京都大学（日本）特任助理教授。研究方向包括区块链系统与协议、分布式系统与协议、Web3 基础设施。研究成果发表在 CCF-A 类推荐期刊 IEEE Journal on Selected Areas in Communications（JSAC），IEEE Transactions on Parallel and Distributed Systems (TPDS), IEEE Transactions on Dependable and Secure Computing (TDSC), IEEE Transactions on Mobile Computing (TMC) 与 IEEE Transactions on Computers (TC)等，以及 CCF 推荐 A / B 类国际学术会议 INFOCOM、ICDCS、SRDS、IWQoS等。论文谷歌引用 9000+。出版区块链教材《从区块链到 Web3》人民邮电出版社出版，与 Springer 区块链学术专著《From Blockchain to Web3 & Metaverse》。
 
-# 郑子彬
-
-<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zibin.PNG" width=200>
-
-中山大学计算机学院教授，软件工程学院副院长、国家优秀青年科学基金获得者、IEEE Fellow、ACM 杰出科学家、国家数字家庭工程技术研究主心副主任、区块链与智能金融研究中心主任。出版 Springer 英文学术专著 2 部、发表论文 200 余篇，论文谷歌学术引用超过 40000 次。获得教育部自然科学二等奖、吴文俊人工智能自然科学二等奖、青年珠江学者、 ACM 中国新星提名奖、国际软件工程大会（ICSE）ACM SIGSOFT Distinguished Paper Award、国际 Web 服务大会（ICWS）最佳学生论文奖等奖项；担任数十个国际学术会议的程序委员会主席。
 
 # 林建入
 
@@ -198,66 +194,77 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 林建入，资深程序员，在去中心化系统、智能合约语言与虚拟机的设计与实现方面拥有丰富经验。《高伸缩性系统》中文版译者。唬米科技创始人，同时也是中山大学区块链实验室 HuangLab 的技术导师。访问 \url{ https://github.com/Jianru-Lin/} 可以了解他的开源项目。设计并领导开发了 blockEmulator 以及其后续高阶版本。参与编著区块链教材《从区块链到 Web3》人民邮电出版社出版。
 
-# 李涛涛
-
-<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/taotao.PNG" width=200>
-
-李涛涛，博士，博士后研究员，于2022年毕业于中国科学院信息工程研究所网络空间安全专业获工学博士学位，现就职于中山大学软件工程学院进行博士后研究工作。主要研究方向为区块链理论与技术应用，应用密码，具体包括侧链技术、跨链协议、轻量级区块链、密码工具在区块链中的应用。参与多项国家/省部级重点研发计划课题，近年来在CCF推荐国际学术会议和期刊上发表论文多篇。参与编写区块链教材《从区块链到 Web3》人民邮电出版社出版。
 
 # 罗肖飞
 
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Luo.png" width=200>
 
-罗肖飞，中山大学博士后研究员，于2023年3月获得日本会津大学“计算机科学与工程”博士学位，曾参与日本文部省 RFID 项目的研发等相关工作。目前的研究方向为区块链、支付通道网络，强化学习等等。相关研究成果发表在 CCF A 类期刊及其他知名国际期刊与会议。参与多项科技部和广东省重点研发计划项目。参与编写区块链教材《从区块链到 Web3》人民邮电出版社出版。
+罗肖飞，现任职于中国电子标准研究院，曾任中山大学博士后研究员，于2023年3月获得日本会津大学“计算机科学与工程”博士学位，曾参与日本文部省 RFID 项目的研发等相关工作。目前的研究方向为区块链、支付通道网络，强化学习等等。相关研究成果发表在 CCF A 类期刊及其他知名国际期刊与会议。参与多项科技部和广东省重点研发计划项目。参与编写区块链教材《从区块链到 Web3》人民邮电出版社出版。
 
 
 # 杨青林
 
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/qinglin.PNG" width=200>
 
-杨青林，博士，助理研究员， IEEE 会员（IEEE member），于2021年3月取得日本会津大学“计算机科学与工程”博士学位。主要研究方向包括智能边缘云计算，联邦学习隐私保护，Web3。近年来在国际学术期刊/会议发表论文近 20 篇。担任 IEEE Open Journal of Computer Science (OJ-CS) 专刊客座编委成员。参与多项国家重点研发计划课题、国家自然科学基金面上项目的研发工作。参与编著区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
+杨青林，现任职于广州大学，IEEE 会员（IEEE member），于2021年3月取得日本会津大学“计算机科学与工程”博士学位。主要研究方向包括智能边缘云计算，联邦学习隐私保护，Web3。近年来在国际学术期刊/会议发表论文近 20 篇。担任 IEEE Open Journal of Computer Science (OJ-CS) 专刊客座编委成员。参与多项国家重点研发计划课题、国家自然科学基金面上项目的研发工作。参与编著区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
 
 # 陈钦德
-
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/qinde.png" width=200>
 
+陈钦德，中山大学软件工程学院 2023 级博士生，目前的研究方向为区块链。自 2022 年 8 月进入 HuangLab 研究学习， 参与 BlockEmulator 的早期版本开发。
 
-陈钦德，中山大学软件工程学院 2023 级博士生，目前的研究方向为区块链。自 2022 年 8 月进入 HuangLab 研究学习， 参与 BlockEmulator 的开发。
 
 # 叶光
-
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/yeguang.png" width=200>
 
-叶光，中山大学软件工程学院 2023 级研究生，目前的研究方向为区块链。自 2021 年 8 月以本科实习生身份加入 HuangLab，先后参与了一篇 CCF-A 期刊论文和 BlockEmulator 的开发。
+叶光，中山大学软件工程学院 2023 级硕士研究生，目前的研究方向为区块链。自 2021 年 8 月以本科实习生身份加入 HuangLab，先后参与了一篇 CCF-A 期刊论文和 BlockEmulator 的后期完善版本开发。
 
 # 殷昭伉
-
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/zhaokang.png" width=200>
 
-殷昭伉，中山大学软件工程学院2023级研究生，目前的研究方向为区块链。2022年10月，通过研究生推免加入HuangLab，参与 BlockEmulator的开发。
+殷昭伉，中山大学软件工程学院2023级硕士研究生，目前的研究方向为区块链。2022年10月，通过研究生推免加入HuangLab，参与 BlockEmulator 的后期版本开发、并维护 BrokerChain Testnet。
 
 
 # 彭肖文
-
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Xiaowen.jpg" width=200>
 
-彭肖文，中山大学计算机学院 2020 级研究生，已毕业。研究方向为区块链。自 2019 年 6 月加入HuangLab，先后参与两篇 CCF-A 类论文研究，是 BlockEmulator 的早期开发者。
+彭肖文，中山大学计算机学院 2020 级硕士研究生，已毕业。研究方向为区块链。自 2019 年 6 月加入HuangLab，先后参与两篇 CCF-A 类论文研究，是 BlockEmulator 的早期开发者。
 
 # 林岳
-
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Linyue.png" width=200>
 
-林岳，中山大学计算机学院 2021 级研究生，目前的研究方向为区块链。自 2021 年 5 月加入 HuangLab，先后参与了一篇 CCF-A 会议论文和一篇 CCF-A 期刊论文，是 BlockEmulator 的早期开发者。
+林岳，中山大学计算机学院 2021 级硕士研究生，已毕业。自 2021 年 5 月加入 HuangLab，先后参与了2篇 CCF-A 会议论文和一篇 CCF-A 期刊论文，是 BlockEmulator 的早期开发者。
 
 # 许淼泳
-
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/MiaoYong.png" width=200>
 
-许淼泳，中山大学计算机学院 2022 级研究生，目前的研究方向为区块链。自 2021 年 10 月进入 HuangLab 研究学习， 参与 BlockEmulator 的开发。
+许淼泳，中山大学计算机学院 2022 级硕士研究生，已毕业。自 2021 年 10 月进入 HuangLab 研究学习， 参与了 BlockEmulator 的前期版本开发。
 
 # 吴均豪
-
 <img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/junhao.png" width=200>
 
+吴均豪，中山大学软件工程学院2021级本科生，即将攻读博士学位。2022年9月加入 HuangLab 实习，参与 BlockEmulator 的开发。
 
-吴均豪，中山大学软件工程学院2021级本科生。2022年9月加入 HuangLab 实习，参与 BlockEmulator 的开发。
+
+# 谢葆洲
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Baozhou.png" width=200>
+
+谢葆洲，中山大学软件工程学院2024级硕士研究生。2024年9月加入 HuangLab，参与 BlockEmulator 的后期版本开发，主导了 BrokerChain Testnet 首个版本的上线。
+
+
+# 胡飞鸿
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Feihong.png" width=200>
+
+胡飞鸿，中山大学软件工程学院2024级硕士研究生。2024年9月加入 HuangLab，参与 BlockEmulator 的后期版本开发，促进了 BrokerChain Testnet 首个版本的上线。
+
+
+# 熊剑波
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Jianbo.png" width=200>
+
+熊剑波，中山大学软件工程学院2025级硕士研究生。2025年9月加入 HuangLab，参与 BlockEmulator 的后期版本开发，并维护 BrokerChain Testnet。
+
+
+# 周阳
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/Zhouyang.png" width=200>
+
+周阳，中山大学软件工程学院2025级硕士研究生。2025年9月加入 HuangLab，参与 BlockEmulator 的后期版本开发，完善开发 BrokerChain Wallet，并维护 BrokerChain Testnet。
