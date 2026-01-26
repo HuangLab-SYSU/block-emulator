@@ -52,7 +52,7 @@ BlockEmulator 是由中山大学·软件工程学院·黄华威研究组（  [Hu
 
   - BrokerChain: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)】【[公众号介绍文章](https://mp.weixin.qq.com/s/5MelID6kVMQeM1LAET-37w)】
   - Broker2Earn: Towards Maximizing Broker Revenue and System Liquidity for Sharded Blockchains **(INFOCOM 2024)** 【[PDF]( https://www.researchgate.net/publication/379213048_Broker2Earn_Towards_Maximizing_Broker_Revenue_and_System_Liquidity_for_Sharded_Blockchains)】【[公众号介绍文章](https://mp.weixin.qq.com/s/WxuNjGmqil5GmYYSFJ0qVw)】
-  - LiquidityPool: LiquidityPool: Game-Theoretic Analysis of Stakeholder Revenue in Ranking-Dependent DeFi **(WWW 2026)**【PDF( https://www.researchgate.net/publication/400068018_LiquidityPool_Game-Theoretic_Analysis_of_Stakeholder_Revenue_in_Ranking-Dependent_DeFi)】【[公众号介绍文章](https://mp.weixin.qq.com/s/cNxZwCLjRxCs8srDevPHzw?scene=1)】
+  - LiquidityPool: LiquidityPool: Game-Theoretic Analysis of Stakeholder Revenue in Ranking-Dependent DeFi **(WWW 2026)**【[PDF](https://www.researchgate.net/publication/400068018_LiquidityPool_Game-Theoretic_Analysis_of_Stakeholder_Revenue_in_Ranking-Dependent_DeFi)】【[公众号介绍文章](https://mp.weixin.qq.com/s/cNxZwCLjRxCs8srDevPHzw?scene=1)】
   - Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】【[公众号介绍文章](https://mp.weixin.qq.com/s/WxuNjGmqil5GmYYSFJ0qVw)】
   - Justitia: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】【[公众号介绍文章](https://mp.weixin.qq.com/s/rU3zytC2xurI1S7VH1msZw)】
   - Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】【[公众号介绍文章](https://mp.weixin.qq.com/s/Li7WJQdnFKWko8kBnCd80A)】
@@ -209,7 +209,7 @@ go env -w GOPROXY=https://goproxy.cn,direct
 杨青林，现任职于广州大学，IEEE 会员（IEEE member），于2021年3月取得日本会津大学“计算机科学与工程”博士学位。主要研究方向包括智能边缘云计算，联邦学习隐私保护，Web3。近年来在国际学术期刊/会议发表论文近 20 篇。担任 IEEE Open Journal of Computer Science (OJ-CS) 专刊客座编委成员。参与多项国家重点研发计划课题、国家自然科学基金面上项目的研发工作。参与编著区块链教材《从区块链到 Web3》人民邮电出版社出版，与区块链学术专著《From Blockchain to Web3 & Metaverse》Springer, 2023。
 
 # 陈钦德
-<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/qinde.png" width=200>
+<img src ="https://github.com/HuangLab-SYSU/block-emulator/blob/main/bios/QindeChen.jpg" width=200>
 
 陈钦德，中山大学软件工程学院 2023 级博士生，目前的研究方向为区块链。自 2022 年 8 月进入 HuangLab 研究学习， 参与 BlockEmulator 的早期版本开发。
 
