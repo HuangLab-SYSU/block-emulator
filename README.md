@@ -64,13 +64,13 @@ To provide an official handbook for BlockEmulator, we have written a technical p
 The following papers from HuangLab's publications have adopted **BlockEmulator** as an experimental tool.
 
 1. **BrokerChain**: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)】
-2. **BrokerChain-Ext**: BrokerChain: A Blockchain Sharding Protocol by Exploiting Broker Accounts **(ToN 2025)** 【[PDF](https://www.researchgate.net/publication/390218703_BrokerChain_A_Blockchain_Sharding_Protocol_by_Exploiting_Broker_Accounts)】
+2. **BrokerChain-ToN**: BrokerChain: A Blockchain Sharding Protocol by Exploiting Broker Accounts **(ToN 2025)** 【[PDF](https://www.researchgate.net/publication/390218703_BrokerChain_A_Blockchain_Sharding_Protocol_by_Exploiting_Broker_Accounts)】
 3. **ShardCutter**: ShardCutter: A Blockchain Sharding Protocol Achieving Transaction Workload Balance Across State Shards **(ToN 2026)** 【[PDF](https://www.researchgate.net/publication/400699615_ShardCutter_A_Blockchain_Sharding_Protocol_achieving_Transaction_Workload_Balance_across_State_Shards)】
 4. **Broker2Earn**: Towards Maximizing Broker Revenue and System Liquidity for Sharded Blockchains **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379213048_Broker2Earn_Towards_Maximizing_Broker_Revenue_and_System_Liquidity_for_Sharded_Blockchains)】
 5. **LiquidityPool**: LiquidityPool: Game-Theoretic Analysis of Stakeholder Revenue in Ranking-Dependent DeFi **(WWW 2026)** 【[PDF](https://www.researchgate.net/publication/400068018_LiquidityPool_Game-Theoretic_Analysis_of_Stakeholder_Revenue_in_Ranking-Dependent_DeFi)】
-6. Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】
+6. **Fine-tuned Lock (FTL)**: Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】
 7. **Justitia**: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】
-8. **MVCom**: Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】
+8. **MVCom-ToN**: Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】
 9. **CLPA**: Achieving Scalability and Load Balance across Blockchain Shards for State Sharding (published at SRDS 2022) [PDF](https://ieeexplore.ieee.org/document/9996899)
 10. **tMPT**: Reconfiguration across Blockchain Shards via Trimmed Merkle Patricia Trie (published at IWQoS 2023) [PDF](https://www.researchgate.net/publication/370633426_tMPT_Reconfiguration_across_Blockchain_Shards_via_Trimmed_Merkle_Patricia_Trie)
 
