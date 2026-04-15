@@ -4,28 +4,26 @@ We also provide a **[Chinese-version handbook](https://github.com/HuangLab-SYSU/
 
 On Dec. 31, 2024, we uploaded a detailed 139-page **Chinese-version User Manual**, named "_2024Dec31-(139页)使用指南-黄华威.pdf_". Please feel free to download it from the main folder.
 
-# Issue Log
+## Issue Log
 View the issue logs here:
 **[Issue logs](./docs/issueLogRoot.md)**
 
-# Version Updates
+## Version Updates
 View the updates of **BlockEmulator** here: 
 **[ Version Updates ](./docs/versionUpdate.md)**
 
 
-# FAQ (Frequently Asked Questions)
+## FAQ (Frequently Asked Questions)
 See **[FAQ](./docs/FAQ.md)**. 
 
-# ========================
-
-# The Advanced Version of BlockEmulator (BlockEmulator-X)
+## The Advanced Version of BlockEmulator (BlockEmulator-X)
 See **[ BlockEmulator-X ](https://github.com/HuangLab-SYSU/block-emulator-x)**.
 
 
 # ========================
 
 
-# Introduction 
+# Introduction to BlockEmulator
 
 ## 1. Background of BlockEmulator
 
@@ -59,7 +57,7 @@ To provide an official handbook for BlockEmulator, we have written a technical p
 ```
 
 
-## 3. Related Work
+## 3. Published Papers by HuangLab using BlockEmulator
 
 The following papers from HuangLab's publications have adopted **BlockEmulator** as an experimental tool.
 
