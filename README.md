@@ -16,6 +16,14 @@ View the updates of **BlockEmulator** here:
 # FAQ (Frequently Asked Questions)
 See **[FAQ](./docs/FAQ.md)**. 
 
+# ====================================
+
+# The Advanced Version of BlockEmulator (BlockEmulator-X)
+See **[ BlockEmulator-X ](https://github.com/HuangLab-SYSU/block-emulator-x)**
+
+
+# ====================================
+
 
 # Introduction 
 
@@ -36,7 +44,7 @@ BlockEmulator is oriented toward blockchain researchers. It provides a blockchai
 
 ## 2. Official Technical Paper & Citation
 
-To provide an official handbook for BlockEmulator, we have written a technical paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols" [arXiv page](https://arxiv.org/abs/2311.03612). Please cite our paper if you use BlockEmulator as an experiment tool in your own paper.
+To provide an official handbook for BlockEmulator, we have written a technical paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols" [arXiv page](https://arxiv.org/abs/2311.03612). Please cite our **TSC**-version paper if you use BlockEmulator as an experiment tool in your own paper, using the following **bib data**.
 
 ```
 @article{huang2025blockemulator,
@@ -56,14 +64,15 @@ To provide an official handbook for BlockEmulator, we have written a technical p
 The following papers from HuangLab's publications have adopted **BlockEmulator** as an experimental tool.
 
 1. **BrokerChain**: A Cross-Shard Blockchain Protocol for Account/Balance-based State Sharding **(INFOCOM 2022)** 【[PDF](https://www.researchgate.net/publication/356789473_BrokerChain_A_Cross-Shard_Blockchain_Protocol_for_AccountBalance-based_State_Sharding)】
-2. **Broker2Earn**: Towards Maximizing Broker Revenue and System Liquidity for Sharded Blockchains **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379213048_Broker2Earn_Towards_Maximizing_Broker_Revenue_and_System_Liquidity_for_Sharded_Blockchains)】
-3. **LiquidityPool**: LiquidityPool: Game-Theoretic Analysis of Stakeholder Revenue in Ranking-Dependent DeFi **(WWW 2026)** 【[PDF](https://www.researchgate.net/publication/400068018_LiquidityPool_Game-Theoretic_Analysis_of_Stakeholder_Revenue_in_Ranking-Dependent_DeFi)】
-4. Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】
-5. **Justitia**: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】
-6. Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】
-7. Achieving Scalability and Load Balance across Blockchain Shards for State Sharding (published at SRDS 2022) [PDF](https://ieeexplore.ieee.org/document/9996899)
-8. **tMPT**: Reconfiguration across Blockchain Shards via Trimmed Merkle Patricia Trie (published at IWQoS 2023) [PDF](https://www.researchgate.net/publication/370633426_tMPT_Reconfiguration_across_Blockchain_Shards_via_Trimmed_Merkle_Patricia_Trie)
-9. **MVCom**: Scheduling Most Valuable Committees for the Large-Scale Sharded Blockchain (published at ICDCS 2021) [PDF](https://ieeexplore.ieee.org/document/9546408)
+2. **BrokerChain-Ext**: BrokerChain: A Blockchain Sharding Protocol by Exploiting Broker Accounts **(ToN 2025)** 【[PDF](https://www.researchgate.net/publication/390218703_BrokerChain_A_Blockchain_Sharding_Protocol_by_Exploiting_Broker_Accounts)】
+3. **ShardCutter**: ShardCutter: A Blockchain Sharding Protocol Achieving Transaction Workload Balance Across State Shards **(ToN 2026)** 【[PDF](https://www.researchgate.net/publication/400699615_ShardCutter_A_Blockchain_Sharding_Protocol_achieving_Transaction_Workload_Balance_across_State_Shards)】
+4. **Broker2Earn**: Towards Maximizing Broker Revenue and System Liquidity for Sharded Blockchains **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379213048_Broker2Earn_Towards_Maximizing_Broker_Revenue_and_System_Liquidity_for_Sharded_Blockchains)】
+5. **LiquidityPool**: LiquidityPool: Game-Theoretic Analysis of Stakeholder Revenue in Ranking-Dependent DeFi **(WWW 2026)** 【[PDF](https://www.researchgate.net/publication/400068018_LiquidityPool_Game-Theoretic_Analysis_of_Stakeholder_Revenue_in_Ranking-Dependent_DeFi)】
+6. Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】
+7. **Justitia**: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】
+8. Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】
+9. **CLPA**:Achieving Scalability and Load Balance across Blockchain Shards for State Sharding (published at SRDS 2022) [PDF](https://ieeexplore.ieee.org/document/9996899)
+10. **tMPT**: Reconfiguration across Blockchain Shards via Trimmed Merkle Patricia Trie (published at IWQoS 2023) [PDF](https://www.researchgate.net/publication/370633426_tMPT_Reconfiguration_across_Blockchain_Shards_via_Trimmed_Merkle_Patricia_Trie)
 
 
 ## 4. Highlights of BlockEmulator
@@ -83,12 +92,25 @@ Could you quickly get started with BlockEmulator through the following document?
 - [NSDI'2019 Monoxide] J. Wang and H. Wang, “Monoxide: Scale out blockchains with asynchronous consensus zones,” in 16th USENIX Symposium on Networked Systems Design and Implementation (NSDI 19), 2019, pp. 95–112.
 - [SRDS'2022 Achieving] C. Li, H. Huang, Y. Zhao, X. Peng, R. Yang, Z. Zheng, and S. Guo, “Achieving scalability and load balance across blockchain shards for state sharding,” in Proc. of 2022 41st International Symposium on Reliable Distributed Systems (SRDS’22), 2022, pp. 284–294.
 
+# ====================================
 
 # Contributors
 
 ## Huawei Huang
 
-Huawei Huang is a professor (full) at Sun Yat-sen University. He is a senior member of IEEE. He received his Ph.D. in Computer Science and Engineering from the University of Aizu, Japan. His research interests include blockchain, Web3, and distributed computing/protocols. He has published more than 150 papers in top journals and conferences, including IEEE/ACM ToN, JSAC, TPDS, TDSC, TMC, INFOCOM, WWW, ICDCS, SRDS, and IWQoS. He is a PI or Co-PI on several blockchain-related research projects funded by the National Key Research & Development Program of China, the National Natural Science Foundation of China (NSFC), and other funding agencies. He has published two blockchain books, "From Blockchain to Web3 & Metaverse", "Blockchain Sharding: Theory and Practice", and "Blockchain Scalability", all published by Springer.
+Huawei Huang is a professor (full) at Sun Yat-sen University. He is a senior member of IEEE. He received his Ph.D. in Computer Science and Engineering from the University of Aizu, Japan. His research interests include blockchain and distributed computing/protocols. He has published more than 150 papers in top journals and conferences, including IEEE/ACM ToN, JSAC, TPDS, TDSC, TMC, INFOCOM, WWW, ICDCS, SRDS, and IWQoS. He is a PI or Co-PI on several blockchain-related research projects funded by the National Key Research & Development Program of China, the National Natural Science Foundation of China (NSFC), and other funding agencies. He has published 3 blockchain monographs with Springer: "Blockchain Sharding: Theory and Practice", "From Blockchain to Web3 & Metaverse", and "Blockchain Scalability".
+
+## Guang Ye
+
+Guang Ye is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interests mainly include Blockchain.  Since joining HuangLab as an undergraduate intern in August 2021, he has participated in the development of BlockEmulator. He redesigned and implemented an advanced version of BlockEmulator -- BlockEmulator-X (coming soon).
+
+## Zhaokang Yin
+
+Zhaokang Yin is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interests mainly focus on blockchain. In October 2022, he joined HuangLab to help develop BlockEmulator.
+
+## Jianbo Xiong
+
+Jianbo Xiong is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interests mainly focus on blockchain. In September 2025, he joined HuangLab to help develop BlockEmulator and maintain BrokerChain Testnet.
 
 ## Jianru Lin
 
@@ -108,14 +130,6 @@ Qinglin Yang, IEEE member, received his Ph.D. in Computer Science and Engineerin
 
 Qinde Chen is a Ph.D. student at the School of Software Engineering, Sun Yat-sen University. His research interests mainly include blockchain. In August 2022, he joined HuangLab and participated in the development of BlockEmulator.
 
-## Guang Ye
-
-Guang Ye is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interests mainly include Blockchain.  Since joining HuangLab as an undergraduate intern in August 2021, he has participated in the development of BlockEmulator. He redesigned and implemented an advanced version of BlockEmulator -- BlockEmulator-X (coming soon).
-
-## Zhaokang Yin
-
-Zhaokang Yin is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interest mainly focuses on blockchain. In October 2022, he joined HuangLab to help develop BlockEmulator.
-
 ## Xiaowen Peng 
 
 Xiaowen Peng received his M.Sc. degree from the School of Computer Science and Engineering at Sun Yat-Sen University in 2023, China. His research interests mainly include blockchain. In August 2021, he participated in the development of BlockEmulator.
@@ -134,17 +148,13 @@ Junhao Wu is a Ph.D student at the School of Software Engineering, Sun Yat-sen U
 
 ## Baozhou Xie
 
-Baozhou Xie is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interest mainly focuses on blockchain. In September 2024, he joined HuangLab to help develop BlockEmulator. He also led the development of the first version of BrokerChain Testnet.
+Baozhou Xie is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interests mainly focus on blockchain. In September 2024, he joined HuangLab to help develop BlockEmulator. He also led the development of the first version of BrokerChain Testnet.
 
 ## Feihong Hu
 
-Feihong Hu is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interest mainly focuses on blockchain. In September 2024, he joined HuangLab to help develop BlockEmulator.
+Feihong Hu is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interests mainly focus on blockchain. In September 2024, he joined HuangLab to help develop BlockEmulator.
 
 
 ## Yang Zhou
 
-Yang Zhou is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interest mainly focuses on blockchain. In September 2025, he joined HuangLab to help develop BlockEmulator and BrokerChain Testnet/Wallet.
-
-## Jianbo Xiong
-
-Jianbo Xiong is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interest mainly focuses on blockchain. In September 2025, he joined HuangLab to help develop BlockEmulator and maintain BrokerChain Testnet.
+Yang Zhou is currently a Master's student of the School of Software and Engineering at Sun Yat-Sen University. His research interests mainly focus on blockchain. In September 2025, he joined HuangLab to help develop BlockEmulator and BrokerChain Testnet/Wallet.
