@@ -16,13 +16,13 @@ View the updates of **BlockEmulator** here:
 # FAQ (Frequently Asked Questions)
 See **[FAQ](./docs/FAQ.md)**. 
 
-# ====================================
+# ========================
 
 # The Advanced Version of BlockEmulator (BlockEmulator-X)
-See **[ BlockEmulator-X ](https://github.com/HuangLab-SYSU/block-emulator-x)**
+See **[ BlockEmulator-X ](https://github.com/HuangLab-SYSU/block-emulator-x)**.
 
 
-# ====================================
+# ========================
 
 
 # Introduction 
@@ -44,7 +44,7 @@ BlockEmulator is oriented toward blockchain researchers. It provides a blockchai
 
 ## 2. Official Technical Paper & Citation
 
-To provide an official handbook for BlockEmulator, we have written a technical paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols" [arXiv page](https://arxiv.org/abs/2311.03612). Please cite our **TSC**-version paper if you use BlockEmulator as an experiment tool in your own paper, using the following **bib data**.
+To provide an official handbook for BlockEmulator, we have written a technical paper titled "BlockEmulator: An Emulator Enabling to Test Blockchain Sharding Protocols" [arXiv page](https://arxiv.org/abs/2311.03612). Please cite our **TSC**-version paper if you use BlockEmulator as an experiment tool in your own paper, using the following **bib data**:
 
 ```
 @article{huang2025blockemulator,
@@ -70,8 +70,8 @@ The following papers from HuangLab's publications have adopted **BlockEmulator**
 5. **LiquidityPool**: LiquidityPool: Game-Theoretic Analysis of Stakeholder Revenue in Ranking-Dependent DeFi **(WWW 2026)** 【[PDF](https://www.researchgate.net/publication/400068018_LiquidityPool_Game-Theoretic_Analysis_of_Stakeholder_Revenue_in_Ranking-Dependent_DeFi)】
 6. Account Migration across Blockchain Shards using Fine-tuned Lock Mechanism **(INFOCOM 2024)** 【[PDF](https://www.researchgate.net/publication/379210418_Account_Migration_across_Blockchain_Shards_using_Fine-tuned_Lock_Mechanism)】
 7. **Justitia**: An Incentive Mechanism towards the Fairness of Cross-shard Transactions **(INFOCOM 2025)** 【[PDF](http://xintelligence.pro/archives/1371)】
-8. Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】
-9. **CLPA**:Achieving Scalability and Load Balance across Blockchain Shards for State Sharding (published at SRDS 2022) [PDF](https://ieeexplore.ieee.org/document/9996899)
+8. **MVCom**: Scheduling Most Valuable Committees for the Sharded Blockchain **(ToN 2023)** 【[PDF](https://www.researchgate.net/publication/370671128_Scheduling_Most_Valuable_Committees_for_the_Sharded_Blockchain)】
+9. **CLPA**: Achieving Scalability and Load Balance across Blockchain Shards for State Sharding (published at SRDS 2022) [PDF](https://ieeexplore.ieee.org/document/9996899)
 10. **tMPT**: Reconfiguration across Blockchain Shards via Trimmed Merkle Patricia Trie (published at IWQoS 2023) [PDF](https://www.researchgate.net/publication/370633426_tMPT_Reconfiguration_across_Blockchain_Shards_via_Trimmed_Merkle_Patricia_Trie)
 
 
@@ -92,7 +92,8 @@ Could you quickly get started with BlockEmulator through the following document?
 - [NSDI'2019 Monoxide] J. Wang and H. Wang, “Monoxide: Scale out blockchains with asynchronous consensus zones,” in 16th USENIX Symposium on Networked Systems Design and Implementation (NSDI 19), 2019, pp. 95–112.
 - [SRDS'2022 Achieving] C. Li, H. Huang, Y. Zhao, X. Peng, R. Yang, Z. Zheng, and S. Guo, “Achieving scalability and load balance across blockchain shards for state sharding,” in Proc. of 2022 41st International Symposium on Reliable Distributed Systems (SRDS’22), 2022, pp. 284–294.
 
-# ====================================
+
+# ========================
 
 # Contributors
 
