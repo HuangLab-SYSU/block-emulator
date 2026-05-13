@@ -217,6 +217,7 @@ func (bcm *BrokerCommitteeMod_b2e) MsgSendingControl() {
 				bcm.dealTxByBroker(make([]*core.Transaction, 0))
 			}
 
+			bcm.epochUnallocatedTx += len(bcm.restBrokerRawMegPool)
 			txlist = make([]*core.Transaction, 0)
 			bcm.Ss.StopGap_Reset()
 		}
@@ -280,6 +281,8 @@ func (bcm *BrokerCommitteeMod_b2e) HandleBlockInfo(b *message.BlockInfoMsg) {
 	// accumulate confirmed tx count; unlock next batch when current batch is fully on-chain.
 	// ExcutedTxs = inner txs only (RawTxHash==nil, non-allocated)
 	// Broker1/2  = Tx1+Tx2 broker relay pairs; each CTX pair counts as (0.5+0.5)=1
+	// (Unallocated CTXs are pre-counted into collectTransactions inside dealTxByBroker,
+	// since they are never dispatched to chain and won't appear in any BlockInfoMsg.)
 	bcm.collectTransactions += float64(len(b.ExcutedTxs)) +
 		float64(b.Broker1TxNum+b.Broker2TxNum)/2
 	if bcm.collectTransactions >= float64(params.InjectSpeed) {
@@ -350,7 +353,6 @@ func (bcm *BrokerCommitteeMod_b2e) dealTxByBroker(txs []*core.Transaction) (itxs
 	println("1brokerSize ", len(brokerRawMegs))
 	alloctedBrokerRawMegs, restBrokerRawMeg := Broker2Earn.B2E(brokerRawMegs, bcm.broker.BrokerBalance)
 	bcm.epochAllocatedTx += len(alloctedBrokerRawMegs)
-	bcm.epochUnallocatedTx += len(restBrokerRawMeg)
 	for _, item := range restBrokerRawMeg {
 		bcm.restBrokerRawMegPool = append(bcm.restBrokerRawMegPool, item)
 	}
@@ -561,10 +563,10 @@ func (bcm *BrokerCommitteeMod_b2e) recordEpochStats() {
 	w := csv.NewWriter(file)
 	if os.IsNotExist(statErr) {
 		w.Write([]string{
-			"Epoch", "Injected_Tx",
-			"B2E_Allocated_Tx", "B2E_Unallocated_Tx",
-			"Broker_Service_Tx", "Inner_Tx",
-			"Total_Profit_ETH", "Active_Broker_Count", "Block_Count",
+			"Epoch", "Tx_injection_speed",
+			"CTXs_served_by_Alg", "CTXs_ubserved_by_Alg",
+			"CTXs_served_by_Broker", "ITX_count_handled_thisEpoch",
+			"Total_Profit_ETH", "Active_Broker_Count", "Block_Count_thisEpoch",
 		})
 	}
 	w.Write([]string{
