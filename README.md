@@ -1,10 +1,12 @@
-# blockEmulator-Broker2Earn
+# BlockEmulator · Broker2Earn 分支
 
-> Broker2Earn (B2E) —— 分片区块链上面向 Broker 的可持续激励机制，基于 [BlockEmulator](https://github.com/HuangLab-SYSU/block-emulator) 与 [BrokerChain](https://ieeexplore.ieee.org/document/9796859) 实现。
+> Broker2Earn (B2E) —— 分片区块链上面向 Broker 的可持续激励机制，基于 [BlockEmulator](https://github.com/HuangLab-SYSU/block-emulator) 与 BrokerChain 实现。
 >
-> 论文：H. Huang, Q. Chen, et al., *"Broker2Earn: Towards Maximizing Brokers' Revenue and Cross-Shard Transactions Throughput in Sharded Blockchains"*, IEEE INFOCOM 2024.
+> 论文：H. Huang, Q. Chen, et al., *"Broker2Earn: Towards Maximizing Brokers' Revenue and Cross-Shard Transactions Throughput in Sharded Blockchains"*, **IEEE INFOCOM 2024**.
+>
+> 仓库地址：<https://github.com/HuangLab-SYSU/block-emulator/tree/broker2earn>
 
-本仓库为 Broker2Earn 协议在 BlockEmulator 上的开源实现，基于 BrokerChain 会议版代码扩展而来。配合 BlockEmulator 开源项目使用手册的第 13 章阅读，可一步步复现论文中的实验。
+本分支为 Broker2Earn 协议在 BlockEmulator 上的开源实现，由 BrokerChain 的 INFOCOM 2022 会议版代码修改而来。配合《BlockEmulator 开源项目使用手册》第 13 章一起阅读，可一步步复现论文中的实验。
 
 ---
 
@@ -12,12 +14,13 @@
 
 - [研究背景](#研究背景)
 - [B2E 协议简介](#b2e-协议简介)
-- [本仓库相对 BrokerChain 的新增功能](#本仓库相对-brokerchain-的新增功能)
+- [本分支相对 BrokerChain 的新增功能](#本分支相对-brokerchain-的新增功能)
 - [代码结构](#代码结构)
 - [快速开始](#快速开始)
 - [参数配置](#参数配置)
 - [节点 IP 配置](#节点-ip-配置)
-- [启动实验](#启动实验)
+- [编译与启动实验](#编译与启动实验)
+- [实验数据集](#实验数据集)
 - [实验结果文件说明](#实验结果文件说明)
 - [实验图绘制示例](#实验图绘制示例)
 - [注意事项](#注意事项)
@@ -27,11 +30,11 @@
 
 ## 研究背景
 
-分片技术是保持区块链去中心化的同时提升可扩展性的可行路线。但在状态分片下，一笔涉及不同分片账户的交易（**跨分片交易，CTX**）处理代价远高于片内交易，过高的 CTX 比例会显著拖累整体吞吐。
+分片技术是保持区块链去中心化、同时提升其可扩展性的可行路线。但在状态分片下，一笔涉及不同分片账户的交易（**跨分片交易，CTX**）处理代价远高于片内交易，过高的 CTX 比例会显著拖累整体吞吐。
 
-[BrokerChain (INFOCOM '22)](https://ieeexplore.ieee.org/document/9796859) 通过引入 **broker 账户** 把一笔跨分片交易拆解为两笔片内交易，缓解了 CTX 瓶颈，但留下了一个开放问题：
+BrokerChain (INFOCOM '22) 通过引入 **broker 账户**，把一笔跨分片交易拆解为两笔片内交易，缓解了 CTX 瓶颈，但留下了一个开放问题：
 
-> **如何吸引足够多的用户主动质押通证、自愿成为 broker，并把这些流动性合理分配到各分片中？**
+> **如何吸引足够多的志愿者主动质押 Token、自愿成为 broker，并把这些流动性合理分配到各分片中？**
 
 Broker2Earn 正是为回答这一问题而设计的激励机制。
 
@@ -39,28 +42,28 @@ Broker2Earn 正是为回答这一问题而设计的激励机制。
 
 Broker2Earn 的运作流程：
 
-1. **注册 Broker**：自愿者 (Volunteer) 通过智能合约注册申请成为 broker 账户；
-2. **质押通证**：broker 将一定数量的通证质押到合约中，为分片区块链提供流动性；
+1. **注册 Broker**：志愿者 (Volunteer) 通过智能合约注册申请成为 broker 账户；
+2. **质押 Token**：broker 将一定数量的 Token 质押到合约中，为分片区块链提供流动性；
 3. **B2E 算法分配**：B2E 把各 broker 账户分配到不同分片，以最优化流动性使用；
 4. **处理跨分片交易**：跨分片交易 `CTX⟨S_i, S_j, vol, fee⟩` 经由 broker 中转，被拆解为两笔片内交易；
-5. **broker 获得收益**：每笔成功中转的 CTX 中，broker 按佣金比例 (默认 10%) 收取手续费分成。
+5. **broker 获得收益**：每笔成功中转的 CTX 中，broker 按佣金比例（默认 10%）收取手续费分成。
 
-B2E 在算法层面将上述招募-分配问题建模为一个最大化问题，证明其为 **NP-hard**，并提出基于 **Relax-and-Rounding** 的 **在线近似算法 (Online Approximation Algorithm)**：
+B2E 在算法层面将上述招募—分配问题建模为一个 utility 最大化问题，证明其为 **NP-hard**，并提出基于 **Relax-and-Rounding** 的 **在线近似算法 (Online Approximation Algorithm)**：
 
-- **Relax**：将 0/1 整数约束放松为线性规划 (LP)，多项式时间内精确求解；
-- **Rounding**：对 LP 连续解做随机舍入，并给出严格的近似比保证；
+- **Relax**：将 0/1 整数变量松弛为连续变量，转为线性规划 (LP)，多项式时间内精确求解；
+- **Rounding**：对 LP 分数解做随机舍入，并给出严格的近似比保证；
 - **Online**：随着交易流的实时到达进行决策，无需提前知道全局交易信息。
 
-算法细节与近似比证明详见 [Broker2Earn 论文 (INFOCOM '24)](#引用)。
+算法细节与近似比证明详见 [Broker2Earn 论文](#引用)。
 
-## 本仓库相对 BrokerChain 的新增功能
+## 本分支相对 BrokerChain 的新增功能
 
-本仓库基于 BrokerChain 会议版代码（`blockEmulator-broker`），新增了以下 **四项** 功能以适配 B2E 协议：
+本分支基于 BrokerChain 的 INFOCOM 2022 会议版代码，保留原 broker 机制的基础上新增了 **四项** 功能：
 
-1. **阻塞式注入机制 (Blocking Injection)**：每批交易注入后，Supervisor 会等待该批次的所有交易全部在链上确认后再注入下一批。当累计确认数（片内交易 + 跨分片交易对）达到 `params.InjectSpeed` 时，一个 epoch 结束。每一轮 epoch 的边界清晰可控，B2E 算法始终在完整的一批交易范围内做决策，与论文中的理论模型严格对应。
-2. **未分配 CTX 重试机制 (Retry Pool)**：首次运行 B2E 时，若某些 CTX 因 broker 余额不足而未能分配，会先进入重试池 `restBrokerRawMegPool`。随着 Tx1 上链、broker 余额得到补充，系统会自动重试，直到池清空或连续 5 秒无进展。
-3. **交易价值过滤 (Transaction Filtering)**：读取数据集时，若某笔 CTX 的转账金额超过所有 broker 的最大可用余额上限 (`Init_broker_Balance × ShardNum`，约 20 ETH × 分片数)，则直接过滤丢弃。这类交易任何 broker 都无法承接，留在系统中会长期阻塞重试池。
-4. **逐 Epoch 统计记录 (Epoch Stats)**：每完成一个 epoch，自动将 B2E 分配结果、交易统计、broker 累计收益写入 CSV 文件，便于后续绘图分析。
+1. **阻塞式注入机制 (Blocking Injection)**：每批交易注入后，Supervisor 会等待该批次所有交易在链上完成确认后再注入下一批。当累计确认数（片内交易数 + 跨分片交易对数）达到 `params.InjectSpeed` 时，当前 epoch 终止并触发下一批注入。每个 epoch 的边界明确且可控，B2E 算法始终在完整批次的交易范围内进行分配决策，与论文中的理论模型严格一致。
+2. **未分配 CTX 重试机制 (Retry Pool)**：B2E 算法首次运行时，若某些 CTX 因 broker 账户余额不足而未能分配，这些交易会进入重试池 `restBrokerRawMegPool`。随着对应 Tx1 完成上链、broker 账户余额逐步恢复，系统会自动对重试池中的 CTX 重新执行 B2E，直到池清空或连续 5 秒无新分配。
+3. **交易金额过滤 (Transaction Filtering)**：读取数据集时，若某笔 CTX 的转账金额超过所有 broker 账户的最大可用余额上限（`Init_broker_Balance × ShardNum`，约 **2 ETH × 分片数**），系统会直接过滤该交易。此类交易超出任何 broker 的承接能力，若不予过滤将长期占据重试池，导致实验无法正常终止。
+4. **逐 Epoch 统计记录 (Epoch Stats)**：每个 epoch 结束后，系统自动将该 epoch 的 B2E 分配结果、交易统计与 broker 累计收益等数据写入 CSV 文件，便于后续数据分析与可视化。
 
 ## 代码结构
 
@@ -68,51 +71,45 @@ B2E 在算法层面将上述招募-分配问题建模为一个最大化问题，
 blockEmulator-Broker2Earn/
 ├── block-emulator/
 │   ├── params/
-│   │   └── global_config.go          # 全局参数配置文件
+│   │   └── global_config.go             # 全局参数配置文件
 │   ├── supervisor/
 │   │   ├── committee/
 │   │   │   └── committee_broker_b2e.go  # B2E Supervisor 核心逻辑
 │   │   └── Broker2Earn/
-│   │       ├── B2E.go                # Relax-and-Rounding 主流程
-│   │       └── URFA.go               # URFA 线性松弛分配算法
+│   │       ├── B2E.go                   # Relax-and-Rounding 主流程
+│   │       └── URFA.go                  # URFA 线性松弛分配算法
 │   ├── data/
-│   │   └── selectedTxs_300K.csv      # 内置以太坊历史交易数据集 (30 万笔)
-│   └── ipTable.json                  # 节点 IP 配置文件
+│   │   └── selectedTxs_300K.csv         # 内置以太坊历史交易数据集
+│   └── ipTable.json                     # 节点 IP 配置文件
 ```
 
 ## 快速开始
 
 ```bash
-# 1. 克隆仓库
-git clone <YOUR_GITHUB_URL> blockEmulator-Broker2Earn
-cd blockEmulator-Broker2Earn/block-emulator
+# 1. clone 并切到 broker2earn 分支
+git clone -b broker2earn https://github.com/HuangLab-SYSU/block-emulator.git
+cd block-emulator/block-emulator
 
-# 2. 编译
-go build -o blockEmulator .
+# 2. 生成启动脚本（4 分片 × 4 节点，启用 B2E）
+go run main.go -g -S 4 -N 4 -m 4
 
-# 3. 生成启动脚本 (4 分片 × 4 节点，启用 B2E)
-#    Windows
-./blockEmulator.exe -g -S 4 -N 4 -m 4
-#    Linux / macOS
-./blockEmulator -g -S 4 -N 4 -m 4
-
-# 4. 运行
-#    Windows: 双击生成的 .bat 文件
-#    Linux / macOS:
+# 3. 启动所有节点
+#    Windows : 双击生成的 .bat 文件，或在命令行直接运行
+#    Linux/macOS:
 bash run_IpAddr=127_0_0_1.sh
 ```
 
-实验结束后，结果自动写入 `./result/` 目录。
+实验结束后，所有结果自动写入 `./result/` 目录。
 
 ## 参数配置
 
-Broker2Earn 的全部系统参数集中在 `params/global_config.go`，用 Go 变量直接定义，无需额外的 JSON 配置文件。用任意文本编辑器打开该文件并按需修改即可：
+B2E 的全部系统参数集中在 `params/global_config.go`，以 Go 变量形式直接声明，无需 JSON 配置文件。用任意文本编辑器打开该文件并按需修改即可：
 
 ```go
 var (
     Block_Interval      = 5000    // 出块间隔 (ms)
     MaxBlockSize_global = 2000    // 每块最多交易数
-    InjectSpeed         = 5000    // 每轮注入交易条数，同时是 epoch 结束阈值
+    InjectSpeed         = 5000    // 每轮注入交易条数 (= 每个 epoch 的交易数)
     TotalDataSize       = 500000  // 实验总交易数 (默认 50 万)
     BatchSize           = 5000    // 每批发送量，建议与 InjectSpeed 一致
     BrokerNum           = 50      // 系统中 broker 账户数量
@@ -129,26 +126,28 @@ var (
 | --- | --- |
 | `ShardNum` | 分片总数 |
 | `NodesInShard` | 每分片共识节点数 |
-| `BrokerNum` | 系统中初始参与的 broker 账户数量，程序启动时从 `broker/` 目录下按顺序读取前 `BrokerNum` 个地址 |
+| `BrokerNum` | 系统初始参与的 broker 账户数量，程序启动时从 `broker/` 目录按顺序读取前 `BrokerNum` 个地址 |
 | `InjectSpeed` | Supervisor 每轮注入的交易数，同时为每个 epoch 的结束阈值 |
-| `IterNum_B2E` | B2E 算法每个 epoch 内执行 URFA 贪心分配的迭代次数，值越大分配越精细但开销越高 |
+| `IterNum_B2E` | B2E 算法每个 epoch 内执行 URFA 贪心分配的迭代次数，值越大分配越精细，开销也越高 |
 | `Brokerage` | broker 的佣金比例 |
-| `TotalDataSize` | 参与实验的交易总条数，总 epoch 数 = `TotalDataSize / InjectSpeed` |
-| `MaxBlockSize_global` | 每个区块的最大交易数 |
+| `TotalDataSize` | 参与实验的交易总数。总 epoch 数 = `TotalDataSize / InjectSpeed` |
+| `MaxBlockSize_global` | 每个区块所容纳的最大交易数 |
 | `Block_Interval` | 出块时间间隔 (ms) |
-| `FileInput` | 输入交易数据集路径 |
+| `FileInput` | 输入交易数据集的文件路径 |
 
-### 算法模式开关 (`-m` 参数)
+### 通过 `-m` 参数选择算法
 
-| `-m` | 算法模式 |
+BlockEmulator 内置多种交易处理算法。启动时通过命令行参数 `-m <编号>` 指定本次实验使用的算法：
+
+| `-m` 值 | 算法模式 |
 | :---: | --- |
 | 0 | CLPA_Broker |
 | 1 | CLPA |
-| 2 | Broker (原始 BrokerChain，无激励) |
-| 3 | Relay (默认值) |
+| 2 | Broker（原始 BrokerChain，无激励） |
+| 3 | Relay（默认值） |
 | **4** | **Broker_b2e (Broker2Earn)** |
 
-启动时必须显式指定 `-m 4` 才会启用 B2E 算法。
+启动时必须显式指定 **`-m 4`** 才会启用 B2E 算法。
 
 ## 节点 IP 配置
 
@@ -162,130 +161,162 @@ var (
 }
 ```
 
-其中键 `"2147483647"` 代表 Supervisor 节点 (shard ID 十六进制为 `0x7fffffff`)。
+其中键 `"2147483647"` 代表 Supervisor 节点 ID（其十六进制为 `0x7fffffff`）。
 
-## 启动实验
+## 编译与启动实验
 
-完成参数配置后，在 `block-emulator/` 目录下：
+完成参数配置后，在 `block-emulator/` 根目录下按以下步骤启动（以 4 分片 × 4 节点为例）：
 
-```bash
-# 1. 编译 (首次或修改代码后)
-go build -o blockEmulator .
+1. **生成批处理启动脚本。** 该命令会基于 `main.go` 即时编译并生成启动所有节点的批处理脚本：
 
-# 2. 生成批处理启动脚本
-./blockEmulator -g -S 4 -N 4 -m 4
-#   -S : 分片数      -N : 每分片节点数      -m 4 : 启用 B2E
+   ```bash
+   go run main.go -g -S 4 -N 4 -m 4
+   ```
 
-# 3. 启动所有节点
-# Windows : 双击生成的 .bat
-# Linux / macOS:
-bash run_IpAddr=127_0_0_1.sh
-```
+   - `-S 4`：分片总数 4
+   - `-N 4`：每分片节点数 4
+   - `-m 4`：启用 Broker2Earn 算法
 
-系统会依次注入交易、调用 B2E 算法分配 broker、等待链上确认后再注入下一批，直至全部 `TotalDataSize` 笔交易处理完毕，自动将结果写入 `./result/`。
+   执行完毕后，终端会打印：
+   ```
+   [BlockEmulator] Generating launch scripts: shardNum=4, nodesInShard=4, mode=4 (Broker_b2e)
+   [BlockEmulator] Done. Batch files ... have been written ...
+   ```
+   并在当前目录生成批处理文件（Windows 为 `.bat`，Linux/macOS 为 `.sh`）。
+
+2. **运行批处理脚本以启动所有节点。**
+
+   - Windows：双击或命令行运行生成的 `.bat`；
+   - Linux / macOS：
+     ```bash
+     bash run_IpAddr=127_0_0_1.sh
+     ```
+
+   脚本会针对每个节点依次执行：
+   ```
+   go run main.go -n <node-id> -N <每片节点数> -s <shard-id> -S <分片总数> -m 4
+   ```
+   从而拉起所有共识节点与 Supervisor。
+
+3. **等待实验自动结束。** 系统依次注入交易、调用 B2E 算法分配 broker、等待该批上链确认后再注入下一批，直至 `TotalDataSize` 笔交易全部处理完毕，自动将结果写入 `./result/`。
+
+## 实验数据集
+
+实验所用数据集来自 **以太坊主网区块高度 19000000–19499999** 区间的历史交易记录，已按如下规则进行预处理：
+
+- 仅保留跨分片交易，剔除片内交易（B2E 关注 broker 机制对 CTX 的处理效果）；
+- 剔除智能合约调用类交易（即收方或发方为合约地址的交易）；
+- 去除自转账与字段异常等无效记录。
+
+经上述处理后，最终保留 **600,000** 笔交易，与 Broker2Earn 原始论文实验规模一致。每条记录包含三个字段：
+
+- `from`：付款方账户地址
+- `to`：收款方账户地址
+- `value`：转账金额（单位：Wei）
+
+### 下载链接
+
+> **百度网盘** （文件名：`Tx-dataset_forB2E_600K-TXs-CHEN-Qinde-2026May12.csv`）
+>
+> 链接：<https://pan.baidu.com/s/1Ap8S2njayTOqTj9lB6yBzw?pwd=1234>　提取码：`1234`
+
+下载后将 `params/global_config.go` 中的 `FileInput` 指向该文件，并将 `TotalDataSize` 设为 `600000` 即可。
+
+> 仓库 `./data/` 下另内置了一份小规模数据 `selectedTxs_300K.csv`，便于快速验证流程。
 
 ## 实验结果文件说明
+
+实验结束后，所有输出存放于 `./result/`，主要包括三类 CSV 文件：
 
 ```
 ./result/
 ├── supervisor_measureOutput/
-│   ├── Average_TPS.csv                  # 每 epoch 系统平均 TPS
+│   ├── Average_TPS.csv                  # 每 epoch 平均吞吐量
 │   ├── Transaction_Confirm_Latency.csv  # 每 epoch 交易平均确认时延
 │   └── CrossTransaction_ratio.csv       # 每 epoch 跨分片交易比例
-├── brokerRsult/
-│   ├── <brokerAddr>_brokerBalance.csv   # 各 broker 各分片自由余额变化
-│   ├── <brokerAddr>_lockBalance.csv     # 各 broker 各分片锁定余额变化
-│   └── <brokerAddr>_Profit.csv          # 各 broker 各分片累计手续费收益
+├── brokerResult/
+│   ├── <brokerAddr>_brokerBalance.csv   # 各 broker 各分片自由余额
+│   ├── <brokerAddr>_lockBalance.csv     # 各 broker 各分片锁定余额
+│   └── <brokerAddr>_Profit.csv          # 各 broker 各分片累计佣金收益
 └── epoch_stats/
-    └── epoch_stats_Broker2Earn_inject5000_shard4.csv  # 逐 epoch B2E 分配统计
+    └── epoch_stats_Broker2Earn_inject5000_shard4.csv  # 逐 epoch B2E 统计
 ```
 
 `epoch_stats` 文件各列含义：
 
 | 列名 | 含义 |
 | --- | --- |
-| `Epoch` | epoch 序号 (从 0 开始) |
-| `Injected_Tx` | 本 epoch 注入的交易总数 (= `InjectSpeed`) |
-| `B2E_Allocated_Tx` | B2E 成功分配给 broker 的跨分片交易数 |
-| `B2E_Unallocated_Tx` | 因 broker 余额不足未能分配的跨分片交易数 |
-| `Broker_Service_Tx` | 本 epoch 链上确认的 broker 中转交易数 (Tx1 + Tx2) |
-| `Inner_Tx` | 本 epoch 链上确认的片内交易数 |
-| `Total_Profit_ETH` | 截至本 epoch 所有 broker 累计收益 (ETH) |
+| `Epoch` | epoch 序号（从 0 开始） |
+| `Tx_injection_speed` | 本 epoch 内的交易注入速度 |
+| `CTXs_served_by_Alg` | 由算法（如 B2E）成功分配给 broker 的跨分片交易数 |
+| `CTXs_unserved_by_Alg` | 由算法（如 B2E）未能成功分配给 broker 的跨分片交易数 |
+| `CTXs_served_by_Broker` | 本 epoch 内实际上链的、经 broker 中转的 CTX 数量（用于校验算法分配结果是否正确上链） |
+| `ITX_count_handled_thisEpoch` | 本 epoch 内上链确认的片内交易数 |
+| `Total_Profit_ETH` | 截至本 epoch 全部 broker 的累计收益（ETH） |
 | `Active_Broker_Count` | 当前活跃 broker 账户数 |
-| `Block_Count` | 本 epoch 产生的区块总数 |
-
-> 注：跨分片交易在系统中被拆为两笔片内交易处理，因此 `Average_TPS.csv` 中跨分片交易按 0.5 笔计入 TPS。
+| `Block_Count_thisEpoch` | 本 epoch 内产生的区块总数 |
 
 ## 实验图绘制示例
 
-下面的 Python 脚本读取上述结果文件，绘制三张核心分析图：系统 TPS、B2E 每 epoch 分配情况、各 broker 累计收益。
+以下脚本读取两份 `epoch_stats` 文件（B2E 与 BrokerChain），绘制三联箱线图对比两个算法在每个 epoch 上的分布特征：
 
 ```python
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-result_dir = './result/'
+# 两份 epoch_stats CSV 路径
+B2E_CSV = './epoch_stats_Broker2Earn_inject5000_shard4.csv'
+BC_CSV  = './epoch_stats_Brokerchain_inject5000_shard4.csv'
 
-# ---- 图 1：系统平均 TPS ----
-tps_df = pd.read_csv(
-    result_dir + 'supervisor_measureOutput/Average_TPS.csv',
-    header=None, names=['TPS']
-)
-plt.figure(figsize=(8, 4))
-plt.plot(tps_df['TPS'].values, marker='o', linewidth=2,
-         color='steelblue', label='Broker2Earn')
-plt.xlabel('Epoch'); plt.ylabel('Average TPS')
-plt.title('System Throughput (Broker2Earn)')
-plt.legend(); plt.grid(True, linestyle='--', alpha=0.6)
-plt.tight_layout(); plt.savefig('B2E_TPS.pdf', dpi=300); plt.show()
+df_b2e = pd.read_csv(B2E_CSV)
+df_bc  = pd.read_csv(BC_CSV)
 
-# ---- 图 2：B2E 每 epoch 分配情况 ----
-epoch_df = pd.read_csv(
-    result_dir + 'epoch_stats/'
-    'epoch_stats_Broker2Earn_inject5000_shard4.csv'
-)
-plt.figure(figsize=(8, 4))
-plt.plot(epoch_df['B2E_Allocated_Tx'].values, linewidth=2,
-         color='forestgreen', label='Allocated CTX')
-plt.plot(epoch_df['B2E_Unallocated_Tx'].values, linewidth=2,
-         color='tomato', linestyle='--', label='Unallocated CTX')
-plt.xlabel('Epoch'); plt.ylabel('Number of Cross-Shard Txs')
-plt.title('B2E Allocation per Epoch')
-plt.legend(); plt.grid(True, linestyle='--', alpha=0.6)
-plt.tight_layout(); plt.savefig('B2E_Allocation.pdf', dpi=300); plt.show()
+# 三个对比指标
+metrics = [
+    ('CTXs_served_by_Alg',          'CTXs served'),
+    ('CTXs_unserved_by_Alg',        'CTXs unserved'),
+    ('ITX_count_handled_thisEpoch', 'ITXs served'),
+]
+# 配色: B2E 浅蓝 + 深蓝边; BrokerChain 浅橙 + 深橙边
+palette = [('#A8C8E1', '#2E5F9C'), ('#F2C28C', '#C9701B')]
 
-# ---- 图 3：各 Broker 累计收益 ----
-broker_dir = result_dir + 'brokerRsult/'
-profit_files = [f for f in os.listdir(broker_dir) if f.endswith('_Profit.csv')]
-plt.figure(figsize=(8, 4))
-for fname in profit_files[:3]:
-    df = pd.read_csv(os.path.join(broker_dir, fname))
-    total = df.sum(axis=1)
-    plt.plot(total.values, linewidth=2,
-             label=fname.replace('_Profit.csv', '')[:12])
-plt.xlabel('Epoch'); plt.ylabel('Cumulative Profit (wei)')
-plt.title('Broker Profit over Time')
-plt.legend(fontsize=9); plt.grid(True, linestyle='--', alpha=0.6)
-plt.tight_layout(); plt.savefig('B2E_BrokerProfit.pdf', dpi=300); plt.show()
+fig, axes = plt.subplots(1, len(metrics), figsize=(3.4 * len(metrics), 5.6))
+for ax, (col, label) in zip(axes, metrics):
+    data = [df_b2e[col].dropna().values, df_bc[col].dropna().values]
+    bp = ax.boxplot(
+        data, patch_artist=True, widths=0.6,
+        medianprops=dict(color='#C8423A', linewidth=2.4),
+        flierprops=dict(marker='o', markersize=6, alpha=0.6,
+                        markerfacecolor='#888888', markeredgecolor='#888888'),
+    )
+    for i, (face, edge) in enumerate(palette):
+        bp['boxes'][i].set_facecolor(face)
+        bp['boxes'][i].set_edgecolor(edge)
+        bp['boxes'][i].set_linewidth(2.0)
+        for line in (bp['whiskers'][2*i], bp['whiskers'][2*i+1],
+                     bp['caps'][2*i],     bp['caps'][2*i+1]):
+            line.set_color(edge); line.set_linewidth(1.8)
+    ax.set_xticks([1, 2])
+    ax.set_xticklabels(['B2E', 'BrokerChain'], fontsize=17)
+    ax.set_title(label, fontsize=17, fontweight='bold')
+    ax.tick_params(axis='y', labelsize=17)
+    ax.grid(True, axis='y', linestyle='--', alpha=0.45)
+
+fig.suptitle('B2E vs BrokerChain  ·  Per-Epoch Distribution',
+             fontsize=20, fontweight='bold')
+plt.tight_layout(rect=[0, 0, 1, 0.91])
+plt.savefig('B2E_vs_BrokerChain_boxplot.pdf', dpi=300, bbox_inches='tight')
+plt.show()
 ```
 
-## 数据集
-
-实验使用的输入数据来自 [xBlock — Ethereum On-chain Data](https://xblock.pro/#/dataset/14)，每条记录包含三个字段：
-
-- `from`：付款方账户地址
-- `to`：收款方账户地址
-- `value`：转账金额 (Wei)
-
-仓库已内置一份 30 万条交易的数据集 `./data/selectedTxs_300K.csv`，**克隆即可直接使用**。如需更大规模数据，可前往 xBlock 下载，并将 `FileInput` 与 `TotalDataSize` 改为相应值。
+典型结果：B2E 服务的 CTX 数量显著高于 BrokerChain；且 B2E 能将注入的跨分片交易基本全部完成；由于两组实验使用同一份数据，ITX 数量基本一致。
 
 ## 注意事项
 
-- Linux/macOS 下若提示权限不足，请先执行 `chmod +x blockEmulator`。
-- 实验异常中断但后台进程未停止时，可执行 `pkill -9 -f blockEmulator` 强制终止。
-- 阻塞式注入要求每批交易**全部上链**后才能继续，因此实验耗时与 `Block_Interval` 直接相关。希望加快进度可适当减小 `TotalDataSize` 或 `Block_Interval`。
-- 系统在读取数据时会自动过滤掉转账金额超过 `Init_broker_Balance × ShardNum` (约 20 ETH × 分片数) 的跨分片交易，这些交易超出所有 broker 承接能力，过滤后不计入 `TotalDataSize`，属于正常现象。
+- Linux/macOS 下若执行 `.sh` 提示「权限不足」，可改用 `bash run_*.sh` 直接调用解释器执行，无需为脚本本身赋予可执行权限。
+- 若实验异常中断但后台节点进程未自动终止，可在 Linux/macOS 下执行 `pkill -9 -f "go run main.go"` 强制终止所有相关进程；Windows 下可在任务管理器中结束相关 `go.exe` 与节点进程。
+- 阻塞式注入机制要求每批交易**全部上链**后方可继续，因此实验总耗时与 `Block_Interval` 直接相关。希望加快进度可适当减小 `TotalDataSize` 或缩短 `Block_Interval`。
+- 程序在读取交易数据时会自动过滤掉转账金额超过 `Init_broker_Balance × ShardNum`（即约 **2 ETH × 分片数**）的跨分片交易，被过滤后不计入 `TotalDataSize`。
 
 ## 引用
 
@@ -307,7 +338,7 @@ plt.tight_layout(); plt.savefig('B2E_BrokerProfit.pdf', dpi=300); plt.show()
 }
 ```
 
-并请同时引用 BlockEmulator 项目本身。详细使用说明可参考《BlockEmulator 开源项目使用手册》**第 13 章 Broker2Earn 算法**。
+并请同时引用 BlockEmulator 项目本身。完整使用说明可参考《BlockEmulator 开源项目使用手册》**第 13 章 Broker2Earn 算法**。
 
 ## License
 
