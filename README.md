@@ -19,6 +19,9 @@ See **[FAQ](./docs/FAQ.md)**.
 ## The Advanced Version of BlockEmulator (BlockEmulator-X)
 See **[ BlockEmulator-X ](https://github.com/HuangLab-SYSU/block-emulator-x)**.
 
+## A Video Tutorial of BlockEmulator & BlockEmulator-X
+Go to **[YouTube Video](https://www.youtube.com/watch?v=hrXVMKPfKQ4)**.
+
 
 # ========================
 
