@@ -6,7 +6,6 @@ import (
 	"blockEmulator/utils"
 	"sync"
 	"time"
-	"unsafe"
 )
 
 type TxPool struct {
@@ -73,7 +72,7 @@ func (txpool *TxPool) PackTxsWithBytes(max_bytes int) []*Transaction {
 	txNum := len(txpool.TxQueue)
 	currentSize := 0
 	for tx_idx, tx := range txpool.TxQueue {
-		currentSize += int(unsafe.Sizeof(*tx))
+		currentSize += len(tx.Encode())
 		if currentSize > max_bytes {
 			txNum = tx_idx
 			break
