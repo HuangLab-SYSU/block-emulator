@@ -2,7 +2,7 @@
 This is the official handbook of **BlockEmulator** (version 1.0).
 We also provide a **[Chinese-version handbook](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme_ChnVersion.md)**.
 
-In May 2026, we uploaded a detailed 217-page **Chinese-version User Manual**, named "_2026May13-(217页)使用指南-黄华威.pdf_". Please feel free to download it from the main folder.
+In July 2026, we uploaded a detailed 239-page **Chinese-version User Manual**, named "_2026Jul19-(239页)使用指南-黄华威.pdf_". Please feel free to download it from the main folder.
 
 ## Issue Log
 View the issue logs here:
