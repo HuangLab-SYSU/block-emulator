@@ -88,6 +88,14 @@ The following papers from HuangLab's publications have adopted **BlockEmulator**
 Could you quickly get started with BlockEmulator through the following document? Please refer to:
 [BlockEmulator help document](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/Help%20Documents.md). More details of the user guidebook can be found at [Handbook of BlockEmulator (Eng.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/en/readme.md) or [Handbook of BlockEmulator (Chn.)](https://github.com/HuangLab-SYSU/block-emulator/blob/main/docs/ch/readme_ChnVersion.md).
 
+## 6. Related Project
+
+For users interested in other blockchain simulation and emulation tools, the following open-source project may also be useful.
+
+- ChainXim: A Blockchain Simulator for Simulating and Validating Blockchain Systems. [Source Code](https://github.com/ChainXim-Team/ChainXim)
+
+  ChainXim is a blockchain simulator developed by XinLab. It enables low-cost, large-scale blockchain deployment and testing by deploying a large-scale blockchain network on a single machine and simulating node operations and interactions within a virtual environment. Beyond performance evaluation, ChainXim can simulate attackers' behaviors to test blockchain robustness against potential attack vectors and verify the security properties of consensus protocols. Built upon the Bitcoin Backbone Protocol, it features a highly extensible architecture with multiple network models, and its post-simulation evaluation modules calculate critical performance metrics such as throughput, fork rate, and chain quality.
+
 ## Reference
 - [INFOCOM'2022 BrokerChain] H. Huang, X. Peng, J. Zhan, S. Zhang, Y. Lin, Z. Zheng, and S. Guo, “Brokerchain: A cross-shard blockchain protocol for account/balance-based state sharding,” in Proc. of IEEE Conference on Computer Communications (INFOCOM’22), 2022, pp. 1–10. 
 - [NSDI'2019 Monoxide] J. Wang and H. Wang, “Monoxide: Scale out blockchains with asynchronous consensus zones,” in 16th USENIX Symposium on Networked Systems Design and Implementation (NSDI 19), 2019, pp. 95–112.
